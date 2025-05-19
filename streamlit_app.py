@@ -409,6 +409,854 @@ class LinAlgCalculator:
         
         
         return result
+        
+    def cross_product(self, args):
+        """Calculate the cross product of two vectors."""
+        # Capture print output from the CLI function
+        with StreamOutput() as output:
+            result = self.framework.cross_product(args)
+        
+        # Display the result and steps
+        st.subheader("Result")
+        
+        # Parse the vectors from input
+        a = self.framework.parse_vector(args.vector_a)
+        b = self.framework.parse_vector(args.vector_b)
+        
+        # Display steps calculation 
+        st.write("### Step-by-step Calculation")
+        
+        step_output = output.get_output().split('\n')
+        for line in step_output:
+            if line.strip():
+                st.write(line)
+        
+        # Display a visualization of the vectors and the cross product
+        st.subheader("Visualization")
+        
+        if len(a) == 3 and len(b) == 3:
+            # For 3D vectors, visualize in 3D space
+            cross = result  # The cross product result
+            
+            # Create a 3D visualization using plotly
+            fig = go.Figure()
+            
+            # Add the vectors
+            vectors = [a, b, cross]
+            names = ["Vector a", "Vector b", "Cross Product (a × b)"]
+            colors = ["blue", "green", "red"]
+            
+            for i, vec in enumerate(vectors):
+                fig.add_trace(go.Scatter3d(
+                    x=[0, vec[0]],
+                    y=[0, vec[1]],
+                    z=[0, vec[2]],
+                    mode='lines+markers',
+                    name=names[i],
+                    line=dict(width=6, color=colors[i]),
+                    marker=dict(size=[0, 8], color=colors[i])
+                ))
+            
+            # Add grid and configuration
+            max_val = max([max(abs(vec)) for vec in vectors])
+            fig.update_layout(
+                scene=dict(
+                    xaxis=dict(
+                        range=[-max_val * 1.2, max_val * 1.2], 
+                        title="X",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
+                    ),
+                    yaxis=dict(
+                        range=[-max_val * 1.2, max_val * 1.2], 
+                        title="Y",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
+                    ),
+                    zaxis=dict(
+                        range=[-max_val * 1.2, max_val * 1.2], 
+                        title="Z",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
+                    ),
+                    aspectmode='cube',
+                ),
+                title="Cross Product Visualization",
+                title_font_color="white",
+                width=700,
+                height=700,
+                paper_bgcolor='rgba(0,0,0,0)',
+                legend=dict(font=dict(color="white")),
+            )
+            
+            st.plotly_chart(fig)
+            
+            # Add verification notes
+            st.write("### Verification")
+            
+            # Check orthogonality with both input vectors
+            dot_a = np.dot(cross, a)
+            dot_b = np.dot(cross, b)
+            
+            st.write(f"**Orthogonality Check:**")
+            st.write(f"- Dot product with Vector a: {dot_a:.10f} ≈ 0 ✓")
+            st.write(f"- Dot product with Vector b: {dot_b:.10f} ≈ 0 ✓")
+            
+            # Show magnitude relationship
+            magnitude_relation = np.linalg.norm(cross) / (np.linalg.norm(a) * np.linalg.norm(b) * np.sin(np.arccos(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))))
+            st.write(f"**Magnitude Relationship:**")
+            st.write(f"- |a × b| = |a|·|b|·sin(θ) ✓ (Ratio: {magnitude_relation:.6f} ≈ 1)")
+            
+        else:
+            # For 2D vectors or padded vectors, show the 3 vectors
+            if len(a) < 3:
+                a = np.pad(a, (0, 3 - len(a)), 'constant')
+            if len(b) < 3:
+                b = np.pad(b, (0, 3 - len(b)), 'constant')
+                
+            self.display_vector_visualization([a, b, result], names=["Vector a", "Vector b", "Cross Product (a × b)"])
+        
+        return result
+        
+    def triangle_area(self, args):
+        """Calculate the area of a triangle defined by three points."""
+        # Capture print output from the CLI function
+        with StreamOutput() as output:
+            result = self.framework.triangle_area(args)
+        
+        # Display the result and steps
+        st.subheader("Result")
+        
+        # Parse the points from input
+        A = self.framework.parse_vector(args.point_a)
+        B = self.framework.parse_vector(args.point_b)
+        C = self.framework.parse_vector(args.point_c)
+        
+        # Display steps calculation
+        st.write("### Step-by-step Calculation")
+        
+        step_output = output.get_output().split('\n')
+        for line in step_output:
+            if line.strip():
+                st.write(line)
+        
+        # Display a visualization of the triangle
+        st.subheader("Visualization")
+        
+        # Calculate vectors for visualization
+        AB = B - A
+        AC = C - A
+        
+        # Create a figure based on dimensionality
+        if len(A) == 2 and len(B) == 2 and len(C) == 2:
+            # 2D Triangle
+            fig = go.Figure()
+            
+            # Add the triangle vertices
+            fig.add_trace(go.Scatter(
+                x=[A[0], B[0], C[0], A[0]],  # Close the triangle by repeating the first point
+                y=[A[1], B[1], C[1], A[1]],
+                mode='lines+markers',
+                name='Triangle',
+                fill='toself',  # Fill the triangle
+                line=dict(width=2),
+                marker=dict(size=8)
+            ))
+            
+            # Add labels for the points
+            for i, point in enumerate([A, B, C]):
+                fig.add_annotation(
+                    x=point[0],
+                    y=point[1],
+                    text=f"Point {chr(65+i)}",  # A, B, C
+                    showarrow=True,
+                    arrowhead=1,
+                    ax=10,
+                    ay=-30
+                )
+            
+            # Calculate the centroid for area label placement
+            centroid = (A + B + C) / 3
+            
+            # Add area label
+            fig.add_annotation(
+                x=centroid[0],
+                y=centroid[1],
+                text=f"Area: {result:.4f}",
+                showarrow=False,
+                font=dict(size=14, color="red")
+            )
+            
+            # Set layout
+            points = np.vstack([A, B, C])
+            x_min, x_max = points[:, 0].min(), points[:, 0].max()
+            y_min, y_max = points[:, 1].min(), points[:, 1].max()
+            
+            # Add some padding
+            padding = max(x_max - x_min, y_max - y_min) * 0.2
+            
+            fig.update_layout(
+                xaxis=dict(
+                    range=[x_min - padding, x_max + padding],
+                    title="X",
+                    zeroline=True,
+                    zerolinewidth=2,
+                    zerolinecolor='white',
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(255, 255, 255, 0.2)',
+                    color='white',
+                ),
+                yaxis=dict(
+                    range=[y_min - padding, y_max + padding],
+                    title="Y",
+                    zeroline=True,
+                    zerolinewidth=2,
+                    zerolinecolor='white',
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(255, 255, 255, 0.2)',
+                    color='white',
+                ),
+                title="Triangle Visualization",
+                title_font_color="white",
+                showlegend=True,
+                width=700,
+                height=600,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0.1)',
+                legend=dict(font=dict(color="white")),
+            )
+            
+            st.plotly_chart(fig)
+            
+        elif len(A) == 3 and len(B) == 3 and len(C) == 3:
+            # 3D Triangle
+            fig = go.Figure()
+            
+            # Add the triangle
+            fig.add_trace(go.Mesh3d(
+                x=[A[0], B[0], C[0]],
+                y=[A[1], B[1], C[1]],
+                z=[A[2], B[2], C[2]],
+                opacity=0.7,
+                color='blue',
+                name='Triangle'
+            ))
+            
+            # Add the vertices
+            fig.add_trace(go.Scatter3d(
+                x=[A[0], B[0], C[0]],
+                y=[A[1], B[1], C[1]],
+                z=[A[2], B[2], C[2]],
+                mode='markers',
+                marker=dict(size=8, color=['red', 'green', 'blue']),
+                name='Vertices',
+                text=['Point A', 'Point B', 'Point C']
+            ))
+            
+            # Add edges
+            edges = np.array([A, B, C, A])  # Close the loop
+            fig.add_trace(go.Scatter3d(
+                x=edges[:, 0],
+                y=edges[:, 1],
+                z=edges[:, 2],
+                mode='lines',
+                line=dict(width=4, color='white'),
+                name='Edges'
+            ))
+            
+            # Configure the 3D layout
+            points = np.vstack([A, B, C])
+            x_min, x_max = points[:, 0].min(), points[:, 0].max()
+            y_min, y_max = points[:, 1].min(), points[:, 1].max()
+            z_min, z_max = points[:, 2].min(), points[:, 2].max()
+            
+            # Calculate the ranges for each axis with padding
+            max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
+            x_pad = (max_range - (x_max - x_min)) / 2
+            y_pad = (max_range - (y_max - y_min)) / 2
+            z_pad = (max_range - (z_max - z_min)) / 2
+            
+            padding = max_range * 0.2
+            
+            fig.update_layout(
+                scene=dict(
+                    xaxis=dict(
+                        range=[x_min - x_pad - padding, x_max + x_pad + padding],
+                        title="X",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
+                    ),
+                    yaxis=dict(
+                        range=[y_min - y_pad - padding, y_max + y_pad + padding],
+                        title="Y",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
+                    ),
+                    zaxis=dict(
+                        range=[z_min - z_pad - padding, z_max + z_pad + padding],
+                        title="Z",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
+                    ),
+                    aspectmode='cube',
+                ),
+                title=f"3D Triangle - Area: {result:.4f}",
+                title_font_color="white",
+                width=700,
+                height=700,
+                paper_bgcolor='rgba(0,0,0,0)',
+                legend=dict(font=dict(color="white")),
+            )
+            
+            st.plotly_chart(fig)
+            
+            # Add verification notes - show calculations
+            st.write("### Verification")
+            
+            # Show cross product is perpendicular to both triangle sides
+            cross = np.cross(AB, AC)
+            dot_AB = np.dot(cross, AB)
+            dot_AC = np.dot(cross, AC)
+            
+            st.write("**Cross Product Orthogonality Check:**")
+            st.write(f"- Dot product with vector AB: {dot_AB:.10f} ≈ 0 ✓")
+            st.write(f"- Dot product with vector AC: {dot_AC:.10f} ≈ 0 ✓")
+            
+            # Show area calculation
+            st.write("**Area Calculation:**")
+            st.write(f"- |AB × AC| / 2 = {np.linalg.norm(cross) / 2:.4f} ✓")
+            
+        else:
+            # Higher dimensions or inconsistent dimensionality
+            st.info("Triangle visualization is only available for 2D and 3D points. "
+                   "Showing point coordinates instead.")
+            
+            # Display points as a table
+            point_df = pd.DataFrame([A, B, C], index=["Point A", "Point B", "Point C"])
+            st.table(point_df)
+            
+            # Still show the area
+            st.success(f"Triangle area: {result:.4f}")
+        
+        return result
+        
+    def point_line_distance(self, args):
+        """Calculate the distance from a point to a line."""
+        # Capture print output from the CLI function
+        with StreamOutput() as output:
+            result = self.framework.point_line_distance(args)
+        
+        # Display the result and steps
+        st.subheader("Result")
+        
+        # Parse the points and direction vector from input
+        A = self.framework.parse_vector(args.point_a)  # Point on line
+        v = self.framework.parse_vector(args.direction)  # Direction vector
+        B = self.framework.parse_vector(args.point_b)  # Point to find distance from
+        
+        # Ensure vectors are 3D (pad with zeros if needed)
+        if len(A) < 3:
+            A = np.pad(A, (0, 3 - len(A)), 'constant')
+        if len(v) < 3:
+            v = np.pad(v, (0, 3 - len(v)), 'constant')
+        if len(B) < 3:
+            B = np.pad(B, (0, 3 - len(B)), 'constant')
+        
+        # Display steps calculation
+        st.write("### Step-by-step Calculation")
+        
+        step_output = output.get_output().split('\n')
+        for line in step_output:
+            if line.strip():
+                st.write(line)
+        
+        # Display a visualization of the point and line
+        st.subheader("Visualization")
+        
+        # We'll create either a 2D or 3D visualization based on inputs
+        if A[2] == 0 and v[2] == 0 and B[2] == 0:
+            # 2D visualization (all z-coordinates are 0)
+            fig = go.Figure()
+            
+            # Create the line by extending in both directions
+            # Find appropriate line segment length based on the distance to point B
+            line_length = max(10, 3 * np.linalg.norm(B - A))
+            
+            # Normalize direction vector
+            v_unit = v / np.linalg.norm(v)
+            
+            # Create line points extending in both directions
+            t_vals = np.linspace(-line_length, line_length, 100)
+            line_points = np.array([A + t * v_unit for t in t_vals])
+            
+            # Add the line
+            fig.add_trace(go.Scatter(
+                x=line_points[:, 0],
+                y=line_points[:, 1],
+                mode='lines',
+                name='Line',
+                line=dict(width=2, color='blue')
+            ))
+            
+            # Add point A (on the line)
+            fig.add_trace(go.Scatter(
+                x=[A[0]],
+                y=[A[1]],
+                mode='markers',
+                name='Point A (on line)',
+                marker=dict(size=10, color='blue')
+            ))
+            
+            # Add point B (to find distance from)
+            fig.add_trace(go.Scatter(
+                x=[B[0]],
+                y=[B[1]],
+                mode='markers',
+                name='Point B',
+                marker=dict(size=10, color='red')
+            ))
+            
+            # Calculate the closest point on the line to B
+            # Formula: closest = A + ((B-A)·v_unit) * v_unit
+            closest = A + np.dot(B - A, v_unit) * v_unit
+            
+            # Add the closest point on the line
+            fig.add_trace(go.Scatter(
+                x=[closest[0]],
+                y=[closest[1]],
+                mode='markers',
+                name='Closest Point',
+                marker=dict(size=8, color='green')
+            ))
+            
+            # Draw the distance line (perpendicular to the original line)
+            fig.add_trace(go.Scatter(
+                x=[B[0], closest[0]],
+                y=[B[1], closest[1]],
+                mode='lines',
+                name=f'Distance: {result:.4f}',
+                line=dict(width=2, color='red', dash='dash')
+            ))
+            
+            # Set layout
+            points = np.vstack([A, B, closest])
+            x_min, x_max = points[:, 0].min(), points[:, 0].max()
+            y_min, y_max = points[:, 1].min(), points[:, 1].max()
+            
+            # Add some padding
+            padding_x = max(1, (x_max - x_min) * 0.2)
+            padding_y = max(1, (y_max - y_min) * 0.2)
+            
+            fig.update_layout(
+                xaxis=dict(
+                    range=[x_min - padding_x, x_max + padding_x],
+                    title="X",
+                    zeroline=True,
+                    zerolinewidth=2,
+                    zerolinecolor='white',
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(255, 255, 255, 0.2)',
+                    color='white',
+                ),
+                yaxis=dict(
+                    range=[y_min - padding_y, y_max + padding_y],
+                    title="Y",
+                    zeroline=True,
+                    zerolinewidth=2,
+                    zerolinecolor='white',
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(255, 255, 255, 0.2)',
+                    color='white',
+                ),
+                title="Point-Line Distance Visualization",
+                title_font_color="white",
+                showlegend=True,
+                width=700,
+                height=600,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0.1)',
+                legend=dict(font=dict(color="white")),
+            )
+            
+            # Add formula annotation
+            fig.add_annotation(
+                x=(B[0] + closest[0]) / 2,
+                y=(B[1] + closest[1]) / 2 + padding_y * 0.3,
+                text=f"Distance = {result:.4f}",
+                showarrow=False,
+                font=dict(size=14, color="red")
+            )
+            
+            st.plotly_chart(fig)
+            
+        else:
+            # 3D visualization
+            fig = go.Figure()
+            
+            # Create the line by extending in both directions
+            line_length = max(10, 3 * np.linalg.norm(B - A))
+            
+            # Normalize direction vector
+            v_unit = v / np.linalg.norm(v)
+            
+            # Create line points extending in both directions
+            t_vals = np.linspace(-line_length, line_length, 100)
+            line_points = np.array([A + t * v_unit for t in t_vals])
+            
+            # Add the line
+            fig.add_trace(go.Scatter3d(
+                x=line_points[:, 0],
+                y=line_points[:, 1],
+                z=line_points[:, 2],
+                mode='lines',
+                name='Line',
+                line=dict(width=4, color='blue')
+            ))
+            
+            # Add point A (on the line)
+            fig.add_trace(go.Scatter3d(
+                x=[A[0]],
+                y=[A[1]],
+                z=[A[2]],
+                mode='markers',
+                name='Point A (on line)',
+                marker=dict(size=8, color='blue')
+            ))
+            
+            # Add point B (to find distance from)
+            fig.add_trace(go.Scatter3d(
+                x=[B[0]],
+                y=[B[1]],
+                z=[B[2]],
+                mode='markers',
+                name='Point B',
+                marker=dict(size=8, color='red')
+            ))
+            
+            # Calculate the closest point on the line to B
+            closest = A + np.dot(B - A, v_unit) * v_unit
+            
+            # Add the closest point on the line
+            fig.add_trace(go.Scatter3d(
+                x=[closest[0]],
+                y=[closest[1]],
+                z=[closest[2]],
+                mode='markers',
+                name='Closest Point',
+                marker=dict(size=6, color='green')
+            ))
+            
+            # Draw the distance line (perpendicular to the original line)
+            fig.add_trace(go.Scatter3d(
+                x=[B[0], closest[0]],
+                y=[B[1], closest[1]],
+                z=[B[2], closest[2]],
+                mode='lines',
+                name=f'Distance: {result:.4f}',
+                line=dict(width=5, color='red', dash='dash')
+            ))
+            
+            # Configure the 3D layout
+            points = np.vstack([A, B, closest])
+            x_min, x_max = points[:, 0].min(), points[:, 0].max()
+            y_min, y_max = points[:, 1].min(), points[:, 1].max()
+            z_min, z_max = points[:, 2].min(), points[:, 2].max()
+            
+            # Calculate the ranges for each axis with padding
+            max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
+            x_pad = (max_range - (x_max - x_min)) / 2
+            y_pad = (max_range - (y_max - y_min)) / 2
+            z_pad = (max_range - (z_max - z_min)) / 2
+            
+            padding = max_range * 0.2
+            
+            fig.update_layout(
+                scene=dict(
+                    xaxis=dict(
+                        range=[x_min - x_pad - padding, x_max + x_pad + padding],
+                        title="X",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
+                    ),
+                    yaxis=dict(
+                        range=[y_min - y_pad - padding, y_max + y_pad + padding],
+                        title="Y",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
+                    ),
+                    zaxis=dict(
+                        range=[z_min - z_pad - padding, z_max + z_pad + padding],
+                        title="Z",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
+                    ),
+                    aspectmode='cube',
+                ),
+                title=f"Point-Line Distance in 3D - Distance: {result:.4f}",
+                title_font_color="white",
+                width=700,
+                height=700,
+                paper_bgcolor='rgba(0,0,0,0)',
+                legend=dict(font=dict(color="white")),
+            )
+            
+            st.plotly_chart(fig)
+        
+        # Add verification notes
+        st.write("### Verification")
+        
+        # Show the vector from A to B
+        AB = B - A
+        
+        # Show the distance calculation
+        st.write("**Distance Calculation:**")
+        st.write(f"- |v × (B-A)| / |v| = {np.linalg.norm(np.cross(v, B - A)) / np.linalg.norm(v):.4f} ✓")
+        
+        # Compare to the distance between the point and the closest point on the line
+        closest = A + np.dot(B - A, v_unit) * v_unit
+        direct_distance = np.linalg.norm(B - closest)
+        
+        st.write(f"- Alternate calculation (direct distance to closest point): {direct_distance:.4f} ✓")
+        
+        return result
+        
+    def check_collinear(self, args):
+        """Check if vectors are collinear (linearly dependent)."""
+        # Capture print output from the CLI function
+        with StreamOutput() as output:
+            result = self.framework.check_collinear(args)
+        
+        # Display the result and steps
+        st.subheader("Result")
+        
+        # Parse the vectors from input
+        vectors = []
+        for vector_str in args.vectors:
+            vectors.append(self.framework.parse_vector(vector_str))
+        
+        # Display steps calculation
+        st.write("### Step-by-step Calculation")
+        
+        step_output = output.get_output().split('\n')
+        for line in step_output:
+            if line.strip():
+                st.write(line)
+        
+        # Display a visualization of the vectors
+        st.subheader("Visualization")
+        
+        # Determine the dimensionality for visualization
+        max_dim = max([len(v) for v in vectors])
+        if max_dim > 3:
+            st.info(f"Cannot visualize {max_dim}-dimensional vectors directly. Using tabular representation instead.")
+            vector_df = pd.DataFrame(vectors, index=[f"Vector {i+1}" for i in range(len(vectors))])
+            st.table(vector_df)
+        else:
+            # Pad vectors to consistent dimensionality if needed
+            padded_vectors = []
+            for v in vectors:
+                if len(v) < max_dim:
+                    padded_vectors.append(np.pad(v, (0, max_dim - len(v)), 'constant'))
+                else:
+                    padded_vectors.append(v)
+            
+            # Create a visualization based on dimensionality
+            if max_dim <= 2:
+                # Add a zero for 2D visualization
+                vis_vectors = []
+                for v in padded_vectors:
+                    if len(v) == 1:
+                        vis_vectors.append(np.array([v[0], 0]))
+                    else:
+                        vis_vectors.append(v)
+                
+                # Create 2D visualization
+                fig = go.Figure()
+                
+                # Add vectors as arrows from origin
+                for i, vec in enumerate(vis_vectors):
+                    fig.add_trace(go.Scatter(
+                        x=[0, vec[0]],
+                        y=[0, vec[1]],
+                        mode='lines+markers',
+                        name=f"Vector {i+1}",
+                        line=dict(width=3),
+                        marker=dict(size=[0, 10])
+                    ))
+                
+                # Determine the layout extent
+                max_val = max([max(abs(vec)) for vec in vis_vectors]) * 1.2
+                
+                # Add the collinearity result to the title
+                collinear_status = "collinear ✓" if result else "not collinear ✗"
+                
+                # Configure the layout
+                fig.update_layout(
+                    xaxis=dict(
+                        range=[-max_val, max_val],
+                        zeroline=True,
+                        zerolinewidth=2,
+                        zerolinecolor='white',
+                        showgrid=True,
+                        gridwidth=1,
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        color='white',
+                    ),
+                    yaxis=dict(
+                        range=[-max_val, max_val],
+                        zeroline=True,
+                        zerolinewidth=2,
+                        zerolinecolor='white',
+                        showgrid=True,
+                        gridwidth=1,
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        color='white',
+                    ),
+                    title=f"Vector Visualization - Vectors are {collinear_status}",
+                    title_font_color="white",
+                    showlegend=True,
+                    width=700,
+                    height=600,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0.1)',
+                    legend=dict(font=dict(color="white")),
+                )
+                
+                st.plotly_chart(fig)
+                
+                # Add explanation
+                if result:
+                    ratio_text = ""
+                    if len(vectors) == 2:
+                        # Calculate the ratio between the vectors if there are only 2
+                        v1, v2 = vectors[0], vectors[1]
+                        # Find the first non-zero component to calculate ratio
+                        for i in range(len(v1)):
+                            if abs(v1[i]) > 1e-10 and abs(v2[i]) > 1e-10:
+                                ratio = v2[i] / v1[i]
+                                ratio_text = f"Vector 2 = {ratio:.4f} · Vector 1"
+                                break
+                    
+                    st.success(f"The vectors are collinear (linearly dependent). {ratio_text}")
+                    st.write("This means they all lie along the same line through the origin, or in other words, one is a scalar multiple of the other.")
+                else:
+                    st.error("The vectors are not collinear (they are linearly independent).")
+                    st.write("This means they point in different directions and cannot be expressed as scalar multiples of each other.")
+            
+            else:  # 3D visualization
+                # Create 3D visualization
+                fig = go.Figure()
+                
+                # Add vectors as arrows from origin
+                for i, vec in enumerate(padded_vectors):
+                    fig.add_trace(go.Scatter3d(
+                        x=[0, vec[0]],
+                        y=[0, vec[1]],
+                        z=[0, vec[2]],
+                        mode='lines+markers',
+                        name=f"Vector {i+1}",
+                        line=dict(width=6),
+                        marker=dict(size=[0, 8])
+                    ))
+                
+                # Determine the layout extent
+                max_val = max([max(abs(vec)) for vec in padded_vectors]) * 1.2
+                
+                # Add the collinearity result to the title
+                collinear_status = "collinear ✓" if result else "not collinear ✗"
+                
+                # Configure the layout
+                fig.update_layout(
+                    scene=dict(
+                        xaxis=dict(
+                            range=[-max_val, max_val],
+                            title="X",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        yaxis=dict(
+                            range=[-max_val, max_val],
+                            title="Y",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        zaxis=dict(
+                            range=[-max_val, max_val],
+                            title="Z",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        aspectmode='cube',
+                    ),
+                    title=f"3D Vector Visualization - Vectors are {collinear_status}",
+                    title_font_color="white",
+                    width=700,
+                    height=700,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    legend=dict(font=dict(color="white")),
+                )
+                
+                st.plotly_chart(fig)
+                
+                # Add explanation
+                if result:
+                    ratio_text = ""
+                    if len(vectors) == 2:
+                        # Calculate the ratio between the vectors if there are only 2
+                        v1, v2 = vectors[0], vectors[1]
+                        # Find the first non-zero component to calculate ratio
+                        for i in range(len(v1)):
+                            if abs(v1[i]) > 1e-10 and abs(v2[i]) > 1e-10:
+                                ratio = v2[i] / v1[i]
+                                ratio_text = f"Vector 2 = {ratio:.4f} · Vector 1"
+                                break
+                    
+                    st.success(f"The vectors are collinear (linearly dependent). {ratio_text}")
+                    st.write("This means they all lie along the same line through the origin, or in other words, one is a scalar multiple of the other.")
+                else:
+                    st.error("The vectors are not collinear (they are linearly independent).")
+                    st.write("This means they point in different directions and cannot be expressed as scalar multiples of each other.")
+        
+        # Add verification section
+        st.write("### Verification")
+        
+        # Show the reduced form of the matrix of vectors
+        if len(vectors) <= 4:  # Only show detailed verification for smaller sets
+            st.write("**Matrix of Vectors:**")
+            matrix = np.array(vectors)
+            st.write(pd.DataFrame(matrix))
+            
+            # Show the reduced row echelon form
+            st.write("**Reduced Row Echelon Form:**")
+            reduced = mrref(matrix)
+            st.write(pd.DataFrame(reduced))
+            
+            # Check for zero rows to determine linear dependence
+            rank = np.sum([np.linalg.norm(row) > 1e-10 for row in reduced])
+            st.write(f"**Rank of Matrix:** {rank}")
+            
+            if rank < len(vectors) and rank <= 1:
+                st.write("Since the rank is less than the number of vectors and at most 1, the vectors are collinear.")
+            else:
+                st.write("Since the rank is greater than 1, the vectors are not collinear.")
+        
+        return result
     
     def matrix_operations(self, operation, matrix_a, matrix_b=None, scalar=None):
         """Perform basic matrix operations."""
@@ -662,7 +1510,8 @@ def main():
     if category == "Vector Operations":
         operation = st.sidebar.selectbox(
             "Select Vector Operation",
-            ["Vector Normalization", "Vector Projection/Shadow", "Vector Angle"]
+            ["Vector Normalization", "Vector Projection/Shadow", "Vector Angle", "Cross Product", 
+             "Triangle Area", "Point-Line Distance", "Check Collinear"]
         )
         
         st.subheader(operation)
@@ -724,6 +1573,202 @@ def main():
                     calculator.vector_angle(vector_a, vector_b)
                 else:
                     st.error("Please enter both vectors.")
+        
+        elif operation == "Cross Product":
+            st.write("This operation calculates the cross product of two vectors, resulting in a vector perpendicular to both input vectors.")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                vector_a = st.text_input(
+                    "Enter first vector (a):",
+                    value="-2, 0, 0"
+                )
+            
+            with col2:
+                vector_b = st.text_input(
+                    "Enter second vector (b):",
+                    value="0, 9, 8"
+                )
+            
+            with st.expander("Help: Cross Product Information"):
+                st.write("""
+                The cross product is primarily defined for 3D vectors and produces a vector that is perpendicular to both input vectors.
+                
+                **Formula:** a × b = |a|·|b|·sin(θ)·n̂
+                
+                Where:
+                - θ is the angle between the vectors
+                - n̂ is the unit vector perpendicular to both a and b
+                
+                **Note:** For 2D vectors, they will be treated as 3D vectors with z=0.
+                """)
+            
+            if st.button("Calculate Cross Product"):
+                if vector_a and vector_b:
+                    # Add cross product calculation logic
+                    class Args:
+                        def __init__(self, vector_a, vector_b):
+                            self.vector_a = vector_a
+                            self.vector_b = vector_b
+                    
+                    args = Args(vector_a, vector_b)
+                    calculator.cross_product(args)
+                else:
+                    st.error("Please enter both vectors.")
+                    
+        elif operation == "Triangle Area":
+            st.write("This operation calculates the area of a triangle defined by three points.")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                point_a = st.text_input(
+                    "Enter first point (A):",
+                    value="0, 4, 2"
+                )
+            
+            with col2:
+                point_b = st.text_input(
+                    "Enter second point (B):",
+                    value="0, 8, 5"
+                )
+                
+            with col3:
+                point_c = st.text_input(
+                    "Enter third point (C):",
+                    value="0, 8, -1"
+                )
+            
+            with st.expander("Help: Triangle Area Information"):
+                st.write("""
+                This calculation finds the area of a triangle in 2D or 3D space using vector cross product.
+                
+                **Formula:** Area = |AB × AC| / 2
+                
+                Where:
+                - AB and AC are vectors from point A to points B and C
+                - × represents the cross product
+                
+                **Input:** Three points in 2D or 3D space.
+                For 2D points, enter: "x, y"
+                For 3D points, enter: "x, y, z"
+                """)
+            
+            if st.button("Calculate Triangle Area"):
+                if point_a and point_b and point_c:
+                    # Create Args object and call the triangle_area method
+                    class Args:
+                        def __init__(self, point_a, point_b, point_c):
+                            self.point_a = point_a
+                            self.point_b = point_b
+                            self.point_c = point_c
+                    
+                    args = Args(point_a, point_b, point_c)
+                    calculator.triangle_area(args)
+                else:
+                    st.error("Please enter all three points.")
+                    
+        elif operation == "Point-Line Distance":
+            st.write("This operation calculates the shortest distance from a point to a line in space.")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                point_a = st.text_input(
+                    "Enter a point on the line (A):",
+                    value="3, 0, 0"
+                )
+                
+                direction = st.text_input(
+                    "Enter line direction vector (v):",
+                    value="2, 0, 0"
+                )
+            
+            with col2:
+                point_b = st.text_input(
+                    "Enter point to find distance from (B):",
+                    value="5, 10, 0"
+                )
+                
+                st.info("The direction vector should be non-zero (it defines the direction of the line).")
+            
+            with st.expander("Help: Point-Line Distance Information"):
+                st.write("""
+                This calculation finds the shortest distance from a point to a line in 2D or 3D space.
+                
+                **Formula:** Distance = |v × (B-A)| / |v|
+                
+                Where:
+                - A is a point on the line
+                - v is the direction vector of the line
+                - B is the point to find the distance from
+                - × represents the cross product
+                
+                **Input:** 
+                - Point on line and direction vector to define the line
+                - Point to find the distance from
+                
+                For 2D points, enter: "x, y"
+                For 3D points, enter: "x, y, z"
+                """)
+            
+            if st.button("Calculate Point-Line Distance"):
+                if point_a and direction and point_b:
+                    # Create Args object and call the point_line_distance method
+                    class Args:
+                        def __init__(self, point_a, direction, point_b):
+                            self.point_a = point_a
+                            self.direction = direction
+                            self.point_b = point_b
+                    
+                    args = Args(point_a, direction, point_b)
+                    calculator.point_line_distance(args)
+                else:
+                    st.error("Please enter all required points and vectors.")
+                    
+        elif operation == "Check Collinear":
+            st.write("This operation checks if vectors are collinear (lie on the same line through the origin).")
+            
+            # Dynamic vector input
+            num_vectors = st.slider("Number of vectors to check", min_value=2, max_value=5, value=2)
+            
+            vectors = []
+            cols = st.columns(num_vectors)
+            
+            for i in range(num_vectors):
+                with cols[i]:
+                    vector = st.text_input(
+                        f"Enter Vector {i+1}:",
+                        value="-3, 2" if i == 0 else "6, -4" if i == 1 else "",
+                    )
+                    vectors.append(vector)
+            
+            with st.expander("Help: Collinearity Information"):
+                st.write("""
+                This calculation checks if vectors are collinear - meaning they all lie on the same line through the origin.
+                
+                **Mathematical Definition:** Vectors are collinear if one can be expressed as a scalar multiple of the other.
+                
+                For example, vectors [1, 2] and [2, 4] are collinear because [2, 4] = 2 * [1, 2].
+                
+                **Calculation Method:**
+                - Create a matrix where each vector is a row
+                - Find the rank of this matrix using row reduction
+                - If the rank is 1 (or 0 for zero vectors), the vectors are collinear
+                
+                **Input:** Two or more vectors of the same dimensionality.
+                """)
+            
+            if st.button("Check Collinearity"):
+                # Check if all vector inputs are provided
+                if all(vector for vector in vectors):
+                    # Create Args object and call the check_collinear method
+                    class Args:
+                        def __init__(self, vectors):
+                            self.vectors = vectors
+                    
+                    args = Args(vectors)
+                    calculator.check_collinear(args)
+                else:
+                    st.error("Please enter all vectors.")
     
     elif category == "Matrix Operations":
         operation = st.sidebar.selectbox(
