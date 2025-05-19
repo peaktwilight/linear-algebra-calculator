@@ -453,7 +453,7 @@ def main():
                     st.error("Please enter the augmented matrix.")
     
     elif category == "Quiz Mode":
-        quiz_component.render_quiz_ui()
+        quiz_component.render()
     
     elif category == "Learning Resources":
         render_learning_resources_page()
