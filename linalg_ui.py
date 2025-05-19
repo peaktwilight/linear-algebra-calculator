@@ -26,6 +26,7 @@ try:
     from rich.syntax import Syntax
     from rich.markdown import Markdown
     from rich.prompt import Prompt, Confirm
+    from rich import box
     import questionary
     from questionary import Style
 except ImportError:
