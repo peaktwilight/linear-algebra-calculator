@@ -1356,39 +1356,131 @@ class LinAlgCalculator:
         
     def check_collinear(self, args):
         """Check if vectors are collinear (linearly dependent)."""
-        # Capture print output from the CLI function
-        with StreamOutput() as output:
-            result = self.framework.check_collinear(args)
+        # Get the boolean result from the framework first
+        # We are not capturing the full StreamOutput anymore, as we'll format the explanation manually.
+        # However, we still need the core logic to determine collinearity.
+        # For this, we'll temporarily use StreamOutput to suppress prints if any, 
+        # but primarily rely on the direct return value if the framework method supports it.
+        # Assuming self.framework.check_collinear(args) returns a boolean or a structure from which boolean can be derived.
         
-        # Display the result and steps
+        # Let's simulate the args parsing that the framework would do, if needed, or pass it directly.
+        # The framework.check_collinear(args) is expected to return a boolean.
+        # If it prints and doesn't return, this part needs to be adapted to parse its print output for the boolean result.
+        # For now, assuming it returns a boolean as 'result_is_collinear'.
+        
+        # It seems the original `self.framework.check_collinear(args)` was designed to print to console.
+        # We need its boolean result. Let's assume it returns a boolean, or adapt if it only prints.
+        # Re-evaluating the original: `result = self.framework.check_collinear(args)` captures the *return value*.
+        # The StreamOutput was for capturing *prints*. 
+        # So, the original `result` variable should hold the boolean True/False.
+
+        result_is_collinear = self.framework.check_collinear(args)
+
         st.subheader("Result")
-        
-        # Parse the vectors from input
-        vectors = []
+
+        # Parse the vectors from input for display
+        parsed_vectors = []
         for vector_str in args.vectors:
-            vectors.append(self.framework.parse_vector(vector_str))
-        
-        # Display steps calculation
-        st.write("### Step-by-step Calculation")
-        
-        step_output = output.get_output().split('\n')
-        for line in step_output:
-            if line.strip():
-                st.write(line)
-        
+            parsed_vectors.append(self.framework.parse_vector(vector_str))
+
+        # Display input vectors
+        st.markdown("#### Input Vectors:")
+        vector_display_cols = st.columns(len(parsed_vectors))
+        for i, vec in enumerate(parsed_vectors):
+            with vector_display_cols[i]:
+                st.markdown(f"$v_{i+1} = {vec.tolist()}$")
+
+        st.markdown("---")
+        st.markdown("#### Collinearity Check Explanation:")
+
+        if len(parsed_vectors) < 2:
+            st.warning("At least two vectors are needed to check for collinearity.")
+            return
+
+        # General explanation
+        st.markdown(
+            """Vectors are **collinear** if they all lie on the same line when starting from the origin. 
+            This means they are linearly dependent."""
+        )
+
+        # Explanation based on number of vectors
+        if len(parsed_vectors) == 2:
+            st.markdown(
+                """For two vectors, $v_1$ and $v_2$, they are collinear if one is a scalar multiple of the other:
+                $v_2 = k \\cdot v_1$ for some scalar $k$.
+                """)
+            # Attempt to find k
+            v1 = parsed_vectors[0]
+            v2 = parsed_vectors[1]
+            k = None
+            if result_is_collinear:
+                # Find first non-zero component in v1 to calculate k
+                for i in range(len(v1)):
+                    if abs(v1[i]) > 1e-9: # Avoid division by zero or near-zero
+                        if abs(v2[i]) > 1e-9: # Ensure corresponding component in v2 is also non-zero for a meaningful ratio
+                            k_candidate = v2[i] / v1[i]
+                            # Verify with other components if they exist
+                            is_consistent_k = True
+                            for j in range(len(v1)):
+                                if abs(v2[j] - k_candidate * v1[j]) > 1e-9:
+                                    is_consistent_k = False
+                                    break
+                            if is_consistent_k:
+                                k = k_candidate
+                                break
+                        else: # v1[i] is non-zero, but v2[i] is zero. If v2 is not all zeros, they can't be collinear with this k
+                            if np.any(v2):
+                                k = None # Mark as not found or inconsistent
+                            else: # v2 is a zero vector, k can be 0
+                                k = 0
+                            break
+                    elif abs(v2[i]) > 1e-9: # v1[i] is zero, but v2[i] is non-zero. Cannot be v2 = k*v1 unless v2 is zero vector
+                        k = None # Mark as not found or inconsistent
+                        break
+                    # If both v1[i] and v2[i] are zero, continue to next component
+
+        else: # More than 2 vectors
+            st.markdown(
+                """For multiple vectors, one common way to check for collinearity is to form a matrix where 
+                each vector is a row (or column). The vectors are collinear if the **rank** of this matrix is 1 
+                (assuming not all vectors are zero vectors)."""
+            )
+            # Display the matrix
+            matrix_str = "\\\\begin{bmatrix}\n" 
+            for vec in parsed_vectors:
+                matrix_str += " & ".join(map(str, vec.tolist())) + "\\\\\\\\ \n"
+            matrix_str += "\\end{bmatrix}"
+            st.markdown(f"Matrix formed by the vectors (as rows): $M = {matrix_str}$")
+            st.markdown("If rank(M) = 1, the vectors are collinear.")
+
+        st.markdown("---")
+
+        # Display the final result message
+        if result_is_collinear:
+            result_message = "The vectors are **collinear** (linearly dependent)."
+            if len(parsed_vectors) == 2 and k is not None:
+                result_message += f" Specifically, $v_2 \\approx {k:.4f} \\cdot v_1$."
+            elif len(parsed_vectors) == 2 and k is None and not (np.all(parsed_vectors[0]==0) or np.all(parsed_vectors[1]==0)):
+                 result_message += " They are collinear (e.g., one might be a zero vector, or they align but a simple scalar k was not uniquely determined by the method above)." 
+            st.success(result_message)
+            st.write("This means they all lie along the same line through the origin.")
+        else:
+            st.error("The vectors are **not collinear** (they are linearly independent).")
+            st.write("This means they point in different directions and do not all lie on the same line through the origin.")
+
         # Display a visualization of the vectors
         st.subheader("Visualization")
         
         # Determine the dimensionality for visualization
-        max_dim = max([len(v) for v in vectors])
+        max_dim = max([len(v) for v in parsed_vectors])
         if max_dim > 3:
             st.info(f"Cannot visualize {max_dim}-dimensional vectors directly. Using tabular representation instead.")
-            vector_df = pd.DataFrame(vectors, index=[f"Vector {i+1}" for i in range(len(vectors))])
+            vector_df = pd.DataFrame(parsed_vectors, index=[f"Vector {i+1}" for i in range(len(parsed_vectors))])
             st.table(vector_df)
         else:
             # Pad vectors to consistent dimensionality if needed
             padded_vectors = []
-            for v in vectors:
+            for v in parsed_vectors:
                 if len(v) < max_dim:
                     padded_vectors.append(np.pad(v, (0, max_dim - len(v)), 'constant'))
                 else:
@@ -1425,7 +1517,7 @@ class LinAlgCalculator:
                 max_val_layout = max(1, max_val_vis) * 1.2 # Use max_val_vis and ensure it's at least 1
 
                 # Add the collinearity result to the title
-                collinear_status = "collinear ✓" if result else "not collinear ✗"
+                collinear_status = "collinear ✓" if result_is_collinear else "not collinear ✗"
                 
                 # Configure the layout
                 fig.update_layout(
@@ -1462,11 +1554,11 @@ class LinAlgCalculator:
                 st.plotly_chart(fig)
                 
                 # Add explanation
-                if result:
+                if result_is_collinear:
                     ratio_text = ""
-                    if len(vectors) == 2:
+                    if len(parsed_vectors) == 2:
                         # Calculate the ratio between the vectors if there are only 2
-                        v1, v2 = vectors[0], vectors[1]
+                        v1, v2 = parsed_vectors[0], parsed_vectors[1]
                         # Find the first non-zero component to calculate ratio
                         for i in range(len(v1)):
                             if abs(v1[i]) > 1e-10 and abs(v2[i]) > 1e-10:
@@ -1474,11 +1566,11 @@ class LinAlgCalculator:
                                 ratio_text = f"Vector 2 = {ratio:.4f} · Vector 1"
                                 break
                     
-                    st.success(f"The vectors are collinear (linearly dependent). {ratio_text}")
-                    st.write("This means they all lie along the same line through the origin, or in other words, one is a scalar multiple of the other.")
+                    # st.success(f"The vectors are collinear (linearly dependent). {ratio_text}") # Covered by main success message
+                    # st.write("This means they all lie along the same line through the origin, or in other words, one is a scalar multiple of the other.")
                 else:
-                    st.error("The vectors are not collinear (they are linearly independent).")
-                    st.write("This means they point in different directions and cannot be expressed as scalar multiples of each other.")
+                    # st.error("The vectors are not collinear (they are linearly independent).") # Covered by main error message
+                    pass # No additional text needed here as it's covered by the main error message.
             
             else:  # 3D visualization
                 # Create 3D visualization
@@ -1503,7 +1595,7 @@ class LinAlgCalculator:
                 max_val_layout_3d = max(1, max_val_vis_3d) * 1.2 # Use max_val_vis_3d and ensure it's at least 1
                 
                 # Add the collinearity result to the title
-                collinear_status = "collinear ✓" if result else "not collinear ✗"
+                collinear_status = "collinear ✓" if result_is_collinear else "not collinear ✗"
                 
                 # Configure the layout
                 fig.update_layout(
@@ -1541,49 +1633,56 @@ class LinAlgCalculator:
                 
                 st.plotly_chart(fig)
                 
-                # Add explanation
-                if result:
+                # Add explanation for 3D case, similar to 2D
+                if result_is_collinear:
                     ratio_text = ""
-                    if len(vectors) == 2:
+                    if len(parsed_vectors) == 2:
                         # Calculate the ratio between the vectors if there are only 2
-                        v1, v2 = vectors[0], vectors[1]
-                        # Find the first non-zero component to calculate ratio
+                        v1, v2 = parsed_vectors[0], parsed_vectors[1]
+                        # Find the first non-zero component to calculate ratio (simplified, assumes same dim)
                         for i in range(len(v1)):
-                            if abs(v1[i]) > 1e-10 and abs(v2[i]) > 1e-10:
-                                ratio = v2[i] / v1[i]
-                                ratio_text = f"Vector 2 = {ratio:.4f} · Vector 1"
-                                break
-                    
-                    st.success(f"The vectors are collinear (linearly dependent). {ratio_text}")
-                    st.write("This means they all lie along the same line through the origin, or in other words, one is a scalar multiple of the other.")
+                            if abs(v1[i]) > 1e-10 and abs(v2[i]) > 1e-10: # Basic check
+                                ratio = v2[i] / v1[i] 
+                                # A more robust check would verify this ratio across all components
+                                # For simplicity, we use the k calculated earlier if available or just state collinearity.
+                                # The main result message already handles the k display.
+                                break 
+                    # st.success(f"The vectors are collinear. {ratio_text}") # Covered by main success message
                 else:
-                    st.error("The vectors are not collinear (they are linearly independent).")
-                    st.write("This means they point in different directions and cannot be expressed as scalar multiples of each other.")
-        
-        # Add verification section
-        st.write("### Verification")
-        
-        # Show the reduced form of the matrix of vectors
-        if len(vectors) <= 4:  # Only show detailed verification for smaller sets
-            st.write("**Matrix of Vectors:**")
-            matrix = np.array(vectors)
-            st.write(pd.DataFrame(matrix))
+                    # st.error("The vectors are not collinear.") # Covered by main error message
+                    pass # No additional text needed here.
+
+        # The following block is now redundant due to the new markdown explanations above.
+        # # Show the reduced form of the matrix of vectors
+        # if len(parsed_vectors) <= 4:  # Only show detailed verification for smaller sets
+        #     st.write("**Matrix of Vectors:**")
+        #     matrix = np.array(parsed_vectors)
+        #     st.write(pd.DataFrame(matrix))
             
-            # Show the reduced row echelon form
-            st.write("**Reduced Row Echelon Form:**")
-            reduced_matrix = mrref(matrix) # Renamed variable
-            st.write(pd.DataFrame(reduced_matrix))
-            
-            # Check for zero rows to determine linear dependence
-            rank = np.sum([np.linalg.norm(row) > 1e-10 for row in reduced_matrix])
-            st.write(f"**Rank of Matrix:** {rank}")
-            
-            if rank < len(vectors) and rank <= 1:
-                st.write("Since the rank is less than the number of vectors and at most 1, the vectors are collinear.")
-            else:
-                st.write("Since the rank is greater than 1, the vectors are not collinear.")
+        #     # Placeholder for rank calculation if needed, but framework should handle it
+        #     # For demonstration, assuming rank can be obtained or is implicitly handled by framework.check_collinear
+        #     # For simplicity, assuming rank can be obtained or is implicitly handled by framework.check_collinear
+        #     try:
+        #         # Attempt to calculate rank using numpy for display, actual logic is in framework
+        #         if matrix.size > 0 : # Ensure matrix is not empty
+        #             if matrix.ndim == 1: # Single vector case
+        #                 rank = 1 if np.any(matrix) else 0 # Rank 1 if not zero vector, else 0
+        #             else:
+        #                 rank = np.linalg.matrix_rank(matrix)
+        #             st.write(f"**Rank of Matrix (for context):** {rank}")
+
+        #             # This explanatory text is now part of the main success/error message logic
+        #             # if rank < len(parsed_vectors) and rank <= 1: # Adjusted logic based on what collinear means (rank 1)
+        #             #     st.write("Since the rank is 1 (or 0 for all zero vectors), the vectors are collinear.")
+        #             # else:
+        #             #     st.write("Since the rank is greater than 1, the vectors are not collinear.")
+        #         else:
+        #             st.write("Cannot determine rank of an empty set of vectors.")
+
+        #     except Exception as e:
+        #         st.warning(f"Could not display rank for context: {e}")
         
-        return result
+        return result_is_collinear
     
     def matrix_operations(self, operation, matrix_a, matrix_b=None, scalar=None):
         """Perform basic matrix operations."""
