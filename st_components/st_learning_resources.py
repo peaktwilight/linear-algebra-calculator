@@ -362,6 +362,76 @@ def render_learning_resources_page():
         )
         # Placeholder for Hessian Normal Form / Point-Plane distance to be added later
 
+    # Category: Matrix Operations
+    with st.expander("Matrix Operations", expanded=False):
+        st.header("Matrix Operations")
+
+        # --- What is a Matrix? ---
+        st.subheader("What is a Matrix?")
+        st.markdown(
+            "A matrix is a rectangular array of numbers, symbols, or expressions, arranged in rows and columns. "
+            "It's a fundamental tool for representing and solving systems of linear equations, transformations, and much more."
+        )
+        st.markdown("An `m × n` matrix has `m` rows and `n` columns. Example of a 2x3 matrix A:")
+        st.latex("A = \\begin{bmatrix} a_{11} & a_{12} & a_{13} \\newline a_{21} & a_{22} & a_{23} \\end{bmatrix}")
+        st.markdown("Matrices are typically denoted by uppercase letters (e.g., A, B), and their elements by lowercase letters with subscripts (e.g., `aᵢⱼ` is the element in the i-th row and j-th column). Handling matrices often involves libraries like NumPy in Python.")
+        st.markdown("---")
+
+        # --- Matrix Addition and Subtraction ---
+        st.subheader("Matrix Addition and Subtraction")
+        st.markdown(
+            "Matrices can be added or subtracted if and only if they have the **same dimensions** (same number of rows and same number of columns). "
+            "The operation is performed element-wise."
+        )
+        st.markdown("If A and B are both `m × n` matrices:")
+        st.latex("(A+B)_{ij} = a_{ij} + b_{ij}")
+        st.latex("(A-B)_{ij} = a_{ij} - b_{ij}")
+        st.markdown("**Conceptual Example (Exercise C85VFS / 4I8XHJ adaptation):**")
+        st.markdown("Given `A = [[1,0], [0,1]]` and `B = [[1,0], [0,1]]` (both are 2x2 identity matrices in this case):\n"
+                    "`A + B = [[1+1, 0+0], [0+0, 1+1]] = [[2,0], [0,2]]`\n"
+                    "`A - B = [[1-1, 0-0], [0-0, 1-1]] = [[0,0], [0,0]]` (the zero matrix)")
+        st.markdown("These operations are generally performed manually as preliminary steps for more complex problems. The calculator does not have separate tools for just matrix addition/subtraction.")
+        st.markdown("---")
+
+        # --- Scalar Multiplication of Matrices ---
+        st.subheader("Scalar Multiplication of Matrices")
+        st.markdown("To multiply a matrix by a scalar, multiply every element of the matrix by that scalar.")
+        st.markdown("If `k` is a scalar and `A` is a matrix:")
+        st.latex("(k \cdot A)_{ij} = k \cdot a_{ij}")
+        st.markdown("**Conceptual Example:**")
+        st.markdown("If `k = 3` and `A = [[1,2], [3,4]]`:\n"
+                    "`3A = [[3*1, 3*2], [3*3, 3*4]] = [[3,6], [9,12]]`")
+        st.markdown("Like addition/subtraction, this is usually a manual step. The calculator does not have a dedicated tool for scalar matrix multiplication.")
+        st.markdown("---")
+
+        # --- Matrix Multiplication (Product) ---
+        st.subheader("Matrix Multiplication (Product)")
+        st.markdown(
+            "The product `AB` of two matrices `A` and `B` is defined if and only if the number of columns in `A` is equal to the number of rows in `B`. "
+            "If `A` is an `m × n` matrix and `B` is an `n × p` matrix, then their product `AB` will be an `m × p` matrix."
+        )
+        st.latex("(AB)_{ij} = \\sum_{k=1}^{n} a_{ik} b_{kj}")
+        st.markdown("This means the element `(AB)ᵢⱼ` is the dot product of the i-th row of `A` with the j-th column of `B`.")
+        st.markdown("**Key Properties:**\n"
+                    "- **Not Commutative in general:** `AB ≠ BA`\n"
+                    "- Associative: `(AB)C = A(BC)`\n"
+                    "- Distributive: `A(B+C) = AB + AC` and `(A+B)C = AC + BC`")
+        st.markdown("**Conceptual Example (Exercise N2L782 / 7QG9AW adaptation):**")
+        st.markdown("Let `A = [[1,2], [3,4]]` (2x2) and `B = [[5,6], [7,8]]` (2x2). Their product `C = AB` will be 2x2.\n"
+                    "`C₁₁ = (1*5) + (2*7) = 5 + 14 = 19` (Row 1 of A ⋅ Col 1 of B)\n"
+                    "`C₁₂ = (1*6) + (2*8) = 6 + 16 = 22` (Row 1 of A ⋅ Col 2 of B)\n"
+                    "`C₂₁ = (3*5) + (4*7) = 15 + 28 = 43` (Row 2 of A ⋅ Col 1 of B)\n"
+                    "`C₂₂ = (3*6) + (4*8) = 18 + 32 = 50` (Row 2 of A ⋅ Col 2 of B)\n"
+                    "So, `AB = [[19, 22], [43, 50]]`.")
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. Navigate to **Matrix Operations** in the sidebar."
+            "2. Select the **Matrix Multiplication** tool."
+            "3. Enter Matrix A (e.g., `1,2;3,4`)."
+            "4. Enter Matrix B (e.g., `5,6;7,8`). Ensure dimensions are compatible."
+            "5. The calculator will display the resulting product matrix."
+        )
+
     st.markdown("---")
     st.info("More topics and interactive examples will be added soon!")
 
