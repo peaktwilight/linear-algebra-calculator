@@ -1,7 +1,27 @@
-streamlit==1.30.0
-numpy==1.24.3
-pandas==2.0.3
-matplotlib==3.7.2
-plotly==5.18.0
-sympy==1.12
-scipy==1.10.1
+# Core dependencies (needed for all interfaces)
+numpy>=1.24.3
+sympy>=1.12
+scipy>=1.10.1
+
+# Terminal UI dependencies
+rich>=12.0.0
+questionary>=1.10.0
+pyfiglet>=0.8.0  # Optional: for fancy banners
+
+# Web UI dependencies (Streamlit interface)
+streamlit>=1.30.0
+pandas>=2.0.3
+plotly>=5.18.0
+matplotlib>=3.7.2  # Optional: for additional visualizations
+
+# To install all dependencies:
+# pip install -r requirements.txt
+
+# Or, install minimal CLI version only:
+# pip install numpy sympy scipy
+
+# Or, install Terminal UI version:
+# pip install numpy sympy scipy rich questionary
+
+# Or, install Web UI version:
+# pip install numpy sympy scipy streamlit pandas plotly matplotlib
