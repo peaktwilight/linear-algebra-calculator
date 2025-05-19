@@ -60,36 +60,46 @@ class LinearAlgebraRichUI:
                 ("Common Homework Patterns", self.ui_common_homework_patterns),
                 ("Recognize Problem Types", self.ui_recognize_problem_types),
             ],
-            "Vector Operations": [
+            "Vector Basics": [
                 ("Convert polar to Cartesian coordinates", self.ui_polar_to_cartesian),
                 ("Normalize a vector", self.ui_normalize_vector),
                 ("Create vector with direction and length", self.ui_vector_direction_length),
+                ("Check if vectors are collinear", self.ui_check_collinear),
+            ],
+            "Vector Geometry": [
                 ("Calculate vector shadow (projection)", self.ui_vector_shadow),
                 ("Check if vectors are orthogonal", self.ui_check_orthogonal),
                 ("Calculate angle between vectors", self.ui_vector_angle),
                 ("Calculate cross product", self.ui_cross_product),
                 ("Calculate triangle area", self.ui_triangle_area),
                 ("Calculate point-line distance", self.ui_point_line_distance),
-                ("Check if vectors are collinear", self.ui_check_collinear),
             ],
-            "Matrix Operations": [
+            "Matrix & Linear Systems": [
                 ("Solve system with Gaussian elimination", self.ui_solve_gauss),
-                ("Check if vectors are coplanar", self.ui_check_coplanar),
                 ("Check if vector is solution to system", self.ui_check_solution),
                 ("Solve vector equation", self.ui_vector_equation),
                 ("Extract matrix elements", self.ui_matrix_element),
-                ("Find intersections of planes", self.ui_intersection_planes),
-                ("Find homogeneous intersections", self.ui_homogeneous_intersection),
-                ("Identify pivot and free variables", self.ui_find_pivot_free_vars),
                 ("Perform basic matrix operations", self.ui_matrix_operations),
                 ("Calculate matrix product", self.ui_matrix_product),
             ],
-            "Other Operations": [
+            "Spaces & Subspaces": [
+                ("Check if vectors are coplanar", self.ui_check_coplanar),
+                ("Find intersections of planes", self.ui_intersection_planes),
+                ("Find homogeneous intersections", self.ui_homogeneous_intersection),
+                ("Identify pivot and free variables", self.ui_find_pivot_free_vars),
+                ("Calculate point-plane distance", self.ui_point_plane_distance),
+            ],
+            "Advanced Math": [
                 ("Calculate sum of series", self.ui_sum_series),
                 ("Check particular solutions", self.ui_check_particular_solution),
-                ("Calculate point-plane distance", self.ui_point_plane_distance),
             ]
         }
+        
+        # Create a flat list of all operations for search functionality
+        self.all_operations = []
+        for category, operations in self.categories.items():
+            for op_name, op_func in operations:
+                self.all_operations.append((op_name, op_func, category))
     
     def clear_screen(self):
         """Clear the terminal screen"""
@@ -312,24 +322,77 @@ class LinearAlgebraRichUI:
         
         self.console.print(table)
     
+    def search_operations(self, search_term):
+        """Search through all operations and return matches"""
+        search_term = search_term.lower()
+        matches = []
+        
+        for op_name, op_func, category in self.all_operations:
+            if search_term in op_name.lower() or search_term in category.lower():
+                matches.append((op_name, op_func, category))
+        
+        return matches
+    
+    def show_search_results(self, matches):
+        """Display and handle search results"""
+        if not matches:
+            self.console.print("[yellow]No matching operations found.[/yellow]")
+            self.wait_for_user()
+            return
+        
+        # Format choices with category information
+        choices = [f"{op_name} [dim]({category})[/dim]" for op_name, _, category in matches]
+        choices.append("Back to main menu")
+        
+        self.display_header("Search Results")
+        selected = questionary.select(
+            "Select an operation:",
+            choices=choices,
+            style=custom_style
+        ).ask()
+        
+        if selected == "Back to main menu" or selected is None:
+            return
+        
+        # Extract the operation name without the category suffix
+        selected_op = selected.split(" [dim]")[0]
+        
+        # Find and execute the selected operation
+        for op_name, op_func, _ in matches:
+            if op_name == selected_op:
+                op_func()
+                break
+    
     def run_menu(self):
         while True:
             self.display_header()
             
             # Create list of categories for selection
             categories = list(self.categories.keys())
-            categories.append("Exit")
+            # Add search option at the top
+            main_choices = ["🔍 Search All Operations"] + categories + ["Exit"]
             
-            category = questionary.select(
-                "Select a category:",
-                choices=categories,
+            selection = questionary.select(
+                "Select a category or search:",
+                choices=main_choices,
                 style=custom_style
             ).ask()
             
-            if category == "Exit" or category is None:
+            if selection == "Exit" or selection is None:
                 sys.exit(0)
+            elif selection == "🔍 Search All Operations":
+                search_term = questionary.text(
+                    "Enter search term:",
+                    style=custom_style
+                ).ask()
+                
+                if search_term and search_term.strip():
+                    matches = self.search_operations(search_term.strip())
+                    self.show_search_results(matches)
+                continue
             
-            # Get operations for the selected category
+            # Handle regular category selection
+            category = selection
             operations = self.categories[category]
             operation_names = [op[0] for op in operations]
             operation_names.append("Back to main menu")
