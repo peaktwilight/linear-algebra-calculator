@@ -220,9 +220,9 @@ class LinAlgCalculator:
             st.markdown(f"$|\\hat{{v}}| = {normalized_length:.4f} \\approx 1.0$ ✓")
         
         with col2:
-            # Display a visualization of the original and normalized vectors
+        # Display a visualization of the original and normalized vectors
             st.markdown("### Visualization")
-            self.display_vector_visualization([vector, result], names=["Original Vector", "Normalized Vector"])
+        self.display_vector_visualization([vector, result], names=["Original Vector", "Normalized Vector"])
         
         return result
     
@@ -236,9 +236,8 @@ class LinAlgCalculator:
         
         args = Args(vector_a, vector_b)
         
-        # Capture print output from the CLI function
-        with StreamOutput() as output:
-            result = self.framework.vector_shadow(args)
+        # Get the result from the framework
+        result = self.framework.vector_shadow(args)
         
         # Display the result and steps
         st.subheader("Result")
@@ -282,15 +281,13 @@ class LinAlgCalculator:
             # Add explanation of what the projection means
             st.markdown("**Interpretation:**")
             st.markdown("""
-            The projection of vector b onto vector a represents how much of vector b points in the direction of vector a.
+            The projection of vector b onto vector a represents how much of vector b points in the direction of a.
             - **Scalar projection**: Length of the shadow of vector b when cast onto the line along vector a
             - **Vector projection**: The resulting vector along the direction of a
             """)
         
         with col2:
             st.markdown("### Visualization")
-            
-            # Display a visualization of the vectors and the projection
             self.display_vector_visualization([a, b, vector_proj], names=["Vector a", "Vector b", "Projection of b onto a"])
             
             # Add projection magnitude display
@@ -316,9 +313,8 @@ class LinAlgCalculator:
         
         args = Args(vector_a, vector_b)
         
-        # Capture print output from the CLI function
-        with StreamOutput() as output:
-            result = self.framework.vector_angle(args)
+        # Get the result from the framework
+        result = self.framework.vector_angle(args)
         
         # Display the result and steps
         st.subheader("Result")
@@ -363,116 +359,17 @@ class LinAlgCalculator:
         
         with col2:
             st.markdown("### Visualization")
+            self.display_vector_visualization([a, b], names=["Vector a", "Vector b"])
             
-            # For 2D vectors, create a special angle visualization
-            if len(a) == 2 and len(b) == 2:
-                # Create a figure for the angle visualization
-                fig = go.Figure()
-                
-                # Add the vectors
-                fig.add_trace(go.Scatter(
-                    x=[0, a[0]], y=[0, a[1]],
-                    mode='lines+markers',
-                    name='Vector a',
-                    line=dict(width=3),
-                    marker=dict(size=[0, 10])
-                ))
-                
-                fig.add_trace(go.Scatter(
-                    x=[0, b[0]], y=[0, b[1]],
-                    mode='lines+markers',
-                    name='Vector b',
-                    line=dict(width=3),
-                    marker=dict(size=[0, 10])
-                ))
-                
-                # Add an arc to show the angle
-                r = min(np.linalg.norm(a), np.linalg.norm(b)) * 0.3
-                
-                # Calculate reference angle to x-axis for vector a
-                angle_a = np.arctan2(a[1], a[0])
-                angle_b = np.arctan2(b[1], b[0])
-                
-                # Ensure we draw the smaller angle
-                if angle_b - angle_a > np.pi:
-                    angle_a += 2 * np.pi
-                elif angle_a - angle_b > np.pi:
-                    angle_b += 2 * np.pi
-                
-                # Create points for the arc
-                if angle_a <= angle_b:
-                    theta = np.linspace(angle_a, angle_b, 50)
-                else:
-                    theta = np.linspace(angle_b, angle_a, 50)
-                
-                x_arc = r * np.cos(theta)
-                y_arc = r * np.sin(theta)
-                
-                fig.add_trace(go.Scatter(
-                    x=x_arc, y=y_arc,
-                    mode='lines',
-                    name=f'Angle: {angle_deg:.2f}°',
-                    line=dict(width=2, color='red', dash='dash'),
-                ))
-                
-                # Add a label for the angle
-                mid_angle = (angle_a + angle_b) / 2
-                label_r = r * 1.2
-                fig.add_annotation(
-                    x=label_r * np.cos(mid_angle),
-                    y=label_r * np.sin(mid_angle),
-                    text=f"{angle_deg:.2f}°",
-                    showarrow=False,
-                    font=dict(size=14, color="red")
-                )
-                
-                # Configure the layout
-                max_norm = max(np.linalg.norm(a), np.linalg.norm(b))
-                fig.update_layout(
-                    xaxis=dict(
-                        range=[-max_norm * 1.2, max_norm * 1.2],
-                        zeroline=True,
-                        zerolinewidth=2,
-                        zerolinecolor='white',
-                        showgrid=True,
-                        gridwidth=1,
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        color='white',
-                    ),
-                    yaxis=dict(
-                        range=[-max_norm * 1.2, max_norm * 1.2],
-                        zeroline=True,
-                        zerolinewidth=2,
-                        zerolinecolor='white',
-                        showgrid=True,
-                        gridwidth=1,
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        color='white',
-                    ),
-                    title="Angle Visualization",
-                    title_font_color="white",
-                    showlegend=True,
-                    width=600,
-                    height=600,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0.1)',
-                    legend=dict(font=dict(color="white")),
-                )
-                
-                st.plotly_chart(fig)
-            else:
-                # For higher dimensions, just show the vectors
-                self.display_vector_visualization([a, b], names=["Vector a", "Vector b"])
-                
-                # Add mathematical representation of the angle
-                angle_box = f"""
-                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
-                    <p style="font-size: 18px; text-align: center;">
-                        Angle between vectors: {angle_deg:.2f}° ({angle_rad:.4f} radians)
-                    </p>
-                </div>
-                """
-                st.markdown(angle_box, unsafe_allow_html=True)
+            # Add mathematical representation of the angle
+            angle_box = f"""
+            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                <p style="font-size: 18px; text-align: center;">
+                    Angle between vectors: {angle_deg:.2f}° ({angle_rad:.4f} radians)
+                </p>
+            </div>
+            """
+            st.markdown(angle_box, unsafe_allow_html=True)
         
         return result
         
@@ -618,7 +515,7 @@ class LinAlgCalculator:
                         name="Plane containing a and b"
                     ))
                 
-                # Add grid and configuration
+                # Configure the layout
                 fig.update_layout(
                     scene=dict(
                         xaxis=dict(
@@ -748,239 +645,238 @@ class LinAlgCalculator:
         
         with col2:
             st.markdown("### Visualization")
+        
+        # Create a figure based on dimensionality
+        if len(A) == 2 and len(B) == 2 and len(C) == 2:
+            # 2D Triangle
+            fig = go.Figure()
             
-            # Create a figure based on dimensionality
-            if len(A) == 2 and len(B) == 2 and len(C) == 2:
-                # 2D Triangle
-                fig = go.Figure()
+            # Add the triangle vertices
+            fig.add_trace(go.Scatter(
+                x=[A[0], B[0], C[0], A[0]],  # Close the triangle by repeating the first point
+                y=[A[1], B[1], C[1], A[1]],
+                mode='lines+markers',
+                name='Triangle',
+                fill='toself',  # Fill the triangle
+                line=dict(width=2),
+                marker=dict(size=8)
+            ))
                 
-                # Add the triangle vertices
-                fig.add_trace(go.Scatter(
-                    x=[A[0], B[0], C[0], A[0]],  # Close the triangle by repeating the first point
-                    y=[A[1], B[1], C[1], A[1]],
-                    mode='lines+markers',
-                    name='Triangle',
-                    fill='toself',  # Fill the triangle
-                    line=dict(width=2),
-                    marker=dict(size=8)
-                ))
-                
-                # Add the vectors from A to B and A to C
-                fig.add_trace(go.Scatter(
-                    x=[A[0], A[0] + AB[0]],
-                    y=[A[1], A[1] + AB[1]],
-                    mode='lines+markers',
-                    name='Vector AB',
-                    line=dict(width=2, dash='dash', color='blue'),
-                    marker=dict(size=[0, 8])
-                ))
-                
-                fig.add_trace(go.Scatter(
-                    x=[A[0], A[0] + AC[0]],
-                    y=[A[1], A[1] + AC[1]],
-                    mode='lines+markers',
-                    name='Vector AC',
-                    line=dict(width=2, dash='dash', color='green'),
-                    marker=dict(size=[0, 8])
-                ))
-                
-                # Add labels for the points
-                for i, point in enumerate([A, B, C]):
-                    fig.add_annotation(
-                        x=point[0],
-                        y=point[1],
-                        text=f"Point {chr(65+i)}",  # A, B, C
-                        showarrow=True,
-                        arrowhead=1,
-                        ax=10,
-                        ay=-30
-                    )
-                
-                # Calculate the centroid for area label placement
-                centroid = (A + B + C) / 3
-                
-                # Add area label
+            # Add the vectors from A to B and A to C
+            fig.add_trace(go.Scatter(
+                x=[A[0], A[0] + AB[0]],
+                y=[A[1], A[1] + AB[1]],
+                mode='lines+markers',
+                name='Vector AB',
+                line=dict(width=2, dash='dash', color='blue'),
+                marker=dict(size=[0, 8])
+            ))
+            
+            fig.add_trace(go.Scatter(
+                x=[A[0], A[0] + AC[0]],
+                y=[A[1], A[1] + AC[1]],
+                mode='lines+markers',
+                name='Vector AC',
+                line=dict(width=2, dash='dash', color='green'),
+                marker=dict(size=[0, 8])
+            ))
+            
+            # Add labels for the points
+            for i, point in enumerate([A, B, C]):
                 fig.add_annotation(
-                    x=centroid[0],
-                    y=centroid[1],
-                    text=f"Area: {area:.4f}",
-                    showarrow=False,
-                    font=dict(size=14, color="red")
+                    x=point[0],
+                    y=point[1],
+                    text=f"Point {chr(65+i)}",  # A, B, C
+                    showarrow=True,
+                    arrowhead=1,
+                    ax=10,
+                    ay=-30
                 )
+            
+            # Calculate the centroid for area label placement
+            centroid = (A + B + C) / 3
+            
+            # Add area label
+            fig.add_annotation(
+                x=centroid[0],
+                y=centroid[1],
+                    text=f"Area: {area:.4f}",
+                showarrow=False,
+                font=dict(size=14, color="red")
+            )
+            
+            # Set layout
+            points = np.vstack([A, B, C])
+            x_min, x_max = points[:, 0].min(), points[:, 0].max()
+            y_min, y_max = points[:, 1].min(), points[:, 1].max()
+            
+            # Add some padding
+            padding = max(x_max - x_min, y_max - y_min) * 0.2
+            
+            fig.update_layout(
+                xaxis=dict(
+                    range=[x_min - padding, x_max + padding],
+                    title="X",
+                    zeroline=True,
+                    zerolinewidth=2,
+                    zerolinecolor='white',
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(255, 255, 255, 0.2)',
+                    color='white',
+                ),
+                yaxis=dict(
+                    range=[y_min - padding, y_max + padding],
+                    title="Y",
+                    zeroline=True,
+                    zerolinewidth=2,
+                    zerolinecolor='white',
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(255, 255, 255, 0.2)',
+                    color='white',
+                ),
+                title="Triangle Visualization",
+                title_font_color="white",
+                showlegend=True,
+                width=700,
+                height=600,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0.1)',
+                legend=dict(font=dict(color="white")),
+            )
+            
+            st.plotly_chart(fig)
+            
+        elif len(A) == 3 and len(B) == 3 and len(C) == 3:
+            # 3D Triangle
+            fig = go.Figure()
+            
+            # Add the triangle
+            fig.add_trace(go.Mesh3d(
+                x=[A[0], B[0], C[0]],
+                y=[A[1], B[1], C[1]],
+                z=[A[2], B[2], C[2]],
+                opacity=0.7,
+                color='blue',
+                name='Triangle'
+            ))
                 
-                # Set layout
-                points = np.vstack([A, B, C])
-                x_min, x_max = points[:, 0].min(), points[:, 0].max()
-                y_min, y_max = points[:, 1].min(), points[:, 1].max()
+            # Add the vectors from A to B and A to C
+            fig.add_trace(go.Scatter3d(
+                x=[A[0], A[0] + AB[0]],
+                y=[A[1], A[1] + AB[1]],
+                z=[A[2], A[2] + AB[2]],
+                mode='lines',
+                name='Vector AB',
+                line=dict(width=5, dash='dash', color='blue')
+            ))
+            
+            fig.add_trace(go.Scatter3d(
+                x=[A[0], A[0] + AC[0]],
+                y=[A[1], A[1] + AC[1]],
+                z=[A[2], A[2] + AC[2]],
+                mode='lines',
+                name='Vector AC',
+                line=dict(width=5, dash='dash', color='green')
+            ))
+            
+            # Add the vertices
+            fig.add_trace(go.Scatter3d(
+                x=[A[0], B[0], C[0]],
+                y=[A[1], B[1], C[1]],
+                z=[A[2], B[2], C[2]],
+                mode='markers',
+                marker=dict(size=8, color=['red', 'green', 'blue']),
+                name='Vertices',
+                text=['Point A', 'Point B', 'Point C']
+            ))
+            
+            # Add edges
+            edges = np.array([A, B, C, A])  # Close the loop
+            fig.add_trace(go.Scatter3d(
+                x=edges[:, 0],
+                y=edges[:, 1],
+                z=edges[:, 2],
+                mode='lines',
+                line=dict(width=4, color='white'),
+                name='Edges'
+            ))
                 
-                # Add some padding
-                padding = max(x_max - x_min, y_max - y_min) * 0.2
-                
-                fig.update_layout(
+            # Add normal vector (cross product)
+            # Scale it for better visualization
+            normal = cross / np.linalg.norm(cross) if np.linalg.norm(cross) > 0 else cross
+            scale_factor = max(np.linalg.norm(AB), np.linalg.norm(AC)) * 0.5
+            normal_scaled = normal * scale_factor
+            
+            # Position the normal vector at the centroid
+            centroid = (A + B + C) / 3
+            
+            fig.add_trace(go.Scatter3d(
+                x=[centroid[0], centroid[0] + normal_scaled[0]],
+                y=[centroid[1], centroid[1] + normal_scaled[1]],
+                z=[centroid[2], centroid[2] + normal_scaled[2]],
+                mode='lines',
+                name='Normal Vector',
+                line=dict(width=5, color='red')
+            ))
+            
+            # Configure the 3D layout
+            points = np.vstack([A, B, C])
+            x_min, x_max = points[:, 0].min(), points[:, 0].max()
+            y_min, y_max = points[:, 1].min(), points[:, 1].max()
+            z_min, z_max = points[:, 2].min(), points[:, 2].max()
+            
+            # Calculate the ranges for each axis with padding
+            max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
+            x_pad = (max_range - (x_max - x_min)) / 2
+            y_pad = (max_range - (y_max - y_min)) / 2
+            z_pad = (max_range - (z_max - z_min)) / 2
+            
+            padding = max_range * 0.3  # Increase padding to show vectors better
+            
+            fig.update_layout(
+                scene=dict(
                     xaxis=dict(
-                        range=[x_min - padding, x_max + padding],
+                        range=[x_min - x_pad - padding, x_max + x_pad + padding],
                         title="X",
-                        zeroline=True,
-                        zerolinewidth=2,
-                        zerolinecolor='white',
-                        showgrid=True,
-                        gridwidth=1,
+                        color="white",
                         gridcolor='rgba(255, 255, 255, 0.2)',
-                        color='white',
+                        backgroundcolor='rgba(0,0,0,0.1)',
                     ),
                     yaxis=dict(
-                        range=[y_min - padding, y_max + padding],
+                        range=[y_min - y_pad - padding, y_max + y_pad + padding],
                         title="Y",
-                        zeroline=True,
-                        zerolinewidth=2,
-                        zerolinecolor='white',
-                        showgrid=True,
-                        gridwidth=1,
+                        color="white",
                         gridcolor='rgba(255, 255, 255, 0.2)',
-                        color='white',
+                        backgroundcolor='rgba(0,0,0,0.1)',
                     ),
-                    title="Triangle Visualization",
-                    title_font_color="white",
-                    showlegend=True,
-                    width=700,
-                    height=600,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0.1)',
-                    legend=dict(font=dict(color="white")),
-                )
-                
-                st.plotly_chart(fig)
-                
-            elif len(A) == 3 and len(B) == 3 and len(C) == 3:
-                # 3D Triangle
-                fig = go.Figure()
-                
-                # Add the triangle
-                fig.add_trace(go.Mesh3d(
-                    x=[A[0], B[0], C[0]],
-                    y=[A[1], B[1], C[1]],
-                    z=[A[2], B[2], C[2]],
-                    opacity=0.7,
-                    color='blue',
-                    name='Triangle'
-                ))
-                
-                # Add the vectors from A to B and A to C
-                fig.add_trace(go.Scatter3d(
-                    x=[A[0], A[0] + AB[0]],
-                    y=[A[1], A[1] + AB[1]],
-                    z=[A[2], A[2] + AB[2]],
-                    mode='lines',
-                    name='Vector AB',
-                    line=dict(width=5, dash='dash', color='blue')
-                ))
-                
-                fig.add_trace(go.Scatter3d(
-                    x=[A[0], A[0] + AC[0]],
-                    y=[A[1], A[1] + AC[1]],
-                    z=[A[2], A[2] + AC[2]],
-                    mode='lines',
-                    name='Vector AC',
-                    line=dict(width=5, dash='dash', color='green')
-                ))
-                
-                # Add the vertices
-                fig.add_trace(go.Scatter3d(
-                    x=[A[0], B[0], C[0]],
-                    y=[A[1], B[1], C[1]],
-                    z=[A[2], B[2], C[2]],
-                    mode='markers',
-                    marker=dict(size=8, color=['red', 'green', 'blue']),
-                    name='Vertices',
-                    text=['Point A', 'Point B', 'Point C']
-                ))
-                
-                # Add edges
-                edges = np.array([A, B, C, A])  # Close the loop
-                fig.add_trace(go.Scatter3d(
-                    x=edges[:, 0],
-                    y=edges[:, 1],
-                    z=edges[:, 2],
-                    mode='lines',
-                    line=dict(width=4, color='white'),
-                    name='Edges'
-                ))
-                
-                # Add normal vector (cross product)
-                # Scale it for better visualization
-                normal = cross / np.linalg.norm(cross) if np.linalg.norm(cross) > 0 else cross
-                scale_factor = max(np.linalg.norm(AB), np.linalg.norm(AC)) * 0.5
-                normal_scaled = normal * scale_factor
-                
-                # Position the normal vector at the centroid
-                centroid = (A + B + C) / 3
-                
-                fig.add_trace(go.Scatter3d(
-                    x=[centroid[0], centroid[0] + normal_scaled[0]],
-                    y=[centroid[1], centroid[1] + normal_scaled[1]],
-                    z=[centroid[2], centroid[2] + normal_scaled[2]],
-                    mode='lines',
-                    name='Normal Vector',
-                    line=dict(width=5, color='red')
-                ))
-                
-                # Configure the 3D layout
-                points = np.vstack([A, B, C])
-                x_min, x_max = points[:, 0].min(), points[:, 0].max()
-                y_min, y_max = points[:, 1].min(), points[:, 1].max()
-                z_min, z_max = points[:, 2].min(), points[:, 2].max()
-                
-                # Calculate the ranges for each axis with padding
-                max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
-                x_pad = (max_range - (x_max - x_min)) / 2
-                y_pad = (max_range - (y_max - y_min)) / 2
-                z_pad = (max_range - (z_max - z_min)) / 2
-                
-                padding = max_range * 0.3  # Increase padding to show vectors better
-                
-                fig.update_layout(
-                    scene=dict(
-                        xaxis=dict(
-                            range=[x_min - x_pad - padding, x_max + x_pad + padding],
-                            title="X",
-                            color="white",
-                            gridcolor='rgba(255, 255, 255, 0.2)',
-                            backgroundcolor='rgba(0,0,0,0.1)',
-                        ),
-                        yaxis=dict(
-                            range=[y_min - y_pad - padding, y_max + y_pad + padding],
-                            title="Y",
-                            color="white",
-                            gridcolor='rgba(255, 255, 255, 0.2)',
-                            backgroundcolor='rgba(0,0,0,0.1)',
-                        ),
-                        zaxis=dict(
-                            range=[z_min - z_pad - padding, z_max + z_pad + padding],
-                            title="Z",
-                            color="white",
-                            gridcolor='rgba(255, 255, 255, 0.2)',
-                            backgroundcolor='rgba(0,0,0,0.1)',
-                        ),
-                        aspectmode='cube',
+                    zaxis=dict(
+                        range=[z_min - z_pad - padding, z_max + z_pad + padding],
+                        title="Z",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
                     ),
-                    title=f"3D Triangle Visualization",
-                    title_font_color="white",
-                    width=700,
-                    height=700,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    legend=dict(font=dict(color="white")),
-                )
-                
-                st.plotly_chart(fig)
-                
-            else:
-                # Higher dimensions or inconsistent dimensionality
-                st.info("Triangle visualization is only available for 2D and 3D points. "
-                       "Showing point coordinates instead.")
-                
-                # Display points as a table
-                point_df = pd.DataFrame([A, B, C], index=["Point A", "Point B", "Point C"])
-                st.table(point_df)
+                    aspectmode='cube',
+                ),
+                title=f"3D Triangle Visualization",
+                title_font_color="white",
+                width=700,
+                height=700,
+                paper_bgcolor='rgba(0,0,0,0)',
+                legend=dict(font=dict(color="white")),
+            )
+            
+            st.plotly_chart(fig)
+        else:
+            # Higher dimensions or inconsistent dimensionality
+            st.info("Triangle visualization is only available for 2D and 3D points. "
+                   "Showing point coordinates instead.")
+            
+            # Display points as a table
+            point_df = pd.DataFrame([A, B, C], index=["Point A", "Point B", "Point C"])
+            st.table(point_df)
             
             # Add result info box
             result_box = f"""
@@ -1085,250 +981,250 @@ class LinAlgCalculator:
             
         with col2:
             st.markdown("### Visualization")
+        
+        # We'll create either a 2D or 3D visualization based on inputs
+        if A[2] == 0 and v[2] == 0 and B[2] == 0:
+            # 2D visualization (all z-coordinates are 0)
+            fig = go.Figure()
             
-            # We'll create either a 2D or 3D visualization based on inputs
-            if A[2] == 0 and v[2] == 0 and B[2] == 0:
-                # 2D visualization (all z-coordinates are 0)
-                fig = go.Figure()
+            # Create the line by extending in both directions
+            # Find appropriate line segment length based on the distance to point B
+            line_length = max(10, 3 * np.linalg.norm(B - A))
+            
+            # Create line points extending in both directions
+            t_vals = np.linspace(-line_length, line_length, 100)
+            line_points = np.array([A + t * v_unit for t in t_vals])
+            
+            # Add the line
+            fig.add_trace(go.Scatter(
+                x=line_points[:, 0],
+                y=line_points[:, 1],
+                mode='lines',
+                name='Line',
+                line=dict(width=2, color='blue')
+            ))
+            
+            # Add point A (on the line)
+            fig.add_trace(go.Scatter(
+                x=[A[0]],
+                y=[A[1]],
+                mode='markers',
+                name='Point A (on line)',
+                marker=dict(size=10, color='blue')
+            ))
                 
-                # Create the line by extending in both directions
-                # Find appropriate line segment length based on the distance to point B
-                line_length = max(10, 3 * np.linalg.norm(B - A))
-                
-                # Create line points extending in both directions
-                t_vals = np.linspace(-line_length, line_length, 100)
-                line_points = np.array([A + t * v_unit for t in t_vals])
-                
-                # Add the line
-                fig.add_trace(go.Scatter(
-                    x=line_points[:, 0],
-                    y=line_points[:, 1],
-                    mode='lines',
-                    name='Line',
-                    line=dict(width=2, color='blue')
-                ))
-                
-                # Add point A (on the line)
-                fig.add_trace(go.Scatter(
-                    x=[A[0]],
-                    y=[A[1]],
-                    mode='markers',
-                    name='Point A (on line)',
-                    marker=dict(size=10, color='blue')
-                ))
-                
-                # Add the direction vector
-                scaled_v = v_unit * min(5, line_length / 3)  # Scale for better visualization
-                fig.add_trace(go.Scatter(
-                    x=[A[0], A[0] + scaled_v[0]],
-                    y=[A[1], A[1] + scaled_v[1]],
-                    mode='lines+markers',
-                    name='Direction Vector v',
-                    line=dict(width=2, color='purple', dash='dot'),
-                    marker=dict(size=[0, 8], color='purple')
-                ))
-                
-                # Add point B (to find distance from)
-                fig.add_trace(go.Scatter(
-                    x=[B[0]],
-                    y=[B[1]],
-                    mode='markers',
-                    name='Point B',
-                    marker=dict(size=10, color='red')
-                ))
-                
-                # Add the closest point on the line
-                fig.add_trace(go.Scatter(
-                    x=[closest[0]],
-                    y=[closest[1]],
-                    mode='markers',
+            # Add the direction vector
+            scaled_v = v_unit * min(5, line_length / 3)  # Scale for better visualization
+            fig.add_trace(go.Scatter(
+                x=[A[0], A[0] + scaled_v[0]],
+                y=[A[1], A[1] + scaled_v[1]],
+                mode='lines+markers',
+                name='Direction Vector v',
+                line=dict(width=2, color='purple', dash='dot'),
+                marker=dict(size=[0, 8], color='purple')
+            ))
+            
+            # Add point B (to find distance from)
+            fig.add_trace(go.Scatter(
+                x=[B[0]],
+                y=[B[1]],
+                mode='markers',
+                name='Point B',
+                marker=dict(size=10, color='red')
+            ))
+            
+            # Add the closest point on the line
+            fig.add_trace(go.Scatter(
+                x=[closest[0]],
+                y=[closest[1]],
+                mode='markers',
                     name='Closest Point P',
-                    marker=dict(size=8, color='green')
-                ))
-                
-                # Draw the distance line (perpendicular to the original line)
-                fig.add_trace(go.Scatter(
-                    x=[B[0], closest[0]],
-                    y=[B[1], closest[1]],
-                    mode='lines',
+                marker=dict(size=8, color='green')
+            ))
+            
+            # Draw the distance line (perpendicular to the original line)
+            fig.add_trace(go.Scatter(
+                x=[B[0], closest[0]],
+                y=[B[1], closest[1]],
+                mode='lines',
                     name=f'Distance: {distance:.4f}',
-                    line=dict(width=2, color='red', dash='dash')
-                ))
+                line=dict(width=2, color='red', dash='dash')
+            ))
+            
+            # Set layout
+            points = np.vstack([A, B, closest])
+            x_min, x_max = points[:, 0].min(), points[:, 0].max()
+            y_min, y_max = points[:, 1].min(), points[:, 1].max()
+            
+            # Add some padding
+            padding_x = max(1, (x_max - x_min) * 0.2)
+            padding_y = max(1, (y_max - y_min) * 0.2)
+            
+            fig.update_layout(
+                xaxis=dict(
+                    range=[x_min - padding_x, x_max + padding_x],
+                    title="X",
+                    zeroline=True,
+                    zerolinewidth=2,
+                    zerolinecolor='white',
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(255, 255, 255, 0.2)',
+                    color='white',
+                ),
+                yaxis=dict(
+                    range=[y_min - padding_y, y_max + padding_y],
+                    title="Y",
+                    zeroline=True,
+                    zerolinewidth=2,
+                    zerolinecolor='white',
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(255, 255, 255, 0.2)',
+                    color='white',
+                ),
+                title="Point-Line Distance Visualization",
+                title_font_color="white",
+                showlegend=True,
+                width=700,
+                height=600,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0.1)',
+                legend=dict(font=dict(color="white")),
+            )
+            
+            # Add formula annotation
+            fig.add_annotation(
+                x=(B[0] + closest[0]) / 2,
+                y=(B[1] + closest[1]) / 2 + padding_y * 0.3,
+                    text=f"Distance = {distance:.4f}",
+                showarrow=False,
+                font=dict(size=14, color="red")
+            )
+            
+            st.plotly_chart(fig)
+            
+        else:
+            # 3D visualization
+            fig = go.Figure()
+            
+            # Create the line by extending in both directions
+            line_length = max(10, 3 * np.linalg.norm(B - A))
+            
+            # Create line points extending in both directions
+            t_vals = np.linspace(-line_length, line_length, 100)
+            line_points = np.array([A + t * v_unit for t in t_vals])
+            
+            # Add the line
+            fig.add_trace(go.Scatter3d(
+                x=line_points[:, 0],
+                y=line_points[:, 1],
+                z=line_points[:, 2],
+                mode='lines',
+                name='Line',
+                line=dict(width=4, color='blue')
+            ))
+            
+            # Add point A (on the line)
+            fig.add_trace(go.Scatter3d(
+                x=[A[0]],
+                y=[A[1]],
+                z=[A[2]],
+                mode='markers',
+                name='Point A (on line)',
+                marker=dict(size=8, color='blue')
+            ))
                 
-                # Set layout
-                points = np.vstack([A, B, closest])
-                x_min, x_max = points[:, 0].min(), points[:, 0].max()
-                y_min, y_max = points[:, 1].min(), points[:, 1].max()
-                
-                # Add some padding
-                padding_x = max(1, (x_max - x_min) * 0.2)
-                padding_y = max(1, (y_max - y_min) * 0.2)
-                
-                fig.update_layout(
+            # Add the direction vector
+            scaled_v = v_unit * min(5, line_length / 3)  # Scale for better visualization
+            fig.add_trace(go.Scatter3d(
+                x=[A[0], A[0] + scaled_v[0]],
+                y=[A[1], A[1] + scaled_v[1]],
+                z=[A[2], A[2] + scaled_v[2]],
+                mode='lines',
+                name='Direction Vector v',
+                line=dict(width=5, color='purple', dash='dot')
+            ))
+            
+            # Add point B (to find distance from)
+            fig.add_trace(go.Scatter3d(
+                x=[B[0]],
+                y=[B[1]],
+                z=[B[2]],
+                mode='markers',
+                name='Point B',
+                marker=dict(size=8, color='red')
+            ))
+            
+            # Add the closest point on the line
+            fig.add_trace(go.Scatter3d(
+                x=[closest[0]],
+                y=[closest[1]],
+                z=[closest[2]],
+                mode='markers',
+                    name='Closest Point P',
+                marker=dict(size=6, color='green')
+            ))
+            
+            # Draw the distance line (perpendicular to the original line)
+            fig.add_trace(go.Scatter3d(
+                x=[B[0], closest[0]],
+                y=[B[1], closest[1]],
+                z=[B[2], closest[2]],
+                mode='lines',
+                    name=f'Distance: {distance:.4f}',
+                line=dict(width=5, color='red', dash='dash')
+            ))
+            
+            # Configure the 3D layout
+            points = np.vstack([A, B, closest])
+            x_min, x_max = points[:, 0].min(), points[:, 0].max()
+            y_min, y_max = points[:, 1].min(), points[:, 1].max()
+            z_min, z_max = points[:, 2].min(), points[:, 2].max()
+            
+            # Calculate the ranges for each axis with padding
+            max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
+            x_pad = (max_range - (x_max - x_min)) / 2
+            y_pad = (max_range - (y_max - y_min)) / 2
+            z_pad = (max_range - (z_max - z_min)) / 2
+            
+            padding = max_range * 0.2
+            
+            fig.update_layout(
+                scene=dict(
                     xaxis=dict(
-                        range=[x_min - padding_x, x_max + padding_x],
+                        range=[x_min - x_pad - padding, x_max + x_pad + padding],
                         title="X",
-                        zeroline=True,
-                        zerolinewidth=2,
-                        zerolinecolor='white',
-                        showgrid=True,
-                        gridwidth=1,
+                        color="white",
                         gridcolor='rgba(255, 255, 255, 0.2)',
-                        color='white',
+                        backgroundcolor='rgba(0,0,0,0.1)',
                     ),
                     yaxis=dict(
-                        range=[y_min - padding_y, y_max + padding_y],
+                        range=[y_min - y_pad - padding, y_max + y_pad + padding],
                         title="Y",
-                        zeroline=True,
-                        zerolinewidth=2,
-                        zerolinecolor='white',
-                        showgrid=True,
-                        gridwidth=1,
+                        color="white",
                         gridcolor='rgba(255, 255, 255, 0.2)',
-                        color='white',
+                        backgroundcolor='rgba(0,0,0,0.1)',
                     ),
-                    title="Point-Line Distance Visualization",
-                    title_font_color="white",
-                    showlegend=True,
-                    width=700,
-                    height=600,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0.1)',
-                    legend=dict(font=dict(color="white")),
-                )
-                
-                # Add formula annotation
-                fig.add_annotation(
-                    x=(B[0] + closest[0]) / 2,
-                    y=(B[1] + closest[1]) / 2 + padding_y * 0.3,
-                    text=f"Distance = {distance:.4f}",
-                    showarrow=False,
-                    font=dict(size=14, color="red")
-                )
-                
-                st.plotly_chart(fig)
-                
-            else:
-                # 3D visualization
-                fig = go.Figure()
-                
-                # Create the line by extending in both directions
-                line_length = max(10, 3 * np.linalg.norm(B - A))
-                
-                # Create line points extending in both directions
-                t_vals = np.linspace(-line_length, line_length, 100)
-                line_points = np.array([A + t * v_unit for t in t_vals])
-                
-                # Add the line
-                fig.add_trace(go.Scatter3d(
-                    x=line_points[:, 0],
-                    y=line_points[:, 1],
-                    z=line_points[:, 2],
-                    mode='lines',
-                    name='Line',
-                    line=dict(width=4, color='blue')
-                ))
-                
-                # Add point A (on the line)
-                fig.add_trace(go.Scatter3d(
-                    x=[A[0]],
-                    y=[A[1]],
-                    z=[A[2]],
-                    mode='markers',
-                    name='Point A (on line)',
-                    marker=dict(size=8, color='blue')
-                ))
-                
-                # Add the direction vector
-                scaled_v = v_unit * min(5, line_length / 3)  # Scale for better visualization
-                fig.add_trace(go.Scatter3d(
-                    x=[A[0], A[0] + scaled_v[0]],
-                    y=[A[1], A[1] + scaled_v[1]],
-                    z=[A[2], A[2] + scaled_v[2]],
-                    mode='lines',
-                    name='Direction Vector v',
-                    line=dict(width=5, color='purple', dash='dot')
-                ))
-                
-                # Add point B (to find distance from)
-                fig.add_trace(go.Scatter3d(
-                    x=[B[0]],
-                    y=[B[1]],
-                    z=[B[2]],
-                    mode='markers',
-                    name='Point B',
-                    marker=dict(size=8, color='red')
-                ))
-                
-                # Add the closest point on the line
-                fig.add_trace(go.Scatter3d(
-                    x=[closest[0]],
-                    y=[closest[1]],
-                    z=[closest[2]],
-                    mode='markers',
-                    name='Closest Point P',
-                    marker=dict(size=6, color='green')
-                ))
-                
-                # Draw the distance line (perpendicular to the original line)
-                fig.add_trace(go.Scatter3d(
-                    x=[B[0], closest[0]],
-                    y=[B[1], closest[1]],
-                    z=[B[2], closest[2]],
-                    mode='lines',
-                    name=f'Distance: {distance:.4f}',
-                    line=dict(width=5, color='red', dash='dash')
-                ))
-                
-                # Configure the 3D layout
-                points = np.vstack([A, B, closest])
-                x_min, x_max = points[:, 0].min(), points[:, 0].max()
-                y_min, y_max = points[:, 1].min(), points[:, 1].max()
-                z_min, z_max = points[:, 2].min(), points[:, 2].max()
-                
-                # Calculate the ranges for each axis with padding
-                max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
-                x_pad = (max_range - (x_max - x_min)) / 2
-                y_pad = (max_range - (y_max - y_min)) / 2
-                z_pad = (max_range - (z_max - z_min)) / 2
-                
-                padding = max_range * 0.2
-                
-                fig.update_layout(
-                    scene=dict(
-                        xaxis=dict(
-                            range=[x_min - x_pad - padding, x_max + x_pad + padding],
-                            title="X",
-                            color="white",
-                            gridcolor='rgba(255, 255, 255, 0.2)',
-                            backgroundcolor='rgba(0,0,0,0.1)',
-                        ),
-                        yaxis=dict(
-                            range=[y_min - y_pad - padding, y_max + y_pad + padding],
-                            title="Y",
-                            color="white",
-                            gridcolor='rgba(255, 255, 255, 0.2)',
-                            backgroundcolor='rgba(0,0,0,0.1)',
-                        ),
-                        zaxis=dict(
-                            range=[z_min - z_pad - padding, z_max + z_pad + padding],
-                            title="Z",
-                            color="white",
-                            gridcolor='rgba(255, 255, 255, 0.2)',
-                            backgroundcolor='rgba(0,0,0,0.1)',
-                        ),
-                        aspectmode='cube',
+                    zaxis=dict(
+                        range=[z_min - z_pad - padding, z_max + z_pad + padding],
+                        title="Z",
+                        color="white",
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        backgroundcolor='rgba(0,0,0,0.1)',
                     ),
+                    aspectmode='cube',
+                ),
                     title=f"Point-Line Distance in 3D",
-                    title_font_color="white",
-                    width=700,
-                    height=700,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    legend=dict(font=dict(color="white")),
-                )
-                
-                st.plotly_chart(fig)
+                title_font_color="white",
+                width=700,
+                height=700,
+                paper_bgcolor='rgba(0,0,0,0)',
+                legend=dict(font=dict(color="white")),
+            )
             
+            st.plotly_chart(fig)
+        
             # Add result info box
             result_box = f"""
             <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
@@ -1377,7 +1273,7 @@ class LinAlgCalculator:
         result_is_collinear = self.framework.check_collinear(args)
 
         st.subheader("Result")
-
+        
         # Parse the vectors from input for display
         parsed_vectors = []
         for vector_str in args.vectors:
@@ -1467,7 +1363,7 @@ class LinAlgCalculator:
         else:
             st.error("The vectors are **not collinear** (they are linearly independent).")
             st.write("This means they point in different directions and do not all lie on the same line through the origin.")
-
+        
         # Display a visualization of the vectors
         st.subheader("Visualization")
         
@@ -1642,45 +1538,16 @@ class LinAlgCalculator:
                         # Find the first non-zero component to calculate ratio (simplified, assumes same dim)
                         for i in range(len(v1)):
                             if abs(v1[i]) > 1e-10 and abs(v2[i]) > 1e-10: # Basic check
-                                ratio = v2[i] / v1[i] 
+                                ratio = v2[i] / v1[i]
                                 # A more robust check would verify this ratio across all components
                                 # For simplicity, we use the k calculated earlier if available or just state collinearity.
                                 # The main result message already handles the k display.
-                                break 
+                                break
                     # st.success(f"The vectors are collinear. {ratio_text}") # Covered by main success message
                 else:
                     # st.error("The vectors are not collinear.") # Covered by main error message
                     pass # No additional text needed here.
 
-        # The following block is now redundant due to the new markdown explanations above.
-        # # Show the reduced form of the matrix of vectors
-        # if len(parsed_vectors) <= 4:  # Only show detailed verification for smaller sets
-        #     st.write("**Matrix of Vectors:**")
-        #     matrix = np.array(parsed_vectors)
-        #     st.write(pd.DataFrame(matrix))
-            
-        #     # Placeholder for rank calculation if needed, but framework should handle it
-        #     # For demonstration, assuming rank can be obtained or is implicitly handled by framework.check_collinear
-        #     # For simplicity, assuming rank can be obtained or is implicitly handled by framework.check_collinear
-        #     try:
-        #         # Attempt to calculate rank using numpy for display, actual logic is in framework
-        #         if matrix.size > 0 : # Ensure matrix is not empty
-        #             if matrix.ndim == 1: # Single vector case
-        #                 rank = 1 if np.any(matrix) else 0 # Rank 1 if not zero vector, else 0
-        #             else:
-        #                 rank = np.linalg.matrix_rank(matrix)
-        #             st.write(f"**Rank of Matrix (for context):** {rank}")
-
-        #             # This explanatory text is now part of the main success/error message logic
-        #             # if rank < len(parsed_vectors) and rank <= 1: # Adjusted logic based on what collinear means (rank 1)
-        #             #     st.write("Since the rank is 1 (or 0 for all zero vectors), the vectors are collinear.")
-        #             # else:
-        #             #     st.write("Since the rank is greater than 1, the vectors are not collinear.")
-        #         else:
-        #             st.write("Cannot determine rank of an empty set of vectors.")
-
-        #     except Exception as e:
-        #         st.warning(f"Could not display rank for context: {e}")
         
         return result_is_collinear
     
@@ -1717,7 +1584,7 @@ class LinAlgCalculator:
             matrix_str_a = "\\begin{bmatrix}\n"
             for i, row in enumerate(A):
                 matrix_str_a += " & ".join(map(str, row))
-                if i < len(A) - 1:  # Only add newline if not the last row
+                if i < len(A) - 1:
                     matrix_str_a += "\\\\\\\n"
             matrix_str_a += "\\end{bmatrix}"
             st.markdown(f"$A = {matrix_str_a}$")
@@ -1727,56 +1594,85 @@ class LinAlgCalculator:
                 matrix_str_b = "\\begin{bmatrix}\n"
                 for i, row in enumerate(B):
                     matrix_str_b += " & ".join(map(str, row))
-                    if i < len(B) - 1:  # Only add newline if not the last row
+                    if i < len(B) - 1:
                         matrix_str_b += "\\\\\\\n"
                 matrix_str_b += "\\end{bmatrix}"
                 st.markdown(f"$B = {matrix_str_b}$")
-            
-            # Operation-specific calculations and explanations
-            st.markdown("**Operation:**")
+
+            # Add step-by-step explanations based on operation type
             if operation == "add":
-                st.markdown("Matrix Addition: $C = A + B$")
-                st.markdown("""
-                Each element of the result is the sum of corresponding elements:
-                $c_{ij} = a_{ij} + b_{ij}$
-                """)
-            elif operation == "subtract":
-                st.markdown("Matrix Subtraction: $C = A - B$")
-                st.markdown("""
-                Each element of the result is the difference of corresponding elements:
-                $c_{ij} = a_{ij} - b_{ij}$
-                """)
-            elif operation == "multiply_scalar":
-                st.markdown(f"Scalar Multiplication: $C = {scalar} \\cdot A$")
-                st.markdown("""
-                Each element is multiplied by the scalar:
-                $c_{ij} = k \\cdot a_{ij}$ where $k$ is the scalar
-                """)
-            elif operation == "transpose":
-                st.markdown("Matrix Transpose: $C = A^T$")
-                st.markdown("""
-                The rows become columns and columns become rows:
-                $c_{ij} = a_{ji}$
-                """)
-            
-            # Display result in LaTeX format
-            if result is not None:
-                st.markdown("**Result Matrix:**")
-                matrix_str_result = "\\begin{bmatrix}\n"
-                for i, row in enumerate(result):
-                    matrix_str_result += " & ".join(map(str, row))
-                    if i < len(result) - 1:  # Only add newline if not the last row
-                        matrix_str_result += "\\\\\\\n"
-                matrix_str_result += "\\end{bmatrix}"
+                st.markdown("**Addition Steps:**")
+                st.markdown("To add two matrices, we add corresponding elements:")
+                for i in range(len(A)):
+                    for j in range(len(A[0])):
+                        st.markdown(f"Position ({i+1},{j+1}): ${A[i][j]} + {B[i][j]} = {result[i][j]}$")
                 
-                if operation == "add":
-                    st.markdown(f"$A + B = {matrix_str_result}$")
-                elif operation == "subtract":
-                    st.markdown(f"$A - B = {matrix_str_result}$")
-                elif operation == "multiply_scalar":
-                    st.markdown(f"${scalar} \\cdot A = {matrix_str_result}$")
-                elif operation == "transpose":
-                    st.markdown(f"$A^T = {matrix_str_result}$")
+                # Show the final result in matrix form
+                st.markdown("**Final Result:**")
+                result_str = "\\begin{bmatrix}\n"
+                for i, row in enumerate(result):
+                    result_str += " & ".join(map(str, row))
+                    if i < len(result) - 1:
+                        result_str += "\\\\\\\n"
+                result_str += "\\end{bmatrix}"
+                st.markdown(f"$A + B = {result_str}$")
+
+            elif operation == "subtract":
+                st.markdown("**Subtraction Steps:**")
+                st.markdown("To subtract two matrices, we subtract corresponding elements:")
+                for i in range(len(A)):
+                    for j in range(len(A[0])):
+                        st.markdown(f"Position ({i+1},{j+1}): ${A[i][j]} - {B[i][j]} = {result[i][j]}$")
+                
+                # Show the final result in matrix form
+                st.markdown("**Final Result:**")
+                result_str = "\\begin{bmatrix}\n"
+                for i, row in enumerate(result):
+                    result_str += " & ".join(map(str, row))
+                    if i < len(result) - 1:
+                        result_str += "\\\\\\\n"
+                result_str += "\\end{bmatrix}"
+                st.markdown(f"$A - B = {result_str}$")
+
+            elif operation == "multiply_scalar":
+                st.markdown("**Scalar Multiplication Steps:**")
+                st.markdown(f"To multiply a matrix by scalar {scalar}, we multiply each element by {scalar}:")
+                for i in range(len(A)):
+                    for j in range(len(A[0])):
+                        st.markdown(f"Position ({i+1},{j+1}): ${scalar} \\times {A[i][j]} = {result[i][j]}$")
+                
+                # Show the final result in matrix form
+                st.markdown("**Final Result:**")
+                result_str = "\\begin{bmatrix}\n"
+                for i, row in enumerate(result):
+                    result_str += " & ".join(map(str, row))
+                    if i < len(result) - 1:
+                        result_str += "\\\\\\\n"
+                result_str += "\\end{bmatrix}"
+                st.markdown(f"${scalar}A = {result_str}$")
+
+            elif operation == "transpose":
+                st.markdown("**Transpose Steps:**")
+                st.markdown("To transpose a matrix, we swap rows and columns:")
+                st.markdown("1. The rows of A become columns in A^T")
+                st.markdown("2. The columns of A become rows in A^T")
+                st.markdown("3. Element at position (i,j) moves to position (j,i)")
+                
+                # Show the movement of elements
+                st.markdown("**Element Movements:**")
+                for i in range(len(A)):
+                    for j in range(len(A[0])):
+                        st.markdown(f"A[{i+1},{j+1}] = {A[i][j]} → A^T[{j+1},{i+1}] = {result[j][i]}")
+                
+                # Show the final result in matrix form
+                st.markdown("**Final Result:**")
+                result_str = "\\begin{bmatrix}\n"
+                for i, row in enumerate(result):
+                    result_str += " & ".join(map(str, row))
+                    if i < len(result) - 1:
+                        result_str += "\\\\\\\n"
+                result_str += "\\end{bmatrix}"
+                st.markdown(f"$A^T = {result_str}$")
         
         with col2:
             st.markdown("### Visualization")
@@ -1803,47 +1699,6 @@ class LinAlgCalculator:
                         "transpose": "A^T (transpose)"
                     }.get(operation, "Result")
                     self.display_matrix_heatmap(result, f"Result: {operation_name}")
-            
-            # Add operation-specific properties box
-            properties_box = ""
-            if operation == "add" or operation == "subtract":
-                properties_box = f"""
-                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
-                    <p style="font-size: 14px; text-align: center;">
-                        <strong>Matrix Properties:</strong><br>
-                        • Dimensions must match for {operation}ition<br>
-                        • Result has same dimensions as inputs<br>
-                        • Operation is element-wise<br>
-                        • {'Addition' if operation == 'add' else 'Subtraction'} is {'commutative (A + B = B + A)' if operation == 'add' else 'not commutative (A - B ≠ B - A)'}
-                    </p>
-                </div>
-                """
-            elif operation == "multiply_scalar":
-                properties_box = f"""
-                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
-                    <p style="font-size: 14px; text-align: center;">
-                        <strong>Matrix Properties:</strong><br>
-                        • Scalar multiplication preserves matrix structure<br>
-                        • All elements are multiplied by {scalar}<br>
-                        • Result has same dimensions as input<br>
-                        • Operation is distributive: k(A + B) = kA + kB
-                    </p>
-                </div>
-                """
-            elif operation == "transpose":
-                properties_box = """
-                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
-                    <p style="font-size: 14px; text-align: center;">
-                        <strong>Matrix Properties:</strong><br>
-                        • Rows become columns, columns become rows<br>
-                        • If A is m×n, A^T is n×m<br>
-                        • (A^T)^T = A<br>
-                        • (A + B)^T = A^T + B^T
-                    </p>
-                </div>
-                """
-            
-            st.markdown(properties_box, unsafe_allow_html=True)
         
         return result
     
@@ -1856,9 +1711,8 @@ class LinAlgCalculator:
         
         args = Args(matrix_input)
         
-        # Capture print output from the CLI function
-        with StreamOutput() as output:
-            result = self.framework.solve_gauss(args)
+        # Get the result from the framework
+        result = self.framework.solve_gauss(args)
         
         # Display the result and steps
         st.subheader("Result")
@@ -1866,161 +1720,208 @@ class LinAlgCalculator:
         # Parse the matrix from input
         augmented = self.framework.parse_matrix(matrix_input)
         
-        # Display steps calculation 
-        st.write("### Step-by-step Calculation")
+        # Create a formatted display of the calculations
+        col1, col2 = st.columns([1, 1])
         
-        step_output = output.get_output().split('\n')
-        for line in step_output:
-            if line.strip():
-                st.write(line)
-        
-        # Display matrix visualizations
-        st.subheader("Visualization")
-        
-        # Display the augmented matrix
-        self.display_matrix_heatmap(augmented, "Augmented Matrix [A|b]")
-        
-        # Display the reduced row echelon form
-        reduced_matrix_gauss = mrref(augmented) # Renamed
-        self.display_matrix_heatmap(reduced_matrix_gauss, "Reduced Row Echelon Form")
-        
-        # For 2D or 3D systems, visualize the solution space
-        if augmented.shape[1] - 1 in [2, 3]:
-            st.markdown("**Solution Space Visualization:**")
+        with col1:
+            st.markdown("### Step-by-step Solution")
             
-            # Get the system information
-            A_gauss = augmented[:, :-1] # Renamed
-            b_gauss = augmented[:, -1] # Renamed
+            # Display the original system
+            st.markdown("**Original System:**")
             
-            # Check if the system has a unique solution
-            if result is not None and not isinstance(result, dict):
-                # This is a unique solution
-                if len(result) == 2:
-                    # 2D solution
-                    x, y = result
-                    
-                    # Create a 2D plot for the system
-                    fig = go.Figure()
-                    
-                    # For each equation, plot the line
-                    for i in range(A_gauss.shape[0]):
-                        a_eq, b_val = A_gauss[i, 0], A_gauss[i, 1]
-                        c_eq = b_gauss[i]
-                        
-                        if abs(b_val) > 1e-10:
-                            # b_val is not zero, so we can plot y = (c - a*x) / b_val
-                            x_vals = np.linspace(-10, 10, 100)
-                            y_vals = (c_eq - a_eq * x_vals) / b_val
-                            fig.add_trace(go.Scatter(
-                                x=x_vals, y=y_vals,
-                                mode='lines',
-                                name=f"Equation {i+1}: {a_eq}x + {b_val}y = {c_eq}"
-                            ))
-                        elif abs(a_eq) > 1e-10:
-                            # b_val is zero, so we have a vertical line x = c/a
-                            x_val = c_eq / a_eq
-                            y_vals = np.linspace(-10, 10, 100)
-                            x_vals_const = np.ones_like(y_vals) * x_val # Renamed
-                            fig.add_trace(go.Scatter(
-                                x=x_vals_const, y=y_vals,
-                                mode='lines',
-                                name=f"Equation {i+1}: {a_eq}x = {c_eq}"
-                            ))
-                    
-                    # Add the solution point
-                    fig.add_trace(go.Scatter(
-                        x=[x], y=[y],
-                        mode='markers',
-                        marker=dict(size=12, color='red'),
-                        name=f"Solution: ({x:.4f}, {y:.4f})"
-                    ))
-                    
-                    # Configure the layout
-                    fig.update_layout(
-                        title="2D System Solution",
-                        xaxis_title="x",
-                        yaxis_title="y",
-                        showlegend=True,
-                        width=700,
-                        height=500,
-                    )
-                    
-                    st.plotly_chart(fig)
+            # Extract coefficient matrix A and vector b
+            A = augmented[:, :-1]
+            b = augmented[:, -1]
+            n_equations = len(b)
+            
+            # Display the system as equations
+            for i in range(n_equations):
+                equation = []
+                for j in range(A.shape[1]):
+                    coef = A[i, j]
+                    if j == 0:
+                        if abs(coef - 1.0) < 1e-10:
+                            equation.append(f"x_{j+1}")
+                        elif abs(coef + 1.0) < 1e-10:
+                            equation.append(f"-x_{j+1}")
+                        elif abs(coef) < 1e-10:
+                            continue
+                        else:
+                            equation.append(f"{coef:.4g}x_{j+1}")
+                    else:
+                        if abs(coef) < 1e-10:
+                            continue
+                        sign = "+" if coef > 0 else "-"
+                        if abs(abs(coef) - 1.0) < 1e-10:
+                            equation.append(f"{sign} x_{j+1}")
+                        else:
+                            equation.append(f"{sign} {abs(coef):.4g}x_{j+1}")
                 
-                elif len(result) == 3:
-                    # 3D solution
-                    st.info("3D system visualization is not implemented yet.")
+                st.markdown(f"${' '.join(equation)} = {b[i]:.4g}$")
             
-            elif result is not None and isinstance(result, dict) and "particular" in result and "null_space" in result:
-                # This is a system with a particular solution and null space
-                if len(result["particular"]) == 2:
-                    # 2D system with infinite solutions (a line)
-                    particular = result["particular"]
-                    null_space = result["null_space"].flatten()
+            # Display the augmented matrix
+            st.markdown("**Augmented Matrix [A|b]:**")
+            matrix_str = "\\begin{bmatrix}\n"
+            for i, row in enumerate(augmented):
+                # Format each number: remove scientific notation, show fewer decimals
+                formatted_row = [f"{x:.4g}" for x in row]
+                matrix_str += " & ".join(formatted_row)
+                if i < len(augmented) - 1:
+                    matrix_str += "\\\\\\\n"
+            matrix_str += "\\end{bmatrix}"
+            st.markdown(f"$[A|b] = {matrix_str}$")
+            
+            # Get the reduced row echelon form
+            reduced = mrref(augmented)
+            
+            # Display the reduced row echelon form
+            st.markdown("**Reduced Row Echelon Form:**")
+            matrix_str = "\\begin{bmatrix}\n"
+            for i, row in enumerate(reduced):
+                # Format each number: remove scientific notation, show fewer decimals
+                formatted_row = [f"{x:.4g}" for x in row]
+                matrix_str += " & ".join(formatted_row)
+                if i < len(reduced) - 1:
+                    matrix_str += "\\\\\\\n"
+            matrix_str += "\\end{bmatrix}"
+            st.markdown(f"$RREF = {matrix_str}$")
+            
+            # Display the solution
+            st.markdown("**Solution:**")
+            if result is not None:
+                if isinstance(result, dict):
+                    # Case: Infinite solutions
+                    st.markdown("The system has infinitely many solutions.")
+                    st.markdown("**Particular Solution:**")
+                    for i, val in enumerate(result["particular"]):
+                        st.markdown(f"$x_{i+1} = {val:.4g}$")
                     
-                    # Create a 2D plot showing the solution line
-                    fig = go.Figure()
-                    
-                    # Plot the solution line
-                    t_vals_line = np.linspace(-5, 5, 100) # Renamed
-                    x_vals_line = particular[0] + t_vals_line * null_space[0]
-                    y_vals_line = particular[1] + t_vals_line * null_space[1]
-                    
-                    fig.add_trace(go.Scatter(
-                        x=x_vals_line, y=y_vals_line,
-                        mode='lines',
-                        name="Solution Line",
-                        line=dict(color='red', width=3)
-                    ))
-                    
-                    # Add the particular solution point
-                    fig.add_trace(go.Scatter(
-                        x=[particular[0]], y=[particular[1]],
-                        mode='markers',
-                        marker=dict(size=12, color='blue'),
-                        name=f"Particular Solution: ({particular[0]:.4f}, {particular[1]:.4f})"
-                    ))
-                    
-                    # For each equation, plot the line
-                    for i in range(A_gauss.shape[0]):
-                        a_eq_inf, b_val_inf = A_gauss[i, 0], A_gauss[i, 1] # Renamed
-                        c_eq_inf = b_gauss[i] # Renamed
-                        
-                        if abs(b_val_inf) > 1e-10:
-                            # b_val is not zero, so we can plot y = (c - a*x) / b_val
-                            x_vals_eq = np.linspace(-10, 10, 100)
-                            y_vals_eq = (c_eq_inf - a_eq_inf * x_vals_eq) / b_val_inf
-                            fig.add_trace(go.Scatter(
-                                x=x_vals_eq, y=y_vals_eq,
-                                mode='lines',
-                                name=f"Equation {i+1}: {a_eq_inf}x + {b_val_inf}y = {c_eq_inf}"
-                            ))
-                        elif abs(a_eq_inf) > 1e-10:
-                            # b_val is zero, so we have a vertical line x = c/a
-                            x_val_eq_vert = c_eq_inf / a_eq_inf # Renamed
-                            y_vals_eq_vert = np.linspace(-10, 10, 100)
-                            x_vals_eq_const = np.ones_like(y_vals_eq_vert) * x_val_eq_vert # Renamed
-                            fig.add_trace(go.Scatter(
-                                x=x_vals_eq_const, y=y_vals_eq_vert,
-                                mode='lines',
-                                name=f"Equation {i+1}: {a_eq_inf}x = {c_eq_inf}"
-                            ))
-                    
-                    # Configure the layout
-                    fig.update_layout(
-                        title="2D System Solution (Infinite Solutions)",
-                        xaxis_title="x",
-                        yaxis_title="y",
-                        showlegend=True,
-                        width=700,
-                        height=500,
-                    )
-                    
-                    st.plotly_chart(fig)
+                    st.markdown("**General Solution:**")
+                    st.markdown("Any solution can be written as: Particular + t·Null, where t is any scalar and Null is:")
+                    null_space = result["null_space"]
+                    if len(null_space.shape) == 1:
+                        # Single vector in null space
+                        for i, val in enumerate(null_space):
+                            if i == 0:
+                                st.markdown(f"$x_{i+1} = {val:.4g}t$")
+                            else:
+                                st.markdown(f"$x_{i+1} = {val:.4g}t$")
+                    else:
+                        # Multiple vectors in null space
+                        for j in range(null_space.shape[1]):
+                            st.markdown(f"**Null vector {j+1}:**")
+                            for i in range(null_space.shape[0]):
+                                st.markdown(f"$x_{i+1} = {null_space[i,j]:.4g}t_{j+1}$")
                 
-                elif len(result["particular"]) == 3:
-                    # 3D system with infinite solutions
-                    st.info("3D system visualization is not implemented yet.")
+                elif isinstance(result, np.ndarray):
+                    # Case: Unique solution
+                    st.markdown("The system has a unique solution:")
+                    solution_box = """
+                    <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                        <p style="font-size: 16px; text-align: center;">
+                    """
+                    for i, val in enumerate(result):
+                        if abs(val) < 1e-10:  # Handle very small values
+                            val = 0
+                        solution_box += f"$x_{i+1} = {val:.4g}$<br>"
+                    solution_box += """
+                        </p>
+                    </div>
+                    """
+                    st.markdown(solution_box, unsafe_allow_html=True)
+                else:
+                    st.error("No solution exists (system is inconsistent)")
         
+        with col2:
+            st.markdown("### Visualization")
+            
+            # Create tabs for the matrices
+            tab1, tab2 = st.tabs(["Original System", "Row Echelon Form"])
+            
+            with tab1:
+                self.display_matrix_heatmap(augmented, "Augmented Matrix [A|b]")
+            
+            with tab2:
+                self.display_matrix_heatmap(reduced, "Reduced Row Echelon Form")
+            
+            # Add system properties box
+            st.markdown("### System Properties")
+            
+            # Determine system properties
+            rank_A = np.linalg.matrix_rank(A)
+            rank_augmented = np.linalg.matrix_rank(augmented)
+            n_variables = A.shape[1]
+            n_equations = A.shape[0]
+            
+            properties_box = f"""
+            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                <p style="font-size: 14px; text-align: center;">
+                    <strong>System Characteristics:</strong><br>
+                    • Number of equations: {n_equations}<br>
+                    • Number of variables: {n_variables}<br>
+                    • Rank of coefficient matrix: {rank_A}<br>
+                    • Rank of augmented matrix: {rank_augmented}<br>
+                    • System is {'consistent' if rank_A == rank_augmented else 'inconsistent'}<br>
+                    • Solution type: {
+                        'Unique' if rank_A == rank_augmented == n_variables
+                        else 'No solution' if rank_A != rank_augmented
+                        else 'Infinitely many solutions'
+                    }
+                </p>
+            </div>
+            """
+            st.markdown(properties_box, unsafe_allow_html=True)
+            
+            # If the system is 2D or 3D, add geometric visualization
+            if n_variables == 2 and isinstance(result, np.ndarray):
+                st.markdown("### Geometric Interpretation")
+                
+                # Create a 2D plot of the system
+                x_range = np.linspace(-10, 10, 100)
+                fig = go.Figure()
+                
+                # Plot each equation as a line
+                for i in range(n_equations):
+                    if abs(A[i, 1]) > 1e-10:  # If y coefficient is not zero
+                        y = (-A[i, 0] * x_range - b[i]) / A[i, 1]
+                        fig.add_trace(go.Scatter(
+                            x=x_range,
+                            y=y,
+                            mode='lines',
+                            name=f'Equation {i+1}'
+                        ))
+                    elif abs(A[i, 0]) > 1e-10:  # Vertical line
+                        x_val = -b[i] / A[i, 0]
+                        fig.add_trace(go.Scatter(
+                            x=[x_val, x_val],
+                            y=[-10, 10],
+                            mode='lines',
+                            name=f'Equation {i+1}'
+                        ))
+                
+                # Add solution point
+                if result is not None and len(result) == 2:
+                    fig.add_trace(go.Scatter(
+                        x=[result[0]],
+                        y=[result[1]],
+                        mode='markers',
+                        marker=dict(size=10, color='red'),
+                        name='Solution'
+                    ))
+                
+                # Update layout
+                fig.update_layout(
+                    title="System of Equations",
+                    xaxis_title="x₁",
+                    yaxis_title="x₂",
+                    width=600,
+                    height=600,
+                    showlegend=True
+                )
+                
+                st.plotly_chart(fig)
+            
+            elif n_variables == 3 and isinstance(result, np.ndarray):
+                st.info("3D visualization available but not implemented yet.")
         
-        return result 
+        return result
