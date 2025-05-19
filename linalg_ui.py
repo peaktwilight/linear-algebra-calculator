@@ -114,10 +114,10 @@ class LinearAlgebraRichUI:
         banner = f"{border_top}\n{doruk_ascii}{calc_ascii}{border_bottom}"
         return banner
     
-    def display_header(self, title="Linear Algebra Exercise Framework"):
+    def display_header(self, title="What would you like to do?"):
         self.clear_screen()
         # Only show the banner on the main menu
-        if title == "Linear Algebra Exercise Framework":
+        if title == "What would you like to do?":
             if PYFIGLET_AVAILABLE:
                 self.console.print(self.banner)
             else:
