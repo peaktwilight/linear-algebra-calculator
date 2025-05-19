@@ -30,18 +30,19 @@ A comprehensive toolkit for learning and solving linear algebra problems, develo
 
 ## File Structure
 
+- `linalg.py` - Main entry point script with unified interface and ASCII banner
 - `linalg_cli.py` - Core linear algebra functionality with command-line interface
-- `linalg_ui.py` - Rich user interface for the linear algebra framework
-- `linalg_ui_runner.py` - Simple entry point to run the UI
+- `linalg_ui.py` - Rich user interface with ASCII banner (directly runnable)
 - `help_guides.py` - Help content and learning resources for the framework
+- `generate_banner.py` - Helper script for generating ASCII art banner
 - `given_reference/` - Directory with reference code including core functionality
 
 ## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/linear-algebra-framework.git
-cd linear-algebra-framework
+git clone https://github.com/peaktwilight/python_25fs.git
+cd python_25fs
 
 # Install dependencies
 pip install numpy sympy scipy rich questionary
@@ -51,12 +52,36 @@ pip install numpy sympy scipy rich questionary
 
 ## Usage
 
-The framework offers multiple interfaces:
+The framework offers multiple interfaces through the unified `linalg.py` launcher:
 
-### Interactive UI (Recommended for Learning)
+### Unified Launcher (Recommended)
 
 ```bash
-python linalg_ui_runner.py
+# Interactive UI mode (default)
+python linalg.py
+
+# CLI mode
+python linalg.py --cli
+
+# Direct command execution
+python linalg.py --command "solve_gauss --matrix '1, 2, 3; 4, 5, 6'"
+
+# Skip the ASCII banner
+python linalg.py --no-banner
+```
+
+### Interactive UI
+
+```bash
+# Using the unified launcher
+python linalg.py
+
+# Or running the UI module directly
+python linalg_ui.py
+
+# Optional UI flags
+python linalg_ui.py --no-banner   # Skip the ASCII banner
+python linalg_ui.py --no-color    # Disable colored output
 ```
 
 Features:
@@ -69,11 +94,17 @@ Features:
 ### Command Line Interface
 
 ```bash
+# Using the unified launcher
+python linalg.py --cli <command> [options]
+
+# Or using the dedicated CLI
 python linalg_cli.py <command> [options]
 ```
 
 For help on available commands:
 ```bash
+python linalg.py --cli --help
+# Or
 python linalg_cli.py --help
 ```
 

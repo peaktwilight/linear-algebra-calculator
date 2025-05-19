@@ -41,6 +41,7 @@ class LinearAlgebraRichUI:
     def __init__(self):
         self.framework = LinearAlgebraExerciseFramework()
         self.console = Console()
+        self.banner = self.generate_banner()
         
         # Define categories and operations
         self.categories = {
@@ -83,10 +84,31 @@ class LinearAlgebraRichUI:
         }
     
     def clear_screen(self):
+        """Clear the terminal screen"""
         os.system('cls' if os.name == 'nt' else 'clear')
+        
+    def generate_banner(self):
+        """Generate ASCII art banner for Linear Algebra Framework"""
+        return """
+    _     _                          _    _            _               
+    | |   (_)_ __   ___  __ _ _ __   / \  | | __ _  ___| |__  _ __ __ _ 
+    | |   | | '_ \ / _ \/ _` | '__| / _ \ | |/ _` |/ _ \ '_ \| '__/ _` |
+    | |___| | | | |  __/ (_| | |   / ___ \| | (_| |  __/ |_) | | | (_| |
+    |_____|_|_| |_|\___|\__,_|_|  /_/   \_\_|\__, |\___|_.__/|_|  \__,_|
+                                             |___/                      
+     _____                                             _    
+    |  ___|_ __ __ _ _ __ ___   _____      _____  _ __| | __
+    | |_ | '__/ _` | '_ ` _ \ / _ \ \ /\ / / _ \| '__| |/ /
+    |  _|| | | (_| | | | | | |  __/\ V  V / (_) | |  |   < 
+    |_|  |_|  \__,_|_| |_| |_|\___| \_/\_/ \___/|_|  |_|\_\\
+                                                           
+    """
     
     def display_header(self, title="Linear Algebra Exercise Framework"):
         self.clear_screen()
+        # Only show the banner on the main menu
+        if title == "Linear Algebra Exercise Framework":
+            self.console.print(self.banner)
         self.console.print(Panel.fit(f"[bold cyan]{title}[/bold cyan]", border_style="blue"))
         self.console.print()
     
@@ -2233,7 +2255,40 @@ This guide will help you identify the type of problem you're dealing with and ch
 
 
 def main():
+    """Main entry point with welcome message"""
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='Linear Algebra Exercise Framework with Rich UI')
+    parser.add_argument('--version', action='version', version='Linear Algebra Framework 1.0')
+    parser.add_argument('--no-color', action='store_true', help='Disable colored output')
+    parser.add_argument('--no-banner', action='store_true', help='Skip displaying the banner')
+    
+    args = parser.parse_args()
+    
+    # Create UI instance
     ui = LinearAlgebraRichUI()
+    
+    if args.no_color:
+        ui.console = Console(color_system=None)
+    
+    # Show welcome message
+    if not args.no_banner:
+        ui.clear_screen()
+        ui.console.print(ui.banner)
+        
+        # Print welcome message
+        ui.console.print("[bold green]Welcome to the Linear Algebra Exercise Framework![/bold green]")
+        ui.console.print("This tool helps you practice and visualize linear algebra concepts.")
+        ui.console.print("Starting up the interactive interface...")
+        ui.console.print()
+        
+        # A short pause for the user to see the banner
+        try:
+            from time import sleep
+            sleep(1.0)
+        except:
+            pass
+    
+    # Run the UI
     ui.run()
 
 
