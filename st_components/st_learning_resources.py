@@ -572,6 +572,130 @@ def render_learning_resources_page():
             Understanding the parametric form helps you provide this input correctly, especially if a problem gives you two points on the line instead of a point and direction vector directly.
             """)
 
+        # --- Parametric Representation of a Plane ---
+        st.subheader("Parametric Representation of a Plane")
+        st.markdown("""
+            Similar to lines, planes in 3D space can be described using a parametric representation. 
+            This form uses a point on the plane and two non-parallel vectors that lie within the plane (direction vectors).
+            """)
+        st.markdown("""**Formula:**""")
+        st.latex("\Pi(s, t) = P_0 + s \cdot \mathbf{u} + t \cdot \mathbf{v}")
+        st.markdown("""
+            Where:
+            - `P_0` is a specific known point on the plane (e.g., `[x₀, y₀, z₀]` in 3D).
+            - `\mathbf{u}` and `\mathbf{v}` are two non-parallel direction vectors that lie in the plane. 
+            - `s` and `t` are scalar parameters. As `s` and `t` vary over all real numbers, `Π(s, t)` traces out all points on the plane.
+            """)
+        st.markdown("""
+            This can be written component-wise:
+            `x(s, t) = x₀ + s \cdot u_x + t \cdot v_x`
+            `y(s, t) = y₀ + s \cdot u_y + t \cdot v_y`
+            `z(s, t) = z₀ + s \cdot u_z + t \cdot v_z`
+            """)
+        st.markdown("""
+            **Finding Direction Vectors from Three Points:**
+            If you are given three non-collinear points `P_0`, `P_1`, and `P_2` on the plane:
+            1. Choose one point as the base, e.g., `P_0`.
+            2. Form two vectors from this base point to the other two points: 
+               `\mathbf{u} = P_1 - P_0`
+               `\mathbf{v} = P_2 - P_0`
+            These vectors `\mathbf{u}` and `\mathbf{v}` will be non-parallel (since the points are non-collinear) and lie in the plane.
+            """)
+        st.markdown("""**Conceptual Example (PDI7FV / QLCRW1 adaptation):**""")
+        st.markdown("""
+            Problem: Find the parametric equation of the plane passing through `P_0 = (1,1,1)`, `P_1 = (1,2,3)`, and `P_2 = (-1,0,1)`.
+            1. Base point: `P_0 = (1,1,1)`.
+            2. Direction vector `\mathbf{u} = P_1 - P_0 = [1-1, 2-1, 3-1] = [0, 1, 2]`.
+            3. Direction vector `\mathbf{v} = P_2 - P_0 = [-1-1, 0-1, 1-1] = [-2, -1, 0]`.
+            4. The parametric equation of the plane is:
+               `Π(s, t) = [1,1,1] + s[0,1,2] + t[-2,-1,0]`
+            Component-wise:
+               `x(s,t) = 1 - 2t`
+               `y(s,t) = 1 + s - t`
+               `z(s,t) = 1 + 2s`
+            """)
+        st.markdown("""**How this relates to calculator usage:**""")
+        st.markdown("""
+            While many plane operations in calculators use the general form `Ax + By + Cz + D = 0` (often derived from the normal vector), understanding the parametric form is crucial for defining a plane from three points or when working with geometric transformations. Some advanced tools might allow plane definition using a point and two direction vectors.
+            To convert from parametric form (`P_0, u, v`) to the general form, you can find the normal vector `n = u × v` and then use `n ⋅ (X - P_0) = 0` to get `n_x x + n_y y + n_z z - (n ⋅ P_0) = 0`.
+            """)
+
+        # --- Intersection of Two Lines ---
+        st.subheader("Intersection of Two Lines")
+        st.markdown("""
+            Finding the intersection point of two lines is a common problem in geometry. The approach differs slightly between 2D and 3D space.
+            """)
+        st.markdown("""**Approach in 2D:**""")
+        st.markdown("""
+            Given two lines in parametric form:
+            - Line 1: `L₁(t₁) = P₁ + t₁ \cdot \mathbf{v₁} = [x₁, y₁] + t₁[v₁ₓ, v₁y]`
+            - Line 2: `L₂(t₂) = P₂ + t₂ \cdot \mathbf{v₂} = [x₂, y₂] + t₂[v₂ₓ, v₂y]`
+            
+            At the point of intersection, the coordinates must be equal: `L₁(t₁) = L₂(t₂)`.
+            This gives a system of two linear equations for two unknowns (`t₁`, `t₂`):
+            `x₁ + t₁ \cdot v₁ₓ = x₂ + t₂ \cdot v₂ₓ`
+            `y₁ + t₁ \cdot v₁y = y₂ + t₂ \cdot v₂y`
+            
+            Rearranging:
+            `t₁ \cdot v₁ₓ - t₂ \cdot v₂ₓ = x₂ - x₁`
+            `t₁ \cdot v₁y - t₂ \cdot v₁y = y₂ - y₁`
+            """)
+        st.markdown("""
+            **Solving and Interpreting the System (2D):**
+            1.  **Unique Solution for `t₁`, `t₂`**: If the system has a unique solution, the lines intersect at a single point. Substitute either `t₁` back into `L₁(t₁)` or `t₂` into `L₂(t₂)` to find the coordinates of the intersection point.
+            2.  **No Solution**: If the system is inconsistent (e.g., leads to `0 = 1`), the lines are parallel and distinct; they do not intersect.
+            3.  **Infinitely Many Solutions**: If the system has infinitely many solutions (e.g., one equation is a multiple of the other, leading to `0 = 0`), the lines are collinear (they are the same line).
+            """)
+        st.markdown("""**Approach in 3D:**""")
+        st.markdown("""
+            The same principle applies, but with three equations (for x, y, and z components):
+            `x₁ + t₁ \cdot v₁ₓ = x₂ + t₂ \cdot v₂ₓ`
+            `y₁ + t₁ \cdot v₁y = y₂ + t₂ \cdot v₂y`
+            `z₁ + t₁ \cdot v₁z = z₂ + t₂ \cdot v₂z`
+            
+            - Solve any two of these equations (e.g., for x and y) to find potential values for `t₁` and `t₂`.
+            - Substitute these `t₁` and `t₂` values into the third equation (e.g., for z).
+            - If the third equation holds true, the lines intersect at the point found by substituting `t₁` or `t₂` back into their respective line equations.
+            - If the third equation does not hold, the lines do not intersect in 3D space (they are **skew** lines, or parallel if their direction vectors are proportional but they don't satisfy the equations).
+            - If the system of all three equations yields infinitely many solutions, they are collinear.
+            """)
+        st.markdown("""**Conceptual Example (2D - IXZ345/7XTEAY adaptation):**""")
+        st.markdown("""
+            Problem: Find the intersection of Line 1: `P₁=(1,1)`, `v₁=(2,1)` and Line 2: `P₂=(0,2)`, `v₂=(1,-1)`.
+            `L₁(t₁): x = 1 + 2t₁, y = 1 + t₁`
+            `L₂(t₂): x = 0 + t₂,  y = 2 - t₂`
+            
+            Set components equal:
+            1) `1 + 2t₁ = t₂`
+            2) `1 + t₁  = 2 - t₂`
+            
+            Substitute `t₂` from (1) into (2):
+            `1 + t₁ = 2 - (1 + 2t₁)`
+            `1 + t₁ = 2 - 1 - 2t₁`
+            `1 + t₁ = 1 - 2t₁`
+            `3t₁ = 0  => t₁ = 0`
+            
+            Substitute `t₁ = 0` back into (1) to find `t₂`:
+            `t₂ = 1 + 2(0) = 1`
+            
+            Since we found unique values for `t₁` and `t₂`, the lines intersect.
+            Substitute `t₁ = 0` into `L₁`: `x = 1 + 2(0) = 1`, `y = 1 + 0 = 1`.
+            Intersection point: `(1, 1)`.
+            (Check with `t₂ = 1` in `L₂`: `x = 1`, `y = 2 - 1 = 1`. Matches.)
+            """)
+        st.markdown("""**How to use the calculator for this:**""")
+        st.markdown("""
+            A dedicated "Line Intersection" tool (if available under **Lines and Planes**) would typically:
+            1. Ask for the definition of Line 1 (e.g., point `P₁` and direction vector `v₁`).
+            2. Ask for the definition of Line 2 (e.g., point `P₂` and direction vector `v₂`).
+            3. The calculator would then solve the system and report:
+                - The intersection point if one exists.
+                - That the lines are parallel if they don't intersect but have proportional direction vectors.
+                - That the lines are collinear if they are identical.
+                - That the lines are skew (in 3D) if they don't intersect and are not parallel.
+            If no direct tool exists, you would set up and solve the system of linear equations manually, possibly using the "Solve System (Gauss)" tool if you formulate the system in matrix form.
+            """)
+
         st.markdown("*(Placeholder for Point-Plane distance and other advanced Line/Plane topics)*")
         st.markdown("--- --- --- --- --- --- --- --- --- ---")
 
