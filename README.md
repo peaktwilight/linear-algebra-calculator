@@ -1,4 +1,4 @@
-# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/peaktwilight/python_25fs/releases/tag/v1.1.0)
+# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/peaktwilight/python_25fs/releases/tag/v1.4.0)
 
 ```
 ╭───────────────────────────────────────────────────────────────────────╮
