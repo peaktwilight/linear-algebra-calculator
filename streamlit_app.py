@@ -1502,17 +1502,8 @@ class LinAlgCalculator:
 def main():
     calculator = LinAlgCalculator()
     
-    # Header with branding
-    col1, col2 = st.columns([4, 1])
-    with col1:
-        st.title("Linear Algebra Calculator")
-    with col2:
-        st.markdown(
-            "<div style='text-align: right; padding-top: 1.5rem;'>"
-            "<small>Made with ❤️ by Doruk</small>"
-            "</div>",
-            unsafe_allow_html=True
-        )
+    # Simple header
+    st.title("Linear Algebra Calculator")
     
     # Sidebar with categories
     st.sidebar.title("Categories")
