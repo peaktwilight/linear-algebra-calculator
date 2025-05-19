@@ -41,8 +41,8 @@ def render_learning_resources_page():
             "radius `r` (distance from origin) and an angle `phi (φ)` (from the positive x-axis)."
         )
         st.markdown("To convert from polar `(r, φ)` to Cartesian `(vx, vy)`:")
-        st.latex("v_x = r \\cdot \\cos(\\phi)")
-        st.latex("v_y = r \\cdot \\sin(\\phi)")
+        st.latex(r"v_x = r \cdot \cos(\phi)")
+        st.latex(r"v_y = r \cdot \sin(\phi)")
         st.markdown("Note: `φ` should be in radians for trigonometric functions in most programming libraries.")
         
         st.markdown("**Conceptual Example (Exercise NNHCXF adaptation):**")
@@ -70,18 +70,18 @@ def render_learning_resources_page():
         st.markdown(
             "The **magnitude** (or length/norm) of a vector `v = [v₁, v₂, ..., vₙ]` is its size."
         )
-        st.latex("||v|| = \\sqrt{v_1^2 + v_2^2 + \\dots + v_n^2}")
+        st.latex(r"||v|| = \sqrt{v_1^2 + v_2^2 + \dots + v_n^2}")
         st.markdown(
             "**Normalization** creates a **unit vector** (magnitude 1) in the same direction."
         )
-        st.latex("\\hat{v} = \\frac{v}{||v||} \\text{ (if } ||v|| \\neq 0)")
+        st.latex(r"\hat{v} = \frac{v}{||v||} \text{ (if } ||v|| \neq 0)")
         st.markdown("A zero vector cannot be normalized as it would involve division by zero.")
 
         st.markdown("**Conceptual Example (Exercise 5VRS99 adaptation):**")
         st.markdown(
             "1. Problem: Given points `A=(3,4)` and `B=(6,0)`. Find the unit vector in the direction of `u = B - A`.\n"
             "   Step 1 (Find u): `u = [6-3, 0-4] = [3, -4]`.\n"
-            "   Step 2 (Calculate ||u||): `||u|| = \\sqrt{3^2 + (-4)^2} = \\sqrt{9 + 16} = \\sqrt{25} = 5`.\n"
+            "   Step 2 (Calculate ||u||): `||u|| = \sqrt{3^2 + (-4)^2} = \sqrt{9 + 16} = \sqrt{25} = 5`.\n"
             "   Step 3 (Normalize u): `û = u / ||u|| = [3/5, -4/5] = [0.6, -0.8]`. This is the unit vector."
         )
         st.markdown("**How to use the calculator for this:**")
@@ -119,8 +119,8 @@ def render_learning_resources_page():
             "Vectors of the **same dimension** can be added or subtracted by performing the operation on their corresponding components."
         )
         st.markdown("If `u = [u₁, u₂, ..., uₙ]` and `v = [v₁, v₂, ..., vₙ]`:")
-        st.latex("u + v = [u₁ + v₁, u₂ + v₂, ..., uₙ + vₙ]")
-        st.latex("u - v = [u₁ - v₁, u₂ - v₂, ..., uₙ - vₙ]")
+        st.latex(r"u + v = [u₁ + v₁, u₂ + v₂, ..., uₙ + vₙ]")
+        st.latex(r"u - v = [u₁ - v₁, u₂ - v₂, ..., uₙ - vₙ]")
         st.markdown("Geometrically, `u+v` can be visualized using the 'tip-to-tail' or parallelogram method.")
 
         st.markdown("**Conceptual Example:**")
@@ -145,7 +145,7 @@ def render_learning_resources_page():
             "Each component of the vector is multiplied by the scalar."
         )
         st.markdown("If `v = [v₁, v₂, ..., vₙ]` and `k` is a scalar:")
-        st.latex("k \cdot v = [k \cdot v₁, k \cdot v₂, ..., k \cdot vₙ]")
+        st.latex(r"k \cdot v = [k \cdot v₁, k \cdot v₂, ..., k \cdot vₙ]")
         st.markdown("- If `k > 0`, `kv` has the same direction as `v` but scaled length.\n"
             "- If `k < 0`, `kv` has the opposite direction to `v` and scaled length.\n"
             "- If `k = 0`, `kv` is the zero vector `[0, 0, ..., 0]`."
@@ -153,7 +153,7 @@ def render_learning_resources_page():
 
         st.markdown("**Conceptual Example (Exercise SWI49N adaptation):**")
         st.markdown("- Problem: Given vector `af = [8, -0.5]`, find a vector `a` in the same direction but with length 10.\n"
-            "  Step 1 (Find unit vector an): First normalize `af`. `||af|| = \\sqrt{8^2 + (-0.5)^2} = \\sqrt{64.25} \\approx 8.0156`. So, `an = af / ||af|| \approx [0.998, -0.062]`.\n"
+            "  Step 1 (Find unit vector an): First normalize `af`. `||af|| = \sqrt{8^2 + (-0.5)^2} = \sqrt{64.25} \approx 8.0156`. So, `an = af / ||af|| \approx [0.998, -0.062]`.\n"
             "  Step 2 (Scale to desired length): `a = 10 * an \approx [9.98, -0.62]`."
         )
 
@@ -177,7 +177,7 @@ def render_learning_resources_page():
             "It is calculated by multiplying corresponding components and summing the results."
         )
         st.markdown("If `u = [u₁, u₂, ..., uₙ]` and `v = [v₁, v₂, ..., vₙ]`:")
-        st.latex("u \\cdot v = u_1 v_1 + u_2 v_2 + \\dots + u_n v_n = \\sum_{i=1}^{n} u_i v_i")
+        st.latex(r"u \cdot v = u_1 v_1 + u_2 v_2 + \dots + u_n v_n = \sum_{i=1}^{n} u_i v_i")
         st.markdown("**Properties:**\n"
                     "- Commutative: `u ⋅ v = v ⋅ u`\n"
                     "- Distributive over vector addition: `u ⋅ (v + w) = u ⋅ v + u ⋅ w`\n"
@@ -192,11 +192,11 @@ def render_learning_resources_page():
         # --- Geometric Interpretation: Angle Between Two Vectors ---
         st.subheader("Geometric Interpretation: Angle Between Two Vectors")
         st.markdown("The dot product can also be defined geometrically:")
-        st.latex("u \\cdot v = ||u|| \\cdot ||v|| \\cdot \\cos(\\theta)")
+        st.latex(r"u \cdot v = ||u|| \cdot ||v|| \cdot \cos(\theta)")
         st.markdown("Where `θ` is the angle between the vectors `u` and `v`.")
         st.markdown("This formula can be rearranged to find the angle `θ`:")
-        st.latex("\\cos(\\theta) = \\frac{u \\cdot v}{||u|| \\cdot ||v||}")
-        st.latex("\\theta = \\arccos\\left(\\frac{u \\cdot v}{||u|| \\cdot ||v||}\\right)")
+        st.latex(r"\cos(\theta) = \frac{u \cdot v}{||u|| \cdot ||v||}")
+        st.latex(r"\theta = \arccos\left(\frac{u \cdot v}{||u|| \cdot ||v||}\right)")
         st.markdown("The angle `θ` will be between 0° and 180° (0 and π radians).\n"
                     "- If `u ⋅ v > 0`, then `θ` is acute (0° ≤ θ < 90°).\n"
                     "- If `u ⋅ v < 0`, then `θ` is obtuse (90° < θ ≤ 180°).\n"
@@ -205,8 +205,8 @@ def render_learning_resources_page():
         st.markdown("**Conceptual Example (Exercise 520784 adaptation):**")
         st.markdown("Problem: Calculate the angle between `a = [1, 1, -1]` and `b = [1, -1, 1]`.\n"
                     "1. Calculate dot product: `a ⋅ b = (1)(1) + (1)(-1) + (-1)(1) = 1 - 1 - 1 = -1`.\n"
-                    "2. Calculate magnitudes: `||a|| = \\sqrt{1^2+1^2+(-1)^2} = \\sqrt{3}`. `||b|| = \\sqrt{1^2+(-1)^2+1^2} = \\sqrt{3}`.\n"
-                    "3. Calculate cos(θ): `cos(θ) = -1 / (\\sqrt{3} * \\sqrt{3}) = -1 / 3`.\n"
+                    "2. Calculate magnitudes: `||a|| = \sqrt{1^2+1^2+(-1)^2} = \sqrt{3}`. `||b|| = \sqrt{1^2+(-1)^2+1^2} = \sqrt{3}`.\n"
+                    "3. Calculate cos(θ): `cos(θ) = -1 / (\sqrt{3} * \sqrt{3}) = -1 / 3`.\n"
                     "4. Calculate θ: `θ = arccos(-1/3) ≈ 1.9106` radians (or `109.47°`)."
         )
         st.markdown("**How to use the calculator for this:**")
@@ -223,7 +223,7 @@ def render_learning_resources_page():
         st.markdown(
             "Two non-zero vectors `u` and `v` are **orthogonal** (perpendicular) if and only if their dot product is zero."
         )
-        st.latex("u \\perp v \\iff u \\cdot v = 0")
+        st.latex(r"u \perp v \iff u \cdot v = 0")
         st.markdown("This is a direct consequence of the angle formula: if `u ⋅ v = 0`, then `cos(θ) = 0`, which means `θ = 90°` (or π/2 radians). The zero vector is considered orthogonal to all vectors.")
 
         st.markdown("**Conceptual Example (Exercise 891584 adaptation):**")
@@ -247,14 +247,14 @@ def render_learning_resources_page():
             "The **projection** of vector `b` onto vector `a` (denoted `projₐb`) is like the 'shadow' that `b` casts on the line defined by `a`."
         )
         st.markdown("First, the **scalar projection** of `b` onto `a` (length of the shadow):")
-        st.latex("s = \\text{comp}_a b = \\frac{a \\cdot b}{||a||}")
+        st.latex(r"s = \text{comp}_a b = \frac{a \cdot b}{||a||}")
         st.markdown("This scalar `s` can be positive (projection in same direction as `a`), negative (opposite direction), or zero (if orthogonal). ")
         st.markdown("Then, the **vector projection** of `b` onto `a` is this scalar length multiplied by the unit vector in the direction of `a`:")
-        st.latex("\\text{proj}_a b = \\left(\\frac{a \\cdot b}{||a||^2}\\right) a = \\left(\\frac{a \\cdot b}{a \\cdot a}\\right) a")
+        st.latex(r"\text{proj}_a b = \left(\frac{a \cdot b}{||a||^2}\right) a = \left(\frac{a \cdot b}{a \cdot a}\right) a")
 
         st.markdown("**Conceptual Example (Exercise QHZIHW adaptation):**")
         st.markdown("Problem: Find the length of the shadow of `b=[12, -1]` on `a=[3, -4]`. (Note: in the exercise, `a` was already normalized, here we use the general form). Also, find the shadow vector.\n"
-                    "1. Given `a=[3,-4]` and `b=[12,-1.0]`. `||a|| = \\sqrt{3^2 + (-4)^2} = 5`. `a \\cdot a = ||a||^2 = 25`.\n"
+                    "1. Given `a=[3,-4]` and `b=[12,-1.0]`. `||a|| = \sqrt{3^2 + (-4)^2} = 5`. `a \cdot a = ||a||^2 = 25`.\n"
                     "2. Dot product: `a ⋅ b = (3)(12) + (-4)(-1) = 36 + 4 = 40`.\n"
                     "3. Scalar projection (length of shadow): `s = (a ⋅ b) / ||a|| = 40 / 5 = 8`.\n"
                     "   (Since `s > 0`, the angle between `a` and `b` is acute.)\n"
@@ -277,7 +277,7 @@ def render_learning_resources_page():
             "The **vector product** (or **cross product**) of two 3D vectors `a = [a₁, a₂, a₃]` and `b = [b₁, b₂, b₃]` results in a new 3D vector `c = a × b` "
             "that is **orthogonal** (perpendicular) to both `a` and `b`."
         )
-        st.latex("a \\times b = [a_2 b_3 - a_3 b_2, \\quad a_3 b_1 - a_1 b_3, \\quad a_1 b_2 - a_2 b_1]")
+        st.latex(r"a \times b = [a_2 b_3 - a_3 b_2, \quad a_3 b_1 - a_1 b_3, \quad a_1 b_2 - a_2 b_1]")
         st.markdown("**Properties:**\n"
                     "- Anti-commutative: `a × b = - (b × a)` (Order matters!)\n"
                     "- Distributive over vector addition: `a × (b + c) = a × b + a × c`\n"
@@ -304,8 +304,8 @@ def render_learning_resources_page():
             "- Consequently, the **area of the triangle** formed by `a` and `b` (if they share a starting point) is `(1/2) * ||a × b||`. (Or, if A,B,C are points, Area = `(1/2) * ||AB × AC||` ).\n"
             "- The **direction** of `a × b` is given by the right-hand rule. It is always perpendicular to the plane containing `a` and `b`."
         )
-        st.latex("\\text{Area of Parallelogram} = ||a \\times b|| = ||a|| \\cdot ||b|| \\cdot |\\sin(\\theta)|")
-        st.latex("\\text{Area of Triangle (vertices A,B,C)} = \\frac{1}{2} || \\vec{AB} \\times \\vec{AC} ||")
+        st.latex(r"\text{Area of Parallelogram} = ||a \times b|| = ||a|| \cdot ||b|| \cdot |\sin(\theta)|")
+        st.latex(r"\text{Area of Triangle (vertices A,B,C)} = \frac{1}{2} || \vec{AB} \times \vec{AC} ||")
 
         st.markdown("**Conceptual Example (Triangle Area - Exercise 62FVCH adaptation):**")
         st.markdown("Problem: Calculate the area of the triangle with vertices `A=(0,4,2)`, `B=(0,8,5)`, `C=(0,8,-1)`.\n"
@@ -315,7 +315,7 @@ def render_learning_resources_page():
                     "    `c₂ = (3)(0) - (0)(-3) = 0`\n"
                     "    `c₃ = (0)(4) - (4)(0) = 0`\n"
                     "    `AB × AC = [-24, 0, 0]`.\n"
-                    "3. Calculate magnitude: `||AB × AC|| = \\sqrt{(-24)^2 + 0^2 + 0^2} = \\sqrt{576} = 24`.\n"
+                    "3. Calculate magnitude: `||AB × AC|| = \sqrt{(-24)^2 + 0^2 + 0^2} = \sqrt{576} = 24`.\n"
                     "4. Area of triangle = `(1/2) * 24 = 12`."
         )
         st.markdown("**How to use the calculator for this:**")
@@ -335,7 +335,7 @@ def render_learning_resources_page():
             The **scalar triple product** (also known as the mixed product or box product) involves three 3D vectors. 
             It is calculated as the dot product of one vector with the cross product of the other two.
             """)
-        st.latex("V = a \cdot (b \times c)")
+        st.latex(r"V = a \cdot (b \times c)")
         st.markdown("""
             **Geometric Interpretation: Volume**
             - The absolute value of the scalar triple product, `|a ⋅ (b × c)|`, represents the **volume of the parallelepiped** whose adjacent sides are defined by the vectors `a`, `b`, and `c`.
@@ -345,7 +345,7 @@ def render_learning_resources_page():
             **Properties & Calculation:**
             - The scalar triple product can also be calculated as the determinant of the 3x3 matrix whose rows (or columns) are the components of the vectors `a`, `b`, and `c`:
             """)
-        st.latex("a \cdot (b \times c) = \begin{vmatrix} a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \\ c_1 & c_2 & c_3 \end{vmatrix}")
+        st.latex(r"a \cdot (b \times c) = \begin{vmatrix} a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \\ c_1 & c_2 & c_3 \end{vmatrix}")
         st.markdown("""
             - Cyclic permutation of the vectors does not change the value: `a ⋅ (b × c) = b ⋅ (c × a) = c ⋅ (a × b)`.
             - Swapping any two vectors negates the result: `a ⋅ (b × c) = - a ⋅ (c × b)`.
@@ -442,8 +442,8 @@ def render_learning_resources_page():
         st.markdown(
             "To find the shortest distance from a point `P` to a line (in 2D or 3D), where the line is defined by a point `A` on the line and a direction vector `v`."
         )
-        st.latex("\text{Line Equation: } X = A + t \cdot v")
-        st.latex("\text{Distance } h = \frac{|| \vec{AP} \times v ||}{||v||}")
+        st.latex(r"\text{Line Equation: } X = A + t \cdot v")
+        st.latex(r"\text{Distance } h = \frac{|| \vec{AP} \times v ||}{||v||}")
         st.markdown("Where `AP` is the vector from point `A` on the line to point `P` (i.e., `P - A`). Note that `v` must be a non-zero vector.")
         st.markdown("**Conceptual Example (Exercise CJ1IXZ adaptation):**")
         st.markdown("Problem: Find the distance between point `P=(5,10,0)` and the line defined by `A=(3,0,0)` and direction `v=[2,0,0]`.\n"
@@ -453,7 +453,7 @@ def render_learning_resources_page():
             "    `c₂ = (0)(2) - (2)(0) = 0`\n"
             "    `c₃ = (2)(0) - (10)(2) = -20`\n"
             "    `AP × v = [0, 0, -20]`.\n"
-            "3. Magnitudes: `||AP × v|| = \\sqrt{0^2+0^2+(-20)^2} = 20`. `||v|| = \\sqrt{2^2+0^2+0^2} = 2`.\n"
+            "3. Magnitudes: `||AP × v|| = \sqrt{0^2+0^2+(-20)^2} = 20`. `||v|| = \sqrt{2^2+0^2+0^2} = 2`.\n"
             "4. Distance `h = 20 / 2 = 10`."
         )
         st.markdown("**How to use the calculator for this:**")
@@ -473,15 +473,15 @@ def render_learning_resources_page():
             Similar to lines in 2D, the Hessian Normal Form (HNF) for a plane in 3D provides a standard way to represent the plane and is useful for calculating distances.
             """)
         st.markdown("""The general equation of a plane in 3D is `Ax + By + Cz + D = 0`. The Hessian Normal Form is:""")
-        st.latex("n_x x + n_y y + n_z z - p = 0 \quad \text{or} \quad \mathbf{n} \cdot \mathbf{x} - p = 0")
+        st.latex(r"n_x x + n_y y + n_z z - p = 0 \quad \text{or} \quad \mathbf{n} \cdot \mathbf{x} - p = 0")
         st.markdown("""
             Where:\n
             - `p` is the perpendicular distance from the origin to the plane (`p >= 0`).\n
             - `\mathbf{n} = [n_x, n_y, n_z]` is the unit normal vector to the plane (pointing from the origin towards the plane if p > 0).
             """)
         st.markdown("""If you have the general form `Ax + By + Cz + D = 0`, you can convert it to HNF:""")
-        st.latex("p = \frac{|D|}{\sqrt{A^2 + B^2 + C^2}}")
-        st.latex("n_x = \frac{A}{\pm\sqrt{A^2 + B^2 + C^2}}, \quad n_y = \frac{B}{\pm\sqrt{A^2 + B^2 + C^2}}, \quad n_z = \frac{C}{\pm\sqrt{A^2 + B^2 + C^2}}")
+        st.latex(r"p = \frac{|D|}{\sqrt{A^2 + B^2 + C^2}}")
+        st.latex(r"n_x = \frac{A}{\pm\sqrt{A^2 + B^2 + C^2}}, \quad n_y = \frac{B}{\pm\sqrt{A^2 + B^2 + C^2}}, \quad n_z = \frac{C}{\pm\sqrt{A^2 + B^2 + C^2}}")
         st.markdown("""
             The sign of the denominator `±√(A² + B² + C²)` is chosen to be opposite to the sign of `D` if `D ≠ 0`. 
             If `D = 0`, the sign can be chosen arbitrarily (e.g., to make `n_z` positive, or `n_y` if `n_z=0`, etc.), though consistency is good. This ensures `p >= 0`.
@@ -490,7 +490,7 @@ def render_learning_resources_page():
         st.markdown("""
             Given a point `P(x₀, y₀, z₀)`, the signed distance `d_signed` to the plane `n_x x + n_y y + n_z z - p = 0` is:
             """)
-        st.latex("d_{signed} = n_x x_0 + n_y y_0 + n_z z_0 - p")
+        st.latex(r"d_{signed} = n_x x_0 + n_y y_0 + n_z z_0 - p")
         st.markdown("""
             - If `d_signed > 0`, the point is on the side of the plane pointed to by the normal vector `n` (opposite to the origin if `p > 0`).\n
             - If `d_signed < 0`, the point is on the other side (same side as the origin if `p > 0`).\n
@@ -528,7 +528,7 @@ def render_learning_resources_page():
             It describes the coordinates of any point on the line as a function of a single parameter, usually denoted by `t`.
             """)
         st.markdown("""**Formula:**""")
-        st.latex("L(t) = P_0 + t \cdot \mathbf{v}")
+        st.latex(r"L(t) = P_0 + t \cdot \mathbf{v}")
         st.markdown("""
             Where:
             - `P_0` is a specific known point on the line (e.g., `[x₀, y₀]` in 2D, or `[x₀, y₀, z₀]` in 3D).
@@ -579,7 +579,7 @@ def render_learning_resources_page():
             This form uses a point on the plane and two non-parallel vectors that lie within the plane (direction vectors).
             """)
         st.markdown("""**Formula:**""")
-        st.latex("\Pi(s, t) = P_0 + s \cdot \mathbf{u} + t \cdot \mathbf{v}")
+        st.latex(r"\Pi(s, t) = P_0 + s \cdot \mathbf{u} + t \cdot \mathbf{v}")
         st.markdown("""
             Where:
             - `P_0` is a specific known point on the plane (e.g., `[x₀, y₀, z₀]` in 3D).
@@ -718,7 +718,7 @@ def render_learning_resources_page():
             The intersection line lies in both planes. Therefore, its direction vector `\mathbf{v}` must be perpendicular to both normal vectors `\mathbf{n₁}` and `\mathbf{n₂}`.
             Thus, the direction vector of the intersection line can be found using the cross product:
             """)
-        st.latex("\mathbf{v} = \mathbf{n₁} \times \mathbf{n₂}")
+        st.latex(r"\mathbf{v} = \mathbf{n₁} \times \mathbf{n₂}")
         st.markdown("""If `\mathbf{v} = \mathbf{0}`, it means the normal vectors were parallel, and the planes do not intersect in a single line (they are parallel or identical).""")
         st.markdown("""
             **2. Finding a Point (P₀) on the Intersection Line:**
@@ -736,7 +736,7 @@ def render_learning_resources_page():
             **3. Parametric Equation of the Intersection Line:**
             Once you have a point `P₀` on the line and the direction vector `\mathbf{v}`, the parametric equation of the intersection line is:
             """)
-        st.latex("L(t) = P_0 + t \cdot \mathbf{v}")
+        st.latex(r"L(t) = P_0 + t \cdot \mathbf{v}")
         st.markdown("""**Conceptual Example (P23RCO adaptation):**""")
         st.markdown("""
             Problem: Find the intersection line of `Π₁: x - y + z - 1 = 0` and `Π₂: 2x + y - z - 2 = 0`.
@@ -777,7 +777,7 @@ def render_learning_resources_page():
             To find the shortest distance from a point `P(x₀, y₀, z₀)` to a plane defined by the equation `Ax + By + Cz + D = 0`.
             """)
         st.markdown("""**Formula:**""")
-        st.latex("\text{Distance} = \frac{|Ax_0 + By_0 + Cz_0 + D|}{\sqrt{A^2 + B^2 + C^2}}")
+        st.latex(r"\text{Distance} = \frac{|Ax_0 + By_0 + Cz_0 + D|}{\sqrt{A^2 + B^2 + C^2}}")
         st.markdown("""
             Where:
             - `(x₀, y₀, z₀)` are the coordinates of the point.
@@ -841,7 +841,7 @@ def render_learning_resources_page():
                 `t (A v_x + B v_y + C v_z) = -(A x₀ + B y₀ + C z₀ + D)`
                 `t (\mathbf{n} \cdot \mathbf{v}) = -(\mathbf{n} \cdot P_0 + D)`
                 """)
-        st.latex("t = - \frac{\mathbf{n} \cdot P_0 + D}{\mathbf{n} \cdot \mathbf{v}}")
+        st.latex(r"t = - \frac{\mathbf{n} \cdot P_0 + D}{\mathbf{n} \cdot \mathbf{v}}")
         st.markdown("""
             Once `t` is found, substitute this value back into the line's parametric equation `\mathbf{x} = P_0 + t \cdot \mathbf{v}` to get the coordinates of the intersection point.
             """)
@@ -885,7 +885,7 @@ def render_learning_resources_page():
             "It's a fundamental tool for representing and solving systems of linear equations, transformations, and much more."
         )
         st.markdown("An `m × n` matrix has `m` rows and `n` columns. Example of a 2x3 matrix A:")
-        st.latex("A = \\begin{bmatrix} a_{11} & a_{12} & a_{13} \\\\newline a_{21} & a_{22} & a_{23} \\end{bmatrix}")
+        st.latex(r"A = \begin{bmatrix} a_{11} & a_{12} & a_{13} \\newline a_{21} & a_{22} & a_{23} \end{bmatrix}")
         st.markdown("Matrices are typically denoted by uppercase letters (e.g., A, B), and their elements by lowercase letters with subscripts (e.g., `aᵢⱼ` is the element in the i-th row and j-th column). Handling matrices often involves libraries like NumPy in Python.")
         st.markdown("---")
 
@@ -896,8 +896,8 @@ def render_learning_resources_page():
             "The operation is performed element-wise."
         )
         st.markdown("If A and B are both `m × n` matrices:")
-        st.latex("(A+B)_{ij} = a_{ij} + b_{ij}")
-        st.latex("(A-B)_{ij} = a_{ij} - b_{ij}")
+        st.latex(r"(A+B)_{ij} = a_{ij} + b_{ij}")
+        st.latex(r"(A-B)_{ij} = a_{ij} - b_{ij}")
         st.markdown("**Conceptual Example (Exercise C85VFS / 4I8XHJ adaptation):**")
         st.markdown("""Given `A = [[1,0], [0,1]]` and `B = [[1,0], [0,1]]` (both are 2x2 identity matrices in this case):\n
 `A + B = [[1+1, 0+0], [0+0, 1+1]] = [[2,0], [0,2]]`\n
@@ -909,7 +909,7 @@ def render_learning_resources_page():
         st.subheader("Scalar Multiplication of Matrices")
         st.markdown("To multiply a matrix by a scalar, multiply every element of the matrix by that scalar.")
         st.markdown("If `k` is a scalar and `A` is a matrix:")
-        st.latex("(k \cdot A)_{ij} = k \cdot a_{ij}")
+        st.latex(r"(k \cdot A)_{ij} = k \cdot a_{ij}")
         st.markdown("**Conceptual Example:**")
         st.markdown("""If `k = 3` and `A = [[1,2], [3,4]]`:\n
 `3A = [[3*1, 3*2], [3*3, 3*4]] = [[3,6], [9,12]]`""")
@@ -922,7 +922,7 @@ def render_learning_resources_page():
             "The product `AB` of two matrices `A` and `B` is defined if and only if the number of columns in `A` is equal to the number of rows in `B`. "
             "If `A` is an `m × n` matrix and `B` is an `n × p` matrix, then their product `AB` will be an `m × p` matrix."
         )
-        st.latex("(AB)_{ij} = \\sum_{k=1}^{n} a_{ik} b_{kj}")
+        st.latex(r"(AB)_{ij} = \sum_{k=1}^{n} a_{ik} b_{kj}")
         st.markdown("This means the element `(AB)ᵢⱼ` is the dot product of the i-th row of `A` with the j-th column of `B`.")
         st.markdown("""**Key Properties:**\n
 - **Not Commutative in general:** `AB ≠ BA`\n
@@ -951,7 +951,7 @@ So, `AB = [[19, 22], [43, 50]]`.""" )
             "The **transpose** of a matrix `A`, denoted `Aᵀ` or `A\'`, is obtained by swapping its rows and columns. "
             "If `A` is an `m × n` matrix, `Aᵀ` will be an `n × m` matrix."
         )
-        st.latex("(A^T)_{ij} = A_{ji}")
+        st.latex(r"(A^T)_{ij} = A_{ji}")
         st.markdown("**Conceptual Example (Exercise G3XVHK adaptation):**")
         st.markdown("""If `A = [[1,2,3], [4,5,6]]` (a 2x3 matrix):\n
 `Aᵀ = [[1,4], [2,5], [3,6]]` (a 3x2 matrix).""")
@@ -965,9 +965,9 @@ So, `AB = [[19, 22], [43, 50]]`.""" )
             "It is denoted as `det(A)` or `|A|`. The determinant provides important information about the matrix, such as whether it is invertible."
         )
         st.markdown("**For a 2x2 matrix:** `A = [[a,b], [c,d]]`")
-        st.latex("det(A) = ad - bc")
+        st.latex(r"det(A) = ad - bc")
         st.markdown("**For a 3x3 matrix:** `A = [[a,b,c], [d,e,f], [g,h,i]]` (Rule of Sarrus)")
-        st.latex("det(A) = a(ei − fh) − b(di − fg) + c(dh − eg)")
+        st.latex(r"det(A) = a(ei − fh) − b(di − fg) + c(dh − eg)")
         st.markdown("**Key Property:** A square matrix `A` is invertible if and only if `det(A) ≠ 0`.")
         
         st.markdown("**Conceptual Example (2x2 - Exercise 3L8XHF adaptation):**")
@@ -991,10 +991,10 @@ So, `AB = [[19, 22], [43, 50]]`.""" )
         st.markdown(
             "The **inverse** of a square matrix `A`, denoted `A⁻¹`, is a matrix such that when multiplied by `A`, it yields the identity matrix `I`."
         )
-        st.latex("A A^{-1} = A^{-1} A = I")
+        st.latex(r"A A^{-1} = A^{-1} A = I")
         st.markdown("A matrix has an inverse if and only if its determinant is non-zero (`det(A) ≠ 0`). Such a matrix is called **invertible** or **non-singular**.")
         st.markdown("**For a 2x2 matrix:** `A = [[a,b], [c,d]]`")
-        st.latex("A^{-1} = \\frac{1}{ad-bc} \\begin{bmatrix} d & -b \\\\newline -c & a \\end{bmatrix}")
+        st.latex(r"A^{-1} = \frac{1}{ad-bc} \begin{bmatrix} d & -b \\newline -c & a \end{bmatrix}")
         st.markdown("For 3x3 matrices (and larger), the calculation is more complex, often involving methods like Gaussian elimination or the adjugate matrix method. Our calculator handles this for you.")
         
         st.markdown("**Conceptual Example (2x2 - Exercise P32VFS adaptation):**")
@@ -1054,4 +1054,4 @@ Solution: `x = 1`, `y = 2`.""" )
 
 # Example of how this might be called in streamlit_app.py (for testing purposes)
 if __name__ == '__main__':
-    render_learning_resources_page() 
+    render_learning_resources_page()
