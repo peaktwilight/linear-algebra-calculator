@@ -5,7 +5,7 @@
 A comprehensive toolkit for learning and solving linear algebra problems. This project offers three main interfaces:
 -   **TUI (Text-based User Interface)**: An interactive, terminal-based experience (default).
 -   **CLI (Command-Line Interface)**: For direct command execution and scripting.
--   **Web App**: A graphical interface accessible at [lag.doruk.ch](https://lag.doruk.ch).
+-   **Web App**: A graphical interface accessible at [lag.doruk.ch](https://lag.doruk.ch), featuring calculators and interactive quizzes.
 
 ## Features
 
@@ -53,9 +53,6 @@ python linalg.py --cli
 
 # Example: Direct command execution
 python linalg.py --cli --command "solve_gauss --matrix '1,2,3; 4,5,6'"
-
-# Skip the ASCII banner
-python linalg.py --no-banner
 ```
 
 For detailed CLI command help:
@@ -114,6 +111,7 @@ The web interface features:
 - Interactive visualizations.
 - Step-by-step solutions.
 - Modern UI.
+- Interactive Quizzes.
 
 ## Local Testing with Docker
 
