@@ -689,216 +689,311 @@ class LinAlgCalculator:
         B = self.framework.parse_vector(args.point_b)
         C = self.framework.parse_vector(args.point_c)
         
-        # Display steps calculation
-        st.write("### Step-by-step Calculation")
-        
-        step_output = output.get_output().split('\n')
-        for line in step_output:
-            if line.strip():
-                st.write(line)
-        
-        # Display a visualization of the triangle
-        st.subheader("Visualization")
-        
-        # Calculate vectors for visualization
+        # Calculate vectors for calculation and visualization
         AB = B - A
         AC = C - A
+        cross = np.cross(AB, AC)
+        area = np.linalg.norm(cross) / 2
         
-        # Create a figure based on dimensionality
-        if len(A) == 2 and len(B) == 2 and len(C) == 2:
-            # 2D Triangle
-            fig = go.Figure()
+        # Create a formatted display of the calculations
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("### Mathematical Calculation")
             
-            # Add the triangle vertices
-            fig.add_trace(go.Scatter(
-                x=[A[0], B[0], C[0], A[0]],  # Close the triangle by repeating the first point
-                y=[A[1], B[1], C[1], A[1]],
-                mode='lines+markers',
-                name='Triangle',
-                fill='toself',  # Fill the triangle
-                line=dict(width=2),
-                marker=dict(size=8)
-            ))
+            # Create a more structured output with LaTeX formatting
+            st.markdown("**Input points:**")
+            st.markdown(f"$A = {A.tolist()}$")
+            st.markdown(f"$B = {B.tolist()}$")
+            st.markdown(f"$C = {C.tolist()}$")
             
-            # Add labels for the points
-            for i, point in enumerate([A, B, C]):
+            # Show the calculation method
+            st.markdown("**Method: Cross Product**")
+            st.markdown("For a triangle defined by three points, we can calculate its area using vectors and the cross product:")
+            
+            # Step 1: Create vectors
+            st.markdown("**Step 1: Create vectors from point A to B and C**")
+            st.markdown(f"$\\vec{{AB}} = B - A = {B.tolist()} - {A.tolist()} = {AB.tolist()}$")
+            st.markdown(f"$\\vec{{AC}} = C - A = {C.tolist()} - {A.tolist()} = {AC.tolist()}$")
+            
+            # Step 2: Cross Product
+            st.markdown("**Step 2: Calculate the cross product $\\vec{AB} \\times \\vec{AC}$**")
+            
+            # For 3D vectors, show the detailed calculation
+            if len(AB) >= 3 and len(AC) >= 3:
+                c1 = AB[1]*AC[2] - AB[2]*AC[1]
+                c2 = AB[2]*AC[0] - AB[0]*AC[2]
+                c3 = AB[0]*AC[1] - AB[1]*AC[0]
+                
+                st.markdown(f"$\\vec{{AB}} \\times \\vec{{AC}} = \\begin{{vmatrix}} \\vec{{i}} & \\vec{{j}} & \\vec{{k}} \\\\ {AB[0]} & {AB[1]} & {AB[2]} \\\\ {AC[0]} & {AC[1]} & {AC[2]} \\end{{vmatrix}}$")
+                st.markdown(f"$= \\vec{{i}}\\begin{{vmatrix}} {AB[1]} & {AB[2]} \\\\ {AC[1]} & {AC[2]} \\end{{vmatrix}} - \\vec{{j}}\\begin{{vmatrix}} {AB[0]} & {AB[2]} \\\\ {AC[0]} & {AC[2]} \\end{{vmatrix}} + \\vec{{k}}\\begin{{vmatrix}} {AB[0]} & {AB[1]} \\\\ {AC[0]} & {AC[1]} \\end{{vmatrix}}$")
+                st.markdown(f"$= [{c1}, {c2}, {c3}]$")
+            else:
+                # For 2D vectors, we just show the formula for the area
+                st.markdown(f"For 2D points, we can compute the cross product using the determinant:")
+                st.markdown(f"$\\vec{{AB}} \\times \\vec{{AC}} = \\begin{{vmatrix}} {AB[0]} & {AB[1]} \\\\ {AC[0]} & {AC[1]} \\end{{vmatrix}} = {AB[0]}\\cdot{AC[1]} - {AB[1]}\\cdot{AC[0]} = {AB[0]*AC[1] - AB[1]*AC[0]}$")
+                st.markdown(f"The cross product in 2D yields a scalar, which is the z-component of the 3D cross product.")
+            
+            # Step 3: Calculate the area
+            st.markdown("**Step 3: Calculate the area as half the magnitude of the cross product**")
+            st.markdown(f"$\\text{{Area}} = \\frac{{|\\vec{{AB}} \\times \\vec{{AC}}|}}{{2}} = \\frac{{{np.linalg.norm(cross):.4f}}}{{2}} = {area:.4f}$")
+            
+            # Explain why this works
+            st.markdown("**Why This Works**")
+            st.markdown("""
+            The magnitude of the cross product $|\\vec{AB} \\times \\vec{AC}|$ equals the area of the 
+            parallelogram formed by the two vectors. Since a triangle is half of a parallelogram, 
+            we divide by 2 to get the triangle area.
+            """)
+        
+        with col2:
+            st.markdown("### Visualization")
+            
+            # Create a figure based on dimensionality
+            if len(A) == 2 and len(B) == 2 and len(C) == 2:
+                # 2D Triangle
+                fig = go.Figure()
+                
+                # Add the triangle vertices
+                fig.add_trace(go.Scatter(
+                    x=[A[0], B[0], C[0], A[0]],  # Close the triangle by repeating the first point
+                    y=[A[1], B[1], C[1], A[1]],
+                    mode='lines+markers',
+                    name='Triangle',
+                    fill='toself',  # Fill the triangle
+                    line=dict(width=2),
+                    marker=dict(size=8)
+                ))
+                
+                # Add the vectors from A to B and A to C
+                fig.add_trace(go.Scatter(
+                    x=[A[0], A[0] + AB[0]],
+                    y=[A[1], A[1] + AB[1]],
+                    mode='lines+markers',
+                    name='Vector AB',
+                    line=dict(width=2, dash='dash', color='blue'),
+                    marker=dict(size=[0, 8])
+                ))
+                
+                fig.add_trace(go.Scatter(
+                    x=[A[0], A[0] + AC[0]],
+                    y=[A[1], A[1] + AC[1]],
+                    mode='lines+markers',
+                    name='Vector AC',
+                    line=dict(width=2, dash='dash', color='green'),
+                    marker=dict(size=[0, 8])
+                ))
+                
+                # Add labels for the points
+                for i, point in enumerate([A, B, C]):
+                    fig.add_annotation(
+                        x=point[0],
+                        y=point[1],
+                        text=f"Point {chr(65+i)}",  # A, B, C
+                        showarrow=True,
+                        arrowhead=1,
+                        ax=10,
+                        ay=-30
+                    )
+                
+                # Calculate the centroid for area label placement
+                centroid = (A + B + C) / 3
+                
+                # Add area label
                 fig.add_annotation(
-                    x=point[0],
-                    y=point[1],
-                    text=f"Point {chr(65+i)}",  # A, B, C
-                    showarrow=True,
-                    arrowhead=1,
-                    ax=10,
-                    ay=-30
+                    x=centroid[0],
+                    y=centroid[1],
+                    text=f"Area: {area:.4f}",
+                    showarrow=False,
+                    font=dict(size=14, color="red")
                 )
-            
-            # Calculate the centroid for area label placement
-            centroid = (A + B + C) / 3
-            
-            # Add area label
-            fig.add_annotation(
-                x=centroid[0],
-                y=centroid[1],
-                text=f"Area: {result:.4f}",
-                showarrow=False,
-                font=dict(size=14, color="red")
-            )
-            
-            # Set layout
-            points = np.vstack([A, B, C])
-            x_min, x_max = points[:, 0].min(), points[:, 0].max()
-            y_min, y_max = points[:, 1].min(), points[:, 1].max()
-            
-            # Add some padding
-            padding = max(x_max - x_min, y_max - y_min) * 0.2
-            
-            fig.update_layout(
-                xaxis=dict(
-                    range=[x_min - padding, x_max + padding],
-                    title="X",
-                    zeroline=True,
-                    zerolinewidth=2,
-                    zerolinecolor='white',
-                    showgrid=True,
-                    gridwidth=1,
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    color='white',
-                ),
-                yaxis=dict(
-                    range=[y_min - padding, y_max + padding],
-                    title="Y",
-                    zeroline=True,
-                    zerolinewidth=2,
-                    zerolinecolor='white',
-                    showgrid=True,
-                    gridwidth=1,
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    color='white',
-                ),
-                title="Triangle Visualization",
-                title_font_color="white",
-                showlegend=True,
-                width=700,
-                height=600,
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0.1)',
-                legend=dict(font=dict(color="white")),
-            )
-            
-            st.plotly_chart(fig)
-            
-        elif len(A) == 3 and len(B) == 3 and len(C) == 3:
-            # 3D Triangle
-            fig = go.Figure()
-            
-            # Add the triangle
-            fig.add_trace(go.Mesh3d(
-                x=[A[0], B[0], C[0]],
-                y=[A[1], B[1], C[1]],
-                z=[A[2], B[2], C[2]],
-                opacity=0.7,
-                color='blue',
-                name='Triangle'
-            ))
-            
-            # Add the vertices
-            fig.add_trace(go.Scatter3d(
-                x=[A[0], B[0], C[0]],
-                y=[A[1], B[1], C[1]],
-                z=[A[2], B[2], C[2]],
-                mode='markers',
-                marker=dict(size=8, color=['red', 'green', 'blue']),
-                name='Vertices',
-                text=['Point A', 'Point B', 'Point C']
-            ))
-            
-            # Add edges
-            edges = np.array([A, B, C, A])  # Close the loop
-            fig.add_trace(go.Scatter3d(
-                x=edges[:, 0],
-                y=edges[:, 1],
-                z=edges[:, 2],
-                mode='lines',
-                line=dict(width=4, color='white'),
-                name='Edges'
-            ))
-            
-            # Configure the 3D layout
-            points = np.vstack([A, B, C])
-            x_min, x_max = points[:, 0].min(), points[:, 0].max()
-            y_min, y_max = points[:, 1].min(), points[:, 1].max()
-            z_min, z_max = points[:, 2].min(), points[:, 2].max()
-            
-            # Calculate the ranges for each axis with padding
-            max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
-            x_pad = (max_range - (x_max - x_min)) / 2
-            y_pad = (max_range - (y_max - y_min)) / 2
-            z_pad = (max_range - (z_max - z_min)) / 2
-            
-            padding = max_range * 0.2
-            
-            fig.update_layout(
-                scene=dict(
+                
+                # Set layout
+                points = np.vstack([A, B, C])
+                x_min, x_max = points[:, 0].min(), points[:, 0].max()
+                y_min, y_max = points[:, 1].min(), points[:, 1].max()
+                
+                # Add some padding
+                padding = max(x_max - x_min, y_max - y_min) * 0.2
+                
+                fig.update_layout(
                     xaxis=dict(
-                        range=[x_min - x_pad - padding, x_max + x_pad + padding],
+                        range=[x_min - padding, x_max + padding],
                         title="X",
-                        color="white",
+                        zeroline=True,
+                        zerolinewidth=2,
+                        zerolinecolor='white',
+                        showgrid=True,
+                        gridwidth=1,
                         gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
+                        color='white',
                     ),
                     yaxis=dict(
-                        range=[y_min - y_pad - padding, y_max + y_pad + padding],
+                        range=[y_min - padding, y_max + padding],
                         title="Y",
-                        color="white",
+                        zeroline=True,
+                        zerolinewidth=2,
+                        zerolinecolor='white',
+                        showgrid=True,
+                        gridwidth=1,
                         gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
+                        color='white',
                     ),
-                    zaxis=dict(
-                        range=[z_min - z_pad - padding, z_max + z_pad + padding],
-                        title="Z",
-                        color="white",
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
+                    title="Triangle Visualization",
+                    title_font_color="white",
+                    showlegend=True,
+                    width=700,
+                    height=600,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0.1)',
+                    legend=dict(font=dict(color="white")),
+                )
+                
+                st.plotly_chart(fig)
+                
+            elif len(A) == 3 and len(B) == 3 and len(C) == 3:
+                # 3D Triangle
+                fig = go.Figure()
+                
+                # Add the triangle
+                fig.add_trace(go.Mesh3d(
+                    x=[A[0], B[0], C[0]],
+                    y=[A[1], B[1], C[1]],
+                    z=[A[2], B[2], C[2]],
+                    opacity=0.7,
+                    color='blue',
+                    name='Triangle'
+                ))
+                
+                # Add the vectors from A to B and A to C
+                fig.add_trace(go.Scatter3d(
+                    x=[A[0], A[0] + AB[0]],
+                    y=[A[1], A[1] + AB[1]],
+                    z=[A[2], A[2] + AB[2]],
+                    mode='lines',
+                    name='Vector AB',
+                    line=dict(width=5, dash='dash', color='blue')
+                ))
+                
+                fig.add_trace(go.Scatter3d(
+                    x=[A[0], A[0] + AC[0]],
+                    y=[A[1], A[1] + AC[1]],
+                    z=[A[2], A[2] + AC[2]],
+                    mode='lines',
+                    name='Vector AC',
+                    line=dict(width=5, dash='dash', color='green')
+                ))
+                
+                # Add the vertices
+                fig.add_trace(go.Scatter3d(
+                    x=[A[0], B[0], C[0]],
+                    y=[A[1], B[1], C[1]],
+                    z=[A[2], B[2], C[2]],
+                    mode='markers',
+                    marker=dict(size=8, color=['red', 'green', 'blue']),
+                    name='Vertices',
+                    text=['Point A', 'Point B', 'Point C']
+                ))
+                
+                # Add edges
+                edges = np.array([A, B, C, A])  # Close the loop
+                fig.add_trace(go.Scatter3d(
+                    x=edges[:, 0],
+                    y=edges[:, 1],
+                    z=edges[:, 2],
+                    mode='lines',
+                    line=dict(width=4, color='white'),
+                    name='Edges'
+                ))
+                
+                # Add normal vector (cross product)
+                # Scale it for better visualization
+                normal = cross / np.linalg.norm(cross) if np.linalg.norm(cross) > 0 else cross
+                scale_factor = max(np.linalg.norm(AB), np.linalg.norm(AC)) * 0.5
+                normal_scaled = normal * scale_factor
+                
+                # Position the normal vector at the centroid
+                centroid = (A + B + C) / 3
+                
+                fig.add_trace(go.Scatter3d(
+                    x=[centroid[0], centroid[0] + normal_scaled[0]],
+                    y=[centroid[1], centroid[1] + normal_scaled[1]],
+                    z=[centroid[2], centroid[2] + normal_scaled[2]],
+                    mode='lines',
+                    name='Normal Vector',
+                    line=dict(width=5, color='red')
+                ))
+                
+                # Configure the 3D layout
+                points = np.vstack([A, B, C])
+                x_min, x_max = points[:, 0].min(), points[:, 0].max()
+                y_min, y_max = points[:, 1].min(), points[:, 1].max()
+                z_min, z_max = points[:, 2].min(), points[:, 2].max()
+                
+                # Calculate the ranges for each axis with padding
+                max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
+                x_pad = (max_range - (x_max - x_min)) / 2
+                y_pad = (max_range - (y_max - y_min)) / 2
+                z_pad = (max_range - (z_max - z_min)) / 2
+                
+                padding = max_range * 0.3  # Increase padding to show vectors better
+                
+                fig.update_layout(
+                    scene=dict(
+                        xaxis=dict(
+                            range=[x_min - x_pad - padding, x_max + x_pad + padding],
+                            title="X",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        yaxis=dict(
+                            range=[y_min - y_pad - padding, y_max + y_pad + padding],
+                            title="Y",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        zaxis=dict(
+                            range=[z_min - z_pad - padding, z_max + z_pad + padding],
+                            title="Z",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        aspectmode='cube',
                     ),
-                    aspectmode='cube',
-                ),
-                title=f"3D Triangle - Area: {result:.4f}",
-                title_font_color="white",
-                width=700,
-                height=700,
-                paper_bgcolor='rgba(0,0,0,0)',
-                legend=dict(font=dict(color="white")),
-            )
+                    title=f"3D Triangle Visualization",
+                    title_font_color="white",
+                    width=700,
+                    height=700,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    legend=dict(font=dict(color="white")),
+                )
+                
+                st.plotly_chart(fig)
+                
+            else:
+                # Higher dimensions or inconsistent dimensionality
+                st.info("Triangle visualization is only available for 2D and 3D points. "
+                       "Showing point coordinates instead.")
+                
+                # Display points as a table
+                point_df = pd.DataFrame([A, B, C], index=["Point A", "Point B", "Point C"])
+                st.table(point_df)
             
-            st.plotly_chart(fig)
-            
-            # Add verification notes - show calculations
-            st.write("### Verification")
-            
-            # Show cross product is perpendicular to both triangle sides
-            cross = np.cross(AB, AC)
-            dot_AB = np.dot(cross, AB)
-            dot_AC = np.dot(cross, AC)
-            
-            st.write("**Cross Product Orthogonality Check:**")
-            st.write(f"- Dot product with vector AB: {dot_AB:.10f} ≈ 0 ✓")
-            st.write(f"- Dot product with vector AC: {dot_AC:.10f} ≈ 0 ✓")
-            
-            # Show area calculation
-            st.write("**Area Calculation:**")
-            st.write(f"- |AB × AC| / 2 = {np.linalg.norm(cross) / 2:.4f} ✓")
-            
-        else:
-            # Higher dimensions or inconsistent dimensionality
-            st.info("Triangle visualization is only available for 2D and 3D points. "
-                   "Showing point coordinates instead.")
-            
-            # Display points as a table
-            point_df = pd.DataFrame([A, B, C], index=["Point A", "Point B", "Point C"])
-            st.table(point_df)
-            
-            # Still show the area
-            st.success(f"Triangle area: {result:.4f}")
+            # Add result info box
+            result_box = f"""
+            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                <p style="font-size: 18px; text-align: center; font-weight: bold;">
+                    Triangle Area: {area:.4f}
+                </p>
+                <p style="font-size: 14px; text-align: center;">
+                    Calculated using the cross product method: |AB × AC| / 2
+                </p>
+            </div>
+            """
+            st.markdown(result_box, unsafe_allow_html=True)
         
         return result
         
