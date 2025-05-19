@@ -1,19 +1,6 @@
-# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.4.0)
+# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.4-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.4.1)
 
-```
-╭───────────────────────────────────────────────────────────────────────╮
- ___               _   _      _    _                   
-|   \ ___ _ _ _  _| |_( )___ | |  (_)_ _  ___ __ _ _ _ 
-| |) / _ \ '_| || | / //(_-< | |__| | ' \/ -_) _` | '_|
-|___/\___/_|  \_,_|_\_\ /__/ |____|_|_||_\___\__,_|_|  
-                                                       
-   _   _          _                ___      _         _      _           
-  /_\ | |__ _ ___| |__ _ _ __ _   / __|__ _| |__ _  _| |__ _| |_ ___ _ _ 
- / _ \| / _` / -_) '_ \ '_/ _` | | (__/ _` | / _| || | / _` |  _/ _ \ '_|
-/_/ \_\_\__, \___|_.__/_| \__,_|  \___\__,_|_\__|\_,_|_\__,_|\__\___/_|  
-        |___/
-╰───────────────────────────────────────────────────────────────────────╯
-```
+![CLI Demo](public/Doruks_Algebra_Calculator_CLI.gif)
 
 A comprehensive toolkit for learning and solving linear algebra problems, developed for the LAG Fachmodul at FHNW.
 
