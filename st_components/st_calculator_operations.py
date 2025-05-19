@@ -1828,18 +1828,20 @@ class LinAlgCalculator:
                         val = 0 if abs(val_raw) < 1e-10 else val_raw # Handle very small values
                         solution_latex_parts.append(f"x_{{{i+1}}} &= {val:.4g}")
                     
-                    # Construct the LaTeX string for the aligned environment
-                    # Each part is already like "x_1 &= -1", so we join them with " \\\\ " for LaTeX newline
-                    aligned_content = " \\\\ \\n".join(solution_latex_parts)
-                    solution_latex_aligned = f"\\begin{{aligned}}\\n{aligned_content}\\n\\end{{aligned}}"
+                    aligned_content = " \\\\ ".join(solution_latex_parts)
+                    # Remove \n from the beginning and end of the f-string for latex_string_for_st_latex
+                    latex_string_for_st_latex = f"\\begin{{aligned}}{aligned_content}\\end{{aligned}}"
                     
-                    # Embed in the styled div
-                    solution_display_box = f'''
-                    <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px; text-align: center;">
-                        ${solution_latex_aligned}$
-                    </div>
-                    '''
-                    st.markdown(solution_display_box, unsafe_allow_html=True)
+                    st.markdown(
+                        '<div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">',
+                        unsafe_allow_html=True
+                    )
+                    st.latex(latex_string_for_st_latex)
+                    st.markdown(
+                        '</div>',
+                        unsafe_allow_html=True
+                    )
+
                 else:
                     st.error("No solution exists (system is inconsistent)")
         
