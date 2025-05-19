@@ -1696,48 +1696,154 @@ class LinAlgCalculator:
         
         args = Args(operation, matrix_a, matrix_b, scalar)
         
-        # Capture print output from the CLI function
-        with StreamOutput() as output:
-            result = self.framework.matrix_operations(args)
+        # Get the result from the framework
+        result = self.framework.matrix_operations(args)
         
         # Display the result and steps
         st.subheader("Result")
         
         # Parse the matrices from input
         A = self.framework.parse_matrix(matrix_a)
+        B = self.framework.parse_matrix(matrix_b) if matrix_b else None
         
-        # Display steps calculation 
-        st.write("### Step-by-step Calculation")
+        # Create a formatted display of the calculations
+        col1, col2 = st.columns([1, 1])
         
-        step_output = output.get_output().split('\n')
-        for line in step_output:
-            if line.strip():
-                st.write(line)
-        
-        # Display matrix visualizations
-        st.subheader("Visualization")
-        
-        # Display input matrices
-        col1, col2 = st.columns(2)
         with col1:
-            self.display_matrix_heatmap(A, "Matrix A")
-        
-        if operation in ["add", "subtract"] and matrix_b:
-            B = self.framework.parse_matrix(matrix_b)
-            with col2:
-                self.display_matrix_heatmap(B, "Matrix B")
-        
-        # Display result matrix
-        if result is not None:
-            operation_name = {
-                "add": "A + B",
-                "subtract": "A - B",
-                "multiply_scalar": f"{scalar} * A",
-                "transpose": "A^T (transpose)"
-            }.get(operation, "Result")
+            st.markdown("### Step-by-step Calculation")
             
-            self.display_matrix_heatmap(result, f"Result: {operation_name}")
+            # Display input matrices in LaTeX format
+            st.markdown("**Input Matrix A:**")
+            matrix_str_a = "\\begin{bmatrix}\n"
+            for i, row in enumerate(A):
+                matrix_str_a += " & ".join(map(str, row))
+                if i < len(A) - 1:  # Only add newline if not the last row
+                    matrix_str_a += "\\\\\\\n"
+            matrix_str_a += "\\end{bmatrix}"
+            st.markdown(f"$A = {matrix_str_a}$")
+            
+            if operation in ["add", "subtract"] and B is not None:
+                st.markdown("**Input Matrix B:**")
+                matrix_str_b = "\\begin{bmatrix}\n"
+                for i, row in enumerate(B):
+                    matrix_str_b += " & ".join(map(str, row))
+                    if i < len(B) - 1:  # Only add newline if not the last row
+                        matrix_str_b += "\\\\\\\n"
+                matrix_str_b += "\\end{bmatrix}"
+                st.markdown(f"$B = {matrix_str_b}$")
+            
+            # Operation-specific calculations and explanations
+            st.markdown("**Operation:**")
+            if operation == "add":
+                st.markdown("Matrix Addition: $C = A + B$")
+                st.markdown("""
+                Each element of the result is the sum of corresponding elements:
+                $c_{ij} = a_{ij} + b_{ij}$
+                """)
+            elif operation == "subtract":
+                st.markdown("Matrix Subtraction: $C = A - B$")
+                st.markdown("""
+                Each element of the result is the difference of corresponding elements:
+                $c_{ij} = a_{ij} - b_{ij}$
+                """)
+            elif operation == "multiply_scalar":
+                st.markdown(f"Scalar Multiplication: $C = {scalar} \\cdot A$")
+                st.markdown("""
+                Each element is multiplied by the scalar:
+                $c_{ij} = k \\cdot a_{ij}$ where $k$ is the scalar
+                """)
+            elif operation == "transpose":
+                st.markdown("Matrix Transpose: $C = A^T$")
+                st.markdown("""
+                The rows become columns and columns become rows:
+                $c_{ij} = a_{ji}$
+                """)
+            
+            # Display result in LaTeX format
+            if result is not None:
+                st.markdown("**Result Matrix:**")
+                matrix_str_result = "\\begin{bmatrix}\n"
+                for i, row in enumerate(result):
+                    matrix_str_result += " & ".join(map(str, row))
+                    if i < len(result) - 1:  # Only add newline if not the last row
+                        matrix_str_result += "\\\\\\\n"
+                matrix_str_result += "\\end{bmatrix}"
+                
+                if operation == "add":
+                    st.markdown(f"$A + B = {matrix_str_result}$")
+                elif operation == "subtract":
+                    st.markdown(f"$A - B = {matrix_str_result}$")
+                elif operation == "multiply_scalar":
+                    st.markdown(f"${scalar} \\cdot A = {matrix_str_result}$")
+                elif operation == "transpose":
+                    st.markdown(f"$A^T = {matrix_str_result}$")
         
+        with col2:
+            st.markdown("### Visualization")
+            
+            # Create tabs for input and result matrices
+            if operation in ["add", "subtract"] and B is not None:
+                tab1, tab2, tab3 = st.tabs(["Matrix A", "Matrix B", "Result"])
+                
+                with tab1:
+                    self.display_matrix_heatmap(A, "Matrix A")
+                with tab2:
+                    self.display_matrix_heatmap(B, "Matrix B")
+                with tab3:
+                    operation_name = "A + B" if operation == "add" else "A - B"
+                    self.display_matrix_heatmap(result, f"Result: {operation_name}")
+            else:
+                tab1, tab2 = st.tabs(["Input", "Result"])
+                
+                with tab1:
+                    self.display_matrix_heatmap(A, "Matrix A")
+                with tab2:
+                    operation_name = {
+                        "multiply_scalar": f"{scalar} * A",
+                        "transpose": "A^T (transpose)"
+                    }.get(operation, "Result")
+                    self.display_matrix_heatmap(result, f"Result: {operation_name}")
+            
+            # Add operation-specific properties box
+            properties_box = ""
+            if operation == "add" or operation == "subtract":
+                properties_box = f"""
+                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                    <p style="font-size: 14px; text-align: center;">
+                        <strong>Matrix Properties:</strong><br>
+                        • Dimensions must match for {operation}ition<br>
+                        • Result has same dimensions as inputs<br>
+                        • Operation is element-wise<br>
+                        • {'Addition' if operation == 'add' else 'Subtraction'} is {'commutative (A + B = B + A)' if operation == 'add' else 'not commutative (A - B ≠ B - A)'}
+                    </p>
+                </div>
+                """
+            elif operation == "multiply_scalar":
+                properties_box = f"""
+                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                    <p style="font-size: 14px; text-align: center;">
+                        <strong>Matrix Properties:</strong><br>
+                        • Scalar multiplication preserves matrix structure<br>
+                        • All elements are multiplied by {scalar}<br>
+                        • Result has same dimensions as input<br>
+                        • Operation is distributive: k(A + B) = kA + kB
+                    </p>
+                </div>
+                """
+            elif operation == "transpose":
+                properties_box = """
+                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                    <p style="font-size: 14px; text-align: center;">
+                        <strong>Matrix Properties:</strong><br>
+                        • Rows become columns, columns become rows<br>
+                        • If A is m×n, A^T is n×m<br>
+                        • (A^T)^T = A<br>
+                        • (A + B)^T = A^T + B^T
+                    </p>
+                </div>
+                """
+            
+            st.markdown(properties_box, unsafe_allow_html=True)
         
         return result
     
