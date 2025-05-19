@@ -2,27 +2,28 @@
 
 ![CLI Demo](public/Doruks_Algebra_Calculator_CLI.gif)
 
-A comprehensive toolkit for learning and solving linear algebra problems, developed for the LAG Fachmodul at FHNW.
+A comprehensive toolkit for learning and solving linear algebra problems. This project offers three main interfaces:
+-   **TUI (Text-based User Interface)**: An interactive, terminal-based experience (default).
+-   **CLI (Command-Line Interface)**: For direct command execution and scripting.
+-   **Web App**: A graphical interface accessible at [lag.doruk.ch](https://lag.doruk.ch).
 
 ## Features
 
-- Interactive UI with detailed explanations and guidance
-- Vector operations (normalization, projections, angles, cross products)
-- Matrix operations (addition, multiplication, transformation)
-- Linear equation systems (Gaussian elimination, parametric solutions)
-- Geometric calculations (distances, plane intersections)
-- Enhanced search functionality with interactive filtering and clear results organization
-- Comprehensive help system for learning linear algebra concepts
-- Example exercises with step-by-step solutions
-- Problem recognition quiz to improve problem-solving skills
+-   Interactive UI with explanations and guidance.
+-   Core linear algebra operations:
+    -   **Vectors**: Normalization, projections, angles, cross products.
+    -   **Matrices**: Addition, multiplication, Gaussian elimination.
+    -   **Geometric**: Distances, plane intersections.
+-   Search, help system, example exercises, and quizzes.
 
 ## File Structure
 
-- `linalg.py` - Main entry point script with unified interface and ASCII banner
-- `linalg_cli.py` - Core linear algebra functionality with command-line interface
-- `linalg_ui.py` - Rich user interface with ASCII banner (directly runnable)
-- `help_guides.py` - Help content and learning resources for the framework
-- `given_reference/` - Directory with reference code including core functionality
+-   `linalg.py`: Main entry point (recommended).
+-   `linalg_cli.py`: CLI core functions.
+-   `linalg_ui.py`: Rich TUI (runnable).
+-   `streamlit_app.py`: Web interface.
+-   `help_guides.py`: Learning resources.
+-   `given_reference/`: Reference code.
 
 ## Installation
 
@@ -35,13 +36,13 @@ cd linear-algebra-calculator
 pip install numpy sympy scipy rich questionary
 ```
 
-> **Note**: The `core.py` module is located in the `given_reference` directory and imported from there.
+> **Note**: The `core.py` module is in `given_reference/` and imported from there.
 
 ## Usage
 
-The framework offers multiple interfaces through the unified `linalg.py` launcher:
+The primary way to use the calculator is via `linalg.py`.
 
-### Unified Launcher (Recommended)
+### Unified Launcher (`linalg.py`)
 
 ```bash
 # Interactive UI mode (default)
@@ -50,204 +51,88 @@ python linalg.py
 # CLI mode
 python linalg.py --cli
 
-# Direct command execution
-python linalg.py --command "solve_gauss --matrix '1, 2, 3; 4, 5, 6'"
+# Example: Direct command execution
+python linalg.py --cli --command "solve_gauss --matrix '1,2,3; 4,5,6'"
 
 # Skip the ASCII banner
 python linalg.py --no-banner
 ```
 
-### Interactive UI
-
-```bash
-# Using the unified launcher
-python linalg.py
-
-# Or running the UI module directly
-python linalg_ui.py
-
-# Optional UI flags
-python linalg_ui.py --no-banner   # Skip the ASCII banner
-python linalg_ui.py --no-color    # Disable colored output
-```
-
-Features:
-- Interactive menus with explanations
-- Advanced search functionality with real-time filtering and organized results
-- Comprehensive help system
-- Example exercises with solutions
-- Problem recognition guidance
-- Quizzes to test understanding
-
-### Command Line Interface
-
-```bash
-# Using the unified launcher
-python linalg.py --cli <command> [options]
-
-# Or using the dedicated CLI
-python linalg_cli.py <command> [options]
-```
-
-For help on available commands:
+For detailed CLI command help:
 ```bash
 python linalg.py --cli --help
-# Or
-python linalg_cli.py --help
 ```
+
+### Alternative Interfaces
+
+-   **Direct TUI**: `python linalg_ui.py`
+-   **Direct CLI**: `python linalg_cli.py <command> [options]` (e.g., `python linalg_cli.py normalize_vector --vector "3,4"`)
 
 ## Learning Resources
 
-The Interactive UI includes a "Learning Resources" section with:
+The Interactive UI (`python linalg.py`) includes a "Learning Resources" section with:
+- Help topics & explanations.
+- Example exercises with solutions.
+- Problem-solving guides & quizzes.
 
-1. **Browse help topics** - Detailed explanations of linear algebra concepts
-2. **Example exercises** - Practice problems with step-by-step solutions
-3. **Linear algebra guide** - Structured learning path for all concepts
-4. **Common homework patterns** - Strategies for typical homework problems
-5. **Problem recognition guide** - Learn to identify problem types
+## Examples (Interactive UI)
 
-## Examples
+The interactive UI provides a user-friendly way to perform operations.
 
-### Search Functionality
+**Normalize a vector:**
+1.  Select category: `Vector Operations`
+2.  Select operation: `Normalize a vector`
+3.  Enter vector: `3, 4`
 
-Search for specific concepts or operations:
-```
-Select: Search
-Enter search term: projection
-```
-
-Filter search results interactively:
-```
-Select: Search
-Enter search term: matrix
-Filter by category: [Use arrow keys to select categories]
-```
-
-### Vector Operations
-
-Normalize a vector:
-```
-Select category: Vector Operations
-Select operation: Normalize a vector
-Enter vector: 3, 4
-```
-
-Calculate vector projection:
-```
-Select category: Vector Operations
-Select operation: Calculate vector shadow (projection)
-Enter vector to project onto: 3, -4
-Enter vector to be projected: 12, -1
-```
-
-### Matrix Operations
-
-Solve a system of linear equations:
-```
-Select category: Matrix Operations
-Select operation: Solve system with Gaussian elimination
-Enter augmented matrix: 1, -4, -2, -25; 0, -3, 6, -18; 7, -13, -4, -85
-```
-
-Calculate matrix product:
-```
-Select category: Matrix Operations
-Select operation: Calculate matrix product
-Enter first matrix: 0, 4, 2; 2, -1, 5; 6, 0, -3
-Enter second matrix: 4, 1, 9; 5, 4, 2; -3, 5, 2
-```
+**Solve a system of linear equations:**
+1.  Select category: `Matrix Operations`
+2.  Select operation: `Solve system with Gaussian elimination`
+3.  Enter augmented matrix: `1,-4,-2,-25; 0,-3,6,-18; 7,-13,-4,-85`
 
 ## For Students
 
-The framework is designed to help you learn linear algebra concepts while solving exercises:
+This framework is designed to aid your learning:
+1.  **New to Linear Algebra?** Start with "Learning Resources" in the UI.
+2.  **Stuck on homework?** Use the "Common homework patterns" guide.
+3.  **Need conceptual clarity?** Each operation in the UI has detailed explanations.
+4.  **Want to practice?** Try example exercises and quizzes.
 
-1. **If you're new to linear algebra**: Start with the "Learning Resources" section in the Interactive UI to understand the fundamentals.
+## Web Interface (Streamlit)
 
-2. **If you're struggling with homework**: Use the "Common homework patterns" guide to identify solution strategies for your specific problem type.
+A Streamlit web interface offers a graphical experience. It is hosted online at:
+**[lag.doruk.ch](https://lag.doruk.ch)**
 
-3. **If you need to understand concepts**: Each operation includes detailed explanations and formula derivations.
-
-4. **If you want to practice**: Try the example exercises and problem recognition quiz to test your understanding.
-
-## About the Author
-
-This calculator was created by Doruk as a personal project for the Linear Algebra (LAG) module at the University of Applied Sciences and Arts Northwestern Switzerland (FHNW). It was designed to help students understand and solve complex linear algebra problems through an intuitive interface with detailed explanations.
-
-## License
-
-MIT
-
-## Web Interface
-
-A Streamlit web interface is also available for a more interactive experience:
-
+To run it locally:
 ```bash
-# Install Streamlit and other dependencies
-pip install streamlit numpy pandas matplotlib plotly sympy scipy
+# Install additional dependencies for the web app
+pip install streamlit pandas matplotlib plotly
 
 # Run the Streamlit app
 streamlit run streamlit_app.py
 ```
+The web interface features:
+- Interactive visualizations.
+- Step-by-step solutions.
+- Modern UI.
 
-The web interface provides:
-- Interactive visualizations for vectors and matrices
-- Step-by-step solutions with detailed explanations
-- Intuitive input fields for all operations
-- Beautiful, modern UI with dedicated sections for different operation types
+## Local Testing with Docker
 
-### Local Testing with Docker
-
-You can easily test the application locally using Docker Compose with our provided script:
-
+Easily test the Streamlit application locally using Docker.
 ```bash
 # Run with the convenience script
 ./run_docker.sh
-
-# Or manually with Docker Compose
-docker-compose up
-
 # Access at http://localhost:8501
 ```
+For more details, see `DOCKER.md`.
 
-For more details on using Docker, see the [DOCKER.md](DOCKER.md) file.
+## Deployment to Fly.io
 
-### Deployment to Fly.io
-
-The Streamlit app can be deployed to Fly.io for online access using our provided scripts:
-
+The Streamlit app can be deployed to Fly.io.
 ```bash
 # Deploy with the convenience script
 ./deploy_to_fly.sh
-
-# Optional: Set up a custom domain (CNAME method - recommended)
-./setup_custom_domain_cname.sh lag.doruk.ch
-
-# Or with dedicated IPs if needed
-./setup_custom_domain.sh lag.doruk.ch
-
-# Or manually with Fly CLI
-fly launch
-fly deploy
 ```
-
-#### Manual Deployment Steps
-
-```bash
-# Install the Fly CLI
-brew install flyctl  # On macOS
-# or
-curl -L https://fly.io/install.sh | sh  # On Linux
-
-# Log in to Fly.io
-fly auth login
-
-# Deploy the app
-cd /path/to/linear-algebra-calculator
-fly launch
-fly deploy
-```
-
-For more details on deployment, see the [DEPLOY.md](DEPLOY.md) file.
+For manual deployment and custom domain setup, see `DEPLOY.md`.
 
 ---
 

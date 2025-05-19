@@ -14,9 +14,14 @@ from given_reference.core import eliminate, mrref, mnull
 import sympy as sym
 from io import StringIO
 import sys
+import random
+import json
 
 # Import CLI functionality to reuse functions
 from linalg_cli import LinearAlgebraExerciseFramework
+
+# Import Quiz generator
+from linear_algebra_quiz import LinearAlgebraQuiz
 
 # Set page configuration
 st.set_page_config(
@@ -1499,8 +1504,180 @@ class LinAlgCalculator:
         return result
 
 
+class QuizComponent:
+    def __init__(self):
+        """Initialize the quiz component."""
+        self.quiz_generator = LinearAlgebraQuiz()
+        self.available_quiz_types = self.quiz_generator.get_quiz_types()
+        
+    def render(self):
+        """Render the quiz component in Streamlit."""
+        st.title("Linear Algebra Quiz")
+        
+        # Quiz options
+        with st.expander("Quiz Options", expanded=True):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                quiz_type = st.selectbox(
+                    "Select Quiz Type",
+                    ["random"] + self.available_quiz_types,
+                    format_func=lambda x: "Random Mix" if x == "random" else x.replace("_", " ").title()
+                )
+                
+                difficulty = st.select_slider(
+                    "Difficulty Level",
+                    options=["easy", "medium", "hard"],
+                    value="medium"
+                )
+            
+            with col2:
+                num_questions = st.slider(
+                    "Number of Questions",
+                    min_value=1,
+                    max_value=10,
+                    value=3
+                )
+                
+                st.markdown("### Quiz Instructions")
+                st.markdown(
+                    "Test your linear algebra knowledge with these interactive quizzes! "
+                    "Answer the questions and check your solutions against the step-by-step explanations."
+                )
+        
+        # Generate quiz button
+        if st.button("Generate New Quiz", key="generate_quiz"):
+            if quiz_type == "random":
+                questions = self.quiz_generator.generate_random_quiz(
+                    count=num_questions,
+                    difficulty=difficulty
+                )
+            else:
+                questions = self.quiz_generator.generate_quiz(
+                    quiz_type=quiz_type,
+                    difficulty=difficulty,
+                    count=num_questions
+                )
+            
+            # Store questions in session state
+            st.session_state.quiz_questions = questions
+            st.session_state.quiz_responses = [{"answered": False, "correct": None} for _ in range(len(questions))]
+        
+        # Display quiz questions if they exist in session state
+        if "quiz_questions" in st.session_state and st.session_state.quiz_questions:
+            self._display_quiz()
+    
+    def _display_quiz(self):
+        """Display the quiz questions stored in session state."""
+        questions = st.session_state.quiz_questions
+        responses = st.session_state.quiz_responses
+        
+        # Quiz progress
+        progress = sum(1 for r in responses if r["answered"]) / len(questions)
+        st.progress(progress, text=f"Completed {int(progress * 100)}% of the quiz")
+        
+        # Score if all questions are answered
+        if all(r["answered"] for r in responses):
+            correct_count = sum(1 for r in responses if r["correct"])
+            st.success(f"Quiz completed! Your score: {correct_count}/{len(questions)}")
+        
+        # Display each question
+        for i, question in enumerate(questions):
+            with st.expander(f"Question {i+1}: {question['title']}", expanded=not responses[i]["answered"]):                
+                # Question content
+                st.markdown(f"**{question['question']}**")
+                
+                # Custom input based on question type
+                if question["type"] == "polar_to_cartesian":
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        x_response = st.number_input("x coordinate:", key=f"q{i}_x", format="%.4f")
+                    with col2:
+                        y_response = st.number_input("y coordinate:", key=f"q{i}_y", format="%.4f")
+                    user_answer = {"x": x_response, "y": y_response}
+                
+                elif question["type"] == "vector_normalization":
+                    st.markdown("Enter the normalized vector components:")
+                    dims = len(question["parameters"]["vector"])
+                    cols = st.columns(dims)
+                    user_answer = []
+                    for j in range(dims):
+                        with cols[j]:
+                            val = st.number_input(f"Component {j+1}:", key=f"q{i}_comp{j}", format="%.6f")
+                            user_answer.append(val)
+                
+                elif question["type"] == "orthogonal_vectors":
+                    user_answer = st.radio(
+                        "Are the vectors orthogonal?",
+                        ["Yes", "No"],
+                        key=f"q{i}_orthogonal"
+                    )
+                    user_answer = user_answer == "Yes"
+                
+                # Add more input types for other question types as needed
+                
+                # Default fallback for other question types
+                else:
+                    st.write("Please enter your answer (preview-only quiz):")
+                    user_answer = None
+                
+                # Check answer button
+                check_col, reset_col = st.columns([3, 1])
+                with check_col:
+                    check_answer = st.button("Check Answer", key=f"check_q{i}")
+                with reset_col:
+                    reset_answer = st.button("Reset", key=f"reset_q{i}")
+                
+                # Process answer check
+                if check_answer and user_answer is not None:
+                    correct = self._check_answer(question, user_answer)
+                    if correct:
+                        st.success("Correct! 🎉")
+                    else:
+                        st.error("Not quite right. Try again or see the solution.")
+                    
+                    responses[i]["answered"] = True
+                    responses[i]["correct"] = correct
+                
+                # Reset answer
+                if reset_answer:
+                    responses[i]["answered"] = False
+                    responses[i]["correct"] = None
+                
+                # Solution section
+                if responses[i]["answered"] or st.checkbox("Show Solution", key=f"show_solution_{i}"):
+                    st.markdown("### Solution")
+                    for step in question["solution_steps"]:
+                        st.markdown(step)
+    
+    def _check_answer(self, question, user_answer):
+        """Check if the user's answer is correct."""
+        answer_type = question["type"]
+        correct_answer = question["answer"]
+        
+        if answer_type == "polar_to_cartesian":
+            # Check if x and y coordinates are within acceptable tolerance
+            x_correct = abs(user_answer["x"] - correct_answer["x"]) < 0.01
+            y_correct = abs(user_answer["y"] - correct_answer["y"]) < 0.01
+            return x_correct and y_correct
+        
+        elif answer_type == "vector_normalization":
+            # Check if normalized vector components are within acceptable tolerance
+            return all(abs(u - c) < 0.01 for u, c in zip(user_answer, correct_answer["normalized_vector"]))
+        
+        elif answer_type == "orthogonal_vectors":
+            # Check if the orthogonality assessment is correct
+            return user_answer == correct_answer["are_orthogonal"]
+        
+        # Add more checks for other question types as needed
+        
+        # Default fallback
+        return False
+
+
 def main():
     calculator = LinAlgCalculator()
+    quiz_component = QuizComponent()
     
     # Simple header
     st.title("Linear Algebra Calculator")
@@ -1509,7 +1686,7 @@ def main():
     st.sidebar.title("Categories")
     category = st.sidebar.selectbox(
         "Select Operation Category",
-        ["Vector Operations", "Matrix Operations", "Systems of Linear Equations"]
+        ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Quiz Mode"]
     )
     
     if category == "Vector Operations":
@@ -1912,6 +2089,10 @@ def main():
                 else:
                     st.error("Please enter the augmented matrix.")
     
+    elif category == "Quiz Mode":
+        # Render the quiz component
+        quiz_component.render()
+    
     # Help section
     st.sidebar.markdown("---")
     with st.sidebar.expander("How to use this calculator"):
@@ -1922,6 +2103,12 @@ def main():
         3. Enter your values in the input fields
         4. Click the calculate button
         5. View the step-by-step solution and visual representation
+        
+        **Quiz Mode:**
+        - Test your knowledge with interactive quizzes
+        - Choose from various linear algebra topics
+        - Set difficulty level and number of questions
+        - Get step-by-step explanations for all solutions
         
         **Tips:**
         - Hover over visualizations for more details
@@ -1934,7 +2121,7 @@ def main():
     st.sidebar.markdown(
         "<div style='text-align: center;'>"
         "<h4>Made with ❤️ by Doruk</h4>"
-        "<small>Version 1.4 | FHNW Linear Algebra Module</small><br>"
+        "<small>Version 1.5 | FHNW Linear Algebra Module</small><br>"
         "<small>Open source at <a href='https://github.com/peaktwilight/linear-algebra-calculator'>github.com/peaktwilight/linear-algebra-calculator</a></small>"
         "</div>", 
         unsafe_allow_html=True
