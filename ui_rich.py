@@ -92,6 +92,30 @@ class LinearAlgebraRichUI:
     
     def print_result(self, result, title="Result"):
         self.console.print(Panel(result, title=title, border_style="green"))
+        
+    def format_results_for_display(self, result_text):
+        """Format the results as a nicely formatted string for display in a panel"""
+        # Just return the result text as is for now, with proper formatting
+        if result_text.strip():
+            return result_text
+        else:
+            # If the captured text is empty, return a message
+            return "[italic]No results to display[/italic]"
+            
+    def run_with_capture(self, func, *args, **kwargs):
+        """Run a function and capture its output even if it directly uses print()"""
+        import io
+        import sys
+        from contextlib import redirect_stdout
+        
+        # Redirect stdout to a string buffer
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            result = func(*args, **kwargs)
+            
+        # Get the captured output
+        output = buffer.getvalue()
+        return output, result
     
     def wait_for_user(self):
         self.console.print()
@@ -322,10 +346,12 @@ class LinearAlgebraRichUI:
         args.phi = float(phi)
         args.degrees = is_degrees
         
-        with self.console.capture() as capture:
-            self.framework.polar_to_cartesian(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.polar_to_cartesian, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_normalize_vector(self):
@@ -352,10 +378,12 @@ Examples:
         args = Args()
         args.vector = " ".join(map(str, vector))
         
-        with self.console.capture() as capture:
-            self.framework.normalize_vector(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.normalize_vector, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_vector_direction_length(self):
@@ -391,10 +419,12 @@ Example:
         args.direction = " ".join(map(str, direction))
         args.length = float(length)
         
-        with self.console.capture() as capture:
-            self.framework.vector_direction_length(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.vector_direction_length, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_vector_shadow(self):
@@ -432,10 +462,12 @@ Example:
         args.vector_a = " ".join(map(str, vector_a))
         args.vector_b = " ".join(map(str, vector_b))
         
-        with self.console.capture() as capture:
-            self.framework.vector_shadow(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.vector_shadow, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_check_orthogonal(self):
@@ -482,10 +514,12 @@ Example:
         args.vector = " ".join(map(str, vector))
         args.check_vectors = check_vectors
         
-        with self.console.capture() as capture:
-            self.framework.check_orthogonal(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.check_orthogonal, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_vector_angle(self):
@@ -517,10 +551,12 @@ Example:
         args.vector_a = " ".join(map(str, vector_a))
         args.vector_b = " ".join(map(str, vector_b))
         
-        with self.console.capture() as capture:
-            self.framework.vector_angle(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.vector_angle, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_cross_product(self):
@@ -558,10 +594,12 @@ Example:
         args.vector_a = " ".join(map(str, vector_a))
         args.vector_b = " ".join(map(str, vector_b))
         
-        with self.console.capture() as capture:
-            self.framework.cross_product(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.cross_product, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_triangle_area(self):
@@ -605,10 +643,12 @@ Example:
         args.point_b = " ".join(map(str, point_b))
         args.point_c = " ".join(map(str, point_c))
         
-        with self.console.capture() as capture:
-            self.framework.triangle_area(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.triangle_area, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_point_line_distance(self):
@@ -655,10 +695,12 @@ Example:
         args.direction = " ".join(map(str, direction))
         args.point_b = " ".join(map(str, point_b))
         
-        with self.console.capture() as capture:
-            self.framework.point_line_distance(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.point_line_distance, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_check_collinear(self):
@@ -698,10 +740,12 @@ Example:
         args = Args()
         args.vectors = vectors
         
-        with self.console.capture() as capture:
-            self.framework.check_collinear(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.check_collinear, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_solve_gauss(self):
@@ -738,10 +782,12 @@ Matrix format:
         args = Args()
         args.matrix = str(matrix.tolist()).replace('], [', '; ').replace('[[', '').replace(']]', '')
         
-        with self.console.capture() as capture:
-            self.framework.solve_gauss(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.solve_gauss, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_check_coplanar(self):
@@ -783,10 +829,12 @@ Example:
         args = Args()
         args.vectors = vectors
         
-        with self.console.capture() as capture:
-            self.framework.check_coplanar(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.check_coplanar, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_check_solution(self):
@@ -847,10 +895,12 @@ Vector to check: [green]"-1, 5"[/green]
         args.rhs = " ".join(map(str, rhs)) if rhs is not None else None
         args.vectors = vectors
         
-        with self.console.capture() as capture:
-            self.framework.check_solution(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.check_solution, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_vector_equation(self):
@@ -881,10 +931,12 @@ This operation uses symbolic mathematics to solve vector equations.
         args = Args()
         args.equation = equation
         
-        with self.console.capture() as capture:
-            self.framework.vector_equation(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.vector_equation, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_matrix_element(self):
@@ -943,10 +995,12 @@ For matrix [green]"4, 4, -16, 4; 1, 0, -4, 2; 5, 2, -20, 8"[/green]
         args.column = int(next((value for op, value in operations if op == "column"), None) or -1) if any(op == "column" for op in [o[0] for o in operations]) else None
         args.transpose = show_transpose
         
-        with self.console.capture() as capture:
-            self.framework.matrix_element(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.matrix_element, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_intersection_planes(self):
@@ -984,10 +1038,12 @@ Matrix: [green]"2, 1, -2, -1; 1, 8, -4, 10; 6, -1, 18, 81"[/green]
         args = Args()
         args.matrix = str(matrix.tolist()).replace('], [', '; ').replace('[[', '').replace(']]', '')
         
-        with self.console.capture() as capture:
-            self.framework.intersection_planes(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.intersection_planes, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_homogeneous_intersection(self):
@@ -1024,10 +1080,12 @@ Matrix: [green]"0, 9, 8; 8, 9, 6; 10, 0, 6"[/green]
         args = Args()
         args.matrix = str(matrix.tolist()).replace('], [', '; ').replace('[[', '').replace(']]', '')
         
-        with self.console.capture() as capture:
-            self.framework.homogeneous_intersection(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.homogeneous_intersection, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_find_pivot_free_vars(self):
@@ -1066,10 +1124,12 @@ Matrix: [green]"3, 3, -8, 6, 0, 14; 1, 1, -4, 2, 1, 3; 5, 5, -20, 10, 3, 13"[/gr
         args = Args()
         args.matrix = str(matrix.tolist()).replace('], [', '; ').replace('[[', '').replace(']]', '')
         
-        with self.console.capture() as capture:
-            self.framework.find_pivot_free_vars(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.find_pivot_free_vars, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_matrix_operations(self):
@@ -1152,10 +1212,12 @@ This tool performs common matrix operations:
             
         args.scalar = scalar
         
-        with self.console.capture() as capture:
-            self.framework.matrix_operations(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.matrix_operations, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_matrix_product(self):
@@ -1195,10 +1257,12 @@ Result will be a 3×3 matrix
         args.matrix_a = str(matrix_a.tolist()).replace('], [', '; ').replace('[[', '').replace(']]', '')
         args.matrix_b = str(matrix_b.tolist()).replace('], [', '; ').replace('[[', '').replace(']]', '')
         
-        with self.console.capture() as capture:
-            self.framework.matrix_product(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.matrix_product, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_sum_series(self):
@@ -1253,10 +1317,12 @@ This operation calculates the sum of a mathematical series.
         args.end = int(end)
         args.formula = formula
         
-        with self.console.capture() as capture:
-            self.framework.sum_series(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.sum_series, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_check_particular_solution(self):
@@ -1315,10 +1381,12 @@ Vector to check: [green]"2, -1, 0"[/green]
         args.matrix = str(matrix.tolist()).replace('], [', '; ').replace('[[', '').replace(']]', '')
         args.vectors = vectors
         
-        with self.console.capture() as capture:
-            self.framework.check_particular_solution(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.check_particular_solution, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_point_plane_distance(self):
@@ -1367,10 +1435,12 @@ Where:
         args.plane_point = " ".join(map(str, plane_point))
         args.point = " ".join(map(str, point))
         
-        with self.console.capture() as capture:
-            self.framework.point_plane_distance(args)
+        # Use our redirection method to capture direct print output
+        output, _ = self.run_with_capture(self.framework.point_plane_distance, args)
         
-        self.console.print(Panel(capture.get(), title="Results", border_style="green"))
+        # Display results in a nicely formatted panel with green border
+        result_text = self.format_results_for_display(output)
+        self.console.print(Panel(result_text, title="Results", border_style="green"))
         self.wait_for_user()
     
     def ui_browse_help_topics(self):
