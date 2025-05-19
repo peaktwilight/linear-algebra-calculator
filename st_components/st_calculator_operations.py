@@ -195,18 +195,34 @@ class LinAlgCalculator:
         # Parse the vector from the input
         vector = self.framework.parse_vector(vector_input)
         
-        # Display steps calculation 
-        st.write("### Step-by-step Calculation")
+        # Calculate vector length
+        length = np.linalg.norm(vector)
         
-        step_output = output.get_output().split('\n')
-        for line in step_output:
-            if line.strip():
-                st.write(line)
+        # Create a formatted display of the calculations
+        col1, col2 = st.columns([1, 1])
         
-        # Display a visualization of the original and normalized vectors
-        st.subheader("Visualization")
-        self.display_vector_visualization([vector, result], names=["Original Vector", "Normalized Vector"])
+        with col1:
+            st.markdown("### Step-by-step Calculation")
+            
+            # Create a more structured output
+            st.markdown("**Original vector:**")
+            st.markdown(f"$v = {vector.tolist()}$")
+            
+            st.markdown("**Length calculation:**")
+            length_formula = " + ".join([f"({v})^2" for v in vector])
+            st.markdown(f"$|v| = \\sqrt{{{length_formula}}} = {length:.4f}$")
+            
+            st.markdown("**Normalized vector:**")
+            st.markdown(f"$\\hat{{v}} = \\frac{{v}}{{|v|}} = \\frac{{{vector.tolist()}}}{{{length:.4f}}} = {result.tolist()}$")
+            
+            st.markdown("**Verification:**")
+            normalized_length = np.linalg.norm(result)
+            st.markdown(f"$|\\hat{{v}}| = {normalized_length:.4f} \\approx 1.0$ ✓")
         
+        with col2:
+            # Display a visualization of the original and normalized vectors
+            st.markdown("### Visualization")
+            self.display_vector_visualization([vector, result], names=["Original Vector", "Normalized Vector"])
         
         return result
     
