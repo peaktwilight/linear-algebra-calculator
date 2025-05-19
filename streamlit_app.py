@@ -470,12 +470,10 @@ def main():
         6.  **Visit Learning Resources:** For guides, examples, and concept explanations.
         """)
 
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("**Fully Open-Source Code :)**")
-    st.sidebar.markdown("[GitHub](https://github.com/peaktwilight/linear-algebra-calculator)")
     st.sidebar.markdown("--- ")
     st.sidebar.info("Made with ❤️ by Doruk")
-    st.sidebar.markdown("Version 1.4 | FHNW Linear Algebra Module")
+    st.sidebar.markdown("[GitHub](https://github.com/peaktwilight/linear-algebra-calculator) v1.4 | FHNW Linear Algebra Module")
+    st.sidebar.markdown("**Fully Open-Source Code :)** ")
 
 
 if __name__ == "__main__":

@@ -14,160 +14,162 @@ def render_learning_resources_page():
     This will be a series of expanders for different topics.
     """
     st.title("📚 Learning Resources")
-    st.markdown("Explore fundamental concepts of linear algebra with interactive examples!")
+    st.markdown("Explore fundamental concepts of linear algebra, learn problem-solving approaches, and see how to use the calculator tools for various exercises.")
 
     # Category: Introduction to Vectors
     with st.expander("Introduction to Vectors", expanded=True):
         st.header("Introduction to Vectors")
 
+        # --- What is a Vector? ---
+        st.subheader("What is a Vector?")
+        st.markdown(
+            "A vector is a mathematical object that has both **magnitude** (size or length) and **direction**. "
+            "Vectors can be visualized as arrows in a coordinate system.\n"
+            "- In 2D (a plane): `v = [x, y]` or `v = (x, y)`\n"
+            "- In 3D (space): `v = [x, y, z]` or `v = (x, y, z)`\n"
+            "The numbers `x, y, z` are called the **components** of the vector."
+        )
+        st.markdown(
+            "**Representation in Python (NumPy):** Conceptually, vectors are often handled using NumPy arrays in Python for computational purposes, like `np.array([1, 2, 3])`."
+        )
+        st.markdown("---")
+
         # --- Polar to Cartesian Coordinates ---
         st.subheader("Polar to Cartesian Coordinates")
         st.markdown(
-            "Vectors can be represented in different coordinate systems. "
-            "Polar coordinates define a point or vector in terms of a radius `r` (distance from origin) "
-            "and an angle `phi` (measured from the positive x-axis)."
+            "While Cartesian coordinates (`x, y`) are common, 2D vectors can also be defined by polar coordinates: "
+            "radius `r` (distance from origin) and an angle `phi (φ)` (from the positive x-axis)."
         )
-        st.markdown("To convert from polar coordinates `(r, φ)` to Cartesian coordinates `(vx, vy)`:")
+        st.markdown("To convert from polar `(r, φ)` to Cartesian `(vx, vy)`:")
         st.latex("v_x = r \\cdot \\cos(\\phi)")
         st.latex("v_y = r \\cdot \\sin(\\phi)")
-        st.markdown("Where `φ` is typically in radians for calculations.")
+        st.markdown("Note: `φ` should be in radians for trigonometric functions in most programming libraries.")
+        
+        st.markdown("**Conceptual Example (Exercise NNHCXF adaptation):**")
+        st.markdown("- If `r=5.0` and `phi=216.9°` (which is approx. `3.785` radians):\n"
+            "  `vx = 5.0 * cos(3.785) ≈ -3.9984`\n"
+            "  `vy = 5.0 * sin(3.785) ≈ -3.0021`\n"
+            "  So, the vector is approximately `[-4.0, -3.0]`.")
+        st.markdown("Our calculator primarily uses Cartesian coordinates for vector input. Understanding polar-to-Cartesian conversion is useful for interpreting problems that might provide vectors in polar form.")
 
-        st.markdown("---")
-        st.markdown("**Python Example (using NumPy):**")
-        st.markdown("The following code demonstrates how to perform this conversion for given `r` and `phi` values.")
-        st.code("""
-import numpy as np
-
-# Case a) r=5.0; phi=216.9 degrees
-r1 = 5.0
-phi1_deg = 216.9
-phi1_rad = phi1_deg * np.pi / 180.0 # Convert degrees to radians
-v1 = r1 * np.array([np.cos(phi1_rad), np.sin(phi1_rad)])
-# Expected: v1 ≈ [-3.9984, -3.0021] (approx. [-4.0, -3.0])
-print(f"Example 1: r={r1}, phi={phi1_deg}° -> v1 = {v1}")
-
-# Case b) r=13.0; phi=-0.4 radians
-r2 = 13.0
-phi2_rad = -0.4 # Angle is already in radians
-v2 = r2 * np.array([np.cos(phi2_rad), np.sin(phi2_rad)])
-# Expected: v2 ≈ [11.9738, -5.0624]
-print(f"Example 2: r={r2}, phi={phi2_rad} rad -> v2 = {v2}")
-        """, language="python")
-        st.markdown(
-            "In Python, `np.cos()` and `np.sin()` expect the angle to be in radians. "
-            "Remember to convert degrees to radians (`radians = degrees * π / 180`)."
-        )
-
-        st.markdown("---")
-        st.markdown("**Interactive Conversion:**")
-        st.write("Try converting your own polar coordinates to Cartesian coordinates:")
-
+        st.markdown("**Interactive Concept Explorer:**")
         col1_polar, col2_polar = st.columns(2)
-        r_input = col1_polar.number_input("Enter radius (r):", value=5.0, min_value=0.0, step=0.1, key="lr_polar_r")
-        phi_input_deg = col2_polar.number_input("Enter angle (φ in degrees):", value=45.0, step=0.1, key="lr_polar_phi_deg")
+        r_input = col1_polar.number_input("Radius (r):", value=5.0, min_value=0.0, step=0.1, key="lr_polar_r_concept")
+        phi_input_deg = col2_polar.number_input("Angle (φ in degrees):", value=45.0, step=0.1, key="lr_polar_phi_deg_concept")
 
-        if st.button("Convert to Cartesian", key="lr_polar_convert"):
+        if st.button("Show Cartesian Equivalent", key="lr_polar_convert_concept"):
             phi_input_rad = phi_input_deg * np.pi / 180.0
             vx = r_input * np.cos(phi_input_rad)
             vy = r_input * np.sin(phi_input_rad)
-            st.success(f"Cartesian Coordinates: `vx = {vx:.4f}`, `vy = {vy:.4f}`")
-            st.code(f"Vector: [{vx:.4f}, {vy:.4f}]", language="text")
+            st.info(f"Equivalent Cartesian Coordinates: `vx ≈ {vx:.4f}`, `vy ≈ {vy:.4f}`")
         
-        st.markdown("--- --- --- --- --- --- --- --- --- ---") # Visual separator for next sub-topic
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
 
         # --- Vector Magnitude (Length) & Normalization ---
         st.subheader("Vector Magnitude (Length) & Normalization")
         st.markdown(
-            "The **magnitude** (or length/norm) of a vector `v = [v₁, v₂, ..., vₙ]` is a non-negative scalar "
-            "representing its size. It's calculated as the square root of the sum of the squares of its components."
+            "The **magnitude** (or length/norm) of a vector `v = [v₁, v₂, ..., vₙ]` is its size."
         )
         st.latex("||v|| = \\sqrt{v_1^2 + v_2^2 + \\dots + v_n^2}")
         st.markdown(
-            "**Normalization** is the process of creating a **unit vector** (a vector with magnitude 1) "
-            "that has the same direction as the original vector. This is done by dividing each component "
-            "of the vector by its magnitude."
+            "**Normalization** creates a **unit vector** (magnitude 1) in the same direction."
         )
-        st.latex("\\hat{v} = \\frac{v}{||v||}")
-        st.markdown("A unit vector is denoted by a hat symbol (e.g., `û`). Normalization is not possible for a zero vector.")
+        st.latex("\\hat{v} = \\frac{v}{||v||} \\text{ (if } ||v|| \\neq 0)")
+        st.markdown("A zero vector cannot be normalized as it would involve division by zero.")
 
-        st.markdown("---")
-        st.markdown("**Python Example (using NumPy):**")
-        st.markdown("The following code calculates the components of `u = B - A`, then normalizes `u` to `v`, and finally checks the length of `v`.")
-        st.code("""
-import numpy as np
-
-# Given points A and B to define vector u = AB
-A = np.array([3, 4])
-B = np.array([6, 0])
-
-u = B - A 
-print(f"Vector u = B - A = {u}")
-# Expected: u = [3 -4]
-
-# Calculate magnitude of u
-magnitude_u = np.linalg.norm(u)
-print(f"Magnitude ||u|| = {magnitude_u:.4f}")
-# Expected: ||u|| = 5.0
-
-# Normalize u to get unit vector v
-if magnitude_u == 0:
-    v = u # Or handle as an error/special case, cannot normalize zero vector
-    print("Cannot normalize a zero vector.")
-else:
-    v = u / magnitude_u
-print(f"Normalized vector v = u / ||u|| = {v}")
-# Expected: v = [0.6 -0.8]
-
-# Calculate magnitude of v (should be 1 if normalization was successful)
-magnitude_v = np.linalg.norm(v)
-print(f"Magnitude ||v|| = {magnitude_v:.4f}")
-# Expected: ||v|| = 1.0
-        """, language="python")
+        st.markdown("**Conceptual Example (Exercise 5VRS99 adaptation):**")
         st.markdown(
-            "Key NumPy function: `np.linalg.norm(vector)` calculates the magnitude. "
-            "Vector division by a scalar performs element-wise division."
+            "1. Problem: Given points `A=(3,4)` and `B=(6,0)`. Find the unit vector in the direction of `u = B - A`.\n"
+            "   Step 1 (Find u): `u = [6-3, 0-4] = [3, -4]`.\n"
+            "   Step 2 (Calculate ||u||): `||u|| = \\sqrt{3^2 + (-4)^2} = \\sqrt{9 + 16} = \\sqrt{25} = 5`.\n"
+            "   Step 3 (Normalize u): `û = u / ||u|| = [3/5, -4/5] = [0.6, -0.8]`. This is the unit vector."
         )
-
-        st.markdown("---")
-        st.markdown("**Interactive Magnitude & Normalization:**")
-        st.write("Enter a vector (comma-separated components) to calculate its magnitude and normalized form:")
-        
-        vector_input_str = st.text_input(
-            "Enter vector components (e.g., 3, 4 or 1, 2, 2):", 
-            value="3, 4", 
-            key="lr_norm_vec_input"
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. If your problem involves points (like A and B to define vector AB), first calculate the components of the vector yourself (e.g., `u = B - A = [3, -4]`).\n"
+            "2. Navigate to **Vector Operations** in the sidebar.\n"
+            "3. Select the **Vector Normalization** tool.\n"
+            "4. Enter the components of your calculated vector (e.g., `3, -4`) into the input field.\n"
+            "5. The calculator will display the normalized (unit) vector and the original vector's magnitude."
         )
-
-        if st.button("Calculate Magnitude & Normalize", key="lr_norm_calc"):
+        st.markdown("**Quick Check (for concept understanding):**")
+        vector_input_norm_concept = st.text_input("Enter vector components (e.g., 3,-4):", value="3,-4", key="lr_norm_concept_input")
+        if st.button("Show Magnitude & Normalized (Concept)", key="lr_norm_concept_calc"):
             try:
-                components = [float(x.strip()) for x in vector_input_str.split(',')]
-                if not components:
-                    st.error("Please enter vector components.")
-                else:
+                components = [float(x.strip()) for x in vector_input_norm_concept.split(',')]
+                if components:
                     vec = np.array(components)
-                    st.write(f"Input vector: `{vec}`")
-                    
-                    magnitude = np.linalg.norm(vec)
-                    st.success(f"Magnitude (Length): `||v|| = {magnitude:.4f}`")
-                    
-                    if magnitude == 0:
-                        st.warning("The input is a zero vector. It has magnitude 0 and cannot be normalized.")
-                        st.code("Normalized vector: Not applicable for zero vector", language="text")
+                    mag = np.linalg.norm(vec)
+                    st.info(f"For vector `{vec}`: Magnitude ≈ `{mag:.4f}`")
+                    if mag != 0:
+                        norm_vec = vec / mag
+                        st.info(f"Normalized vector ≈ `{np.round(norm_vec, 4)}`")
                     else:
-                        normalized_vec = vec / magnitude
-                        st.success(f"Normalized vector (Unit Vector): `û = {np.round(normalized_vec, 4)}`") # Rounded for display
-                        st.code(f"Unit Vector: {normalized_vec}", language="text")
-                        # Verify magnitude of normalized vector
-                        # st.write(f"Magnitude of normalized vector: {np.linalg.norm(normalized_vec):.4f}") 
+                        st.warning("A zero vector has magnitude 0 and cannot be normalized.")
+                else:
+                    st.error("Please enter vector components.")
             except ValueError:
-                st.error("Invalid input format. Please use comma-separated numbers (e.g., 3, 4 or 1, 2, 2).")
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
+                st.error("Invalid format. Use comma-separated numbers e.g., 3,-4 or 1,2,2.5")
 
-    # Placeholder for next category
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
+        
+        # --- Vector Addition & Subtraction ---
+        st.subheader("Vector Addition & Subtraction")
+        st.markdown(
+            "Vectors of the **same dimension** can be added or subtracted by performing the operation on their corresponding components."
+        )
+        st.markdown("If `u = [u₁, u₂, ..., uₙ]` and `v = [v₁, v₂, ..., vₙ]`:")
+        st.latex("u + v = [u₁ + v₁, u₂ + v₂, ..., uₙ + vₙ]")
+        st.latex("u - v = [u₁ - v₁, u₂ - v₂, ..., uₙ - vₙ]")
+        st.markdown("Geometrically, `u+v` can be visualized using the 'tip-to-tail' or parallelogram method.")
+
+        st.markdown("**Conceptual Example:**")
+        st.markdown("- If `u = [1, 2]` and `v = [3, -1]`:\n"
+            "  `u + v = [1+3, 2+(-1)] = [4, 1]`\n"
+            "  `u - v = [1-3, 2-(-1)] = [-2, 3]`")
+
+        st.markdown("**How this applies to calculator usage:**")
+        st.markdown(
+            "Our calculator does not feature a separate 'Vector Addition/Subtraction' tool, as these are fundamental operations often performed as a preliminary step.\n"
+            "- **Example Scenario:** If a problem requires you to normalize `w = u + v`:\n"
+            "    1.  First, calculate the components of `w` manually (by adding `u` and `v`).\n"
+            "    2.  Then, use the resulting vector `w` in the **Vector Operations -> Vector Normalization** tool in our calculator.\n"
+            "Many exercises, such as finding the vector `AB` from points `A` and `B` (calculated as `B-A`), will require you to perform subtraction manually before using the result in another calculator function."
+        )
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
+
+        # --- Scalar Multiplication of Vectors ---
+        st.subheader("Scalar Multiplication of Vectors")
+        st.markdown(
+            "Multiplying a vector by a scalar (a single number) scales its magnitude and/or reverses its direction (if the scalar is negative). "
+            "Each component of the vector is multiplied by the scalar."
+        )
+        st.markdown("If `v = [v₁, v₂, ..., vₙ]` and `k` is a scalar:")
+        st.latex("k \cdot v = [k \cdot v₁, k \cdot v₂, ..., k \cdot vₙ]")
+        st.markdown("- If `k > 0`, `kv` has the same direction as `v` but scaled length.\n"
+            "- If `k < 0`, `kv` has the opposite direction to `v` and scaled length.\n"
+            "- If `k = 0`, `kv` is the zero vector `[0, 0, ..., 0]`."
+        )
+
+        st.markdown("**Conceptual Example (Exercise SWI49N adaptation):**")
+        st.markdown("- Problem: Given vector `af = [8, -0.5]`, find a vector `a` in the same direction but with length 10.\n"
+            "  Step 1 (Find unit vector an): First normalize `af`. `||af|| = \\sqrt{8^2 + (-0.5)^2} = \\sqrt{64.25} \\approx 8.0156`. So, `an = af / ||af|| \approx [0.998, -0.062]`.\n"
+            "  Step 2 (Scale to desired length): `a = 10 * an \approx [9.98, -0.62]`."
+        )
+
+        st.markdown("**How this applies to calculator usage:**")
+        st.markdown(
+            "Scalar multiplication, like addition/subtraction, is often an intermediate step performed manually.\n"
+            "- **Example Scenario:** If a problem asks to find `3v` and then calculate its dot product with vector `w`:\n"
+            "    1.  Calculate the components of `3v` manually.\n"
+            "    2.  Then, use this resulting vector and `w` in the **Vector Operations -> Vector Angle** tool (which calculates the dot product as part of its process)."
+            "The **Vector Normalization** tool itself is an application of scalar multiplication, where the scalar is `1/||v||`."
+        )
+
+    # Placeholder for next category: Scalar (Dot) Product
     # with st.expander("Scalar (Dot) Product", expanded=False):
     #     st.header("Scalar (Dot) Product")
-    #     ...
+    #     # ... content for dot product ...
 
     st.markdown("---")
     st.info("More topics and interactive examples will be added soon!")
