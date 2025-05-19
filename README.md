@@ -196,7 +196,7 @@ A Streamlit web interface is also available for a more interactive experience:
 
 ```bash
 # Install Streamlit and other dependencies
-pip install streamlit numpy pandas matplotlib plotly sympy
+pip install streamlit numpy pandas matplotlib plotly sympy scipy
 
 # Run the Streamlit app
 streamlit run streamlit_app.py
@@ -207,6 +207,27 @@ The web interface provides:
 - Step-by-step solutions with detailed explanations
 - Intuitive input fields for all operations
 - Beautiful, modern UI with dedicated sections for different operation types
+
+### Deployment to Fly.io
+
+The Streamlit app can be deployed to Fly.io for online access:
+
+```bash
+# Install the Fly CLI
+brew install flyctl  # On macOS
+# or
+curl -L https://fly.io/install.sh | sh  # On Linux
+
+# Log in to Fly.io
+fly auth login
+
+# Deploy the app
+cd /path/to/python_25fs
+fly launch
+fly deploy
+```
+
+For more details on deployment, see the [DEPLOY.md](DEPLOY.md) file.
 
 ![Streamlit Interface](https://github.com/peaktwilight/python_25fs/raw/main/screenshots/streamlit_ui.png)
 
