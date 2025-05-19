@@ -360,45 +360,21 @@ class LinearAlgebraRichUI:
             self.wait_for_user()
             return
         
-        # Group results by category for better organization
-        categories = {}
-        for op_name, op_func, category in matches:
-            if category not in categories:
-                categories[category] = []
-            categories[category].append((op_name, op_func))
+        # Flatten the matches for direct selection
+        flat_matches = []
+        for op_name, op_func, _ in matches:
+            flat_matches.append((op_name, op_func))
         
         self.display_header("🔍 Search Results")
         
-        # Display results as a list first
-        table = Table(show_header=False, box=None, padding=(0, 1, 0, 1))
-        table.add_column("")
+        # Create the selection menu
+        operation_names = [op_name for op_name, _ in flat_matches]
+        operation_names.append("⬅️ Back to main menu")
         
-        for category, operations in categories.items():
-            # Display the category header
-            table.add_row(f"[bold cyan]{category}[/bold cyan]")
-            # Display operations in this category
-            for op_name, _ in operations:
-                table.add_row(f"  {op_name}")
-            table.add_row("")
-        
-        self.console.print(table)
-        self.console.print()
-        
-        # Display the operation selection menu
-        flat_operations = []
-        for category_ops in categories.values():
-            flat_operations.extend([op_name for op_name, _ in category_ops])
-        
-        if not flat_operations:
-            self.console.print("[yellow]No operations to select.[/yellow]")
-            self.wait_for_user()
-            return
-            
-        flat_operations.append("⬅️ Back to main menu")
-        
+        # Simply show the selection menu
         selected = questionary.select(
-            "Select an operation:",
-            choices=flat_operations,
+            f"Found {len(flat_matches)} operations. Select one:",
+            choices=operation_names,
             style=custom_style
         ).ask()
         
@@ -406,7 +382,7 @@ class LinearAlgebraRichUI:
             return
         
         # Find and execute the selected operation
-        for op_name, op_func, _ in matches:
+        for op_name, op_func in flat_matches:
             if op_name == selected:
                 op_func()
                 break
