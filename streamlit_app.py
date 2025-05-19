@@ -665,7 +665,7 @@ def main():
             ["Vector Normalization", "Vector Projection/Shadow", "Vector Angle"]
         )
         
-        st.markdown(f'<div class="subheader">{operation}</div>', unsafe_allow_html=True)
+        st.subheader(operation)
         
         if operation == "Vector Normalization":
             st.write("This operation normalizes a vector to unit length while preserving its direction.")
@@ -731,7 +731,7 @@ def main():
             ["Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose"]
         )
         
-        st.markdown(f'<div class="subheader">{operation}</div>', unsafe_allow_html=True)
+        st.subheader(operation)
         
         if operation == "Matrix Addition":
             st.write("This operation adds two matrices element-wise.")
@@ -813,7 +813,7 @@ def main():
             ["Solve System (Gaussian Elimination)"]
         )
         
-        st.markdown(f'<div class="subheader">{operation}</div>', unsafe_allow_html=True)
+        st.subheader(operation)
         
         if operation == "Solve System (Gaussian Elimination)":
             st.write("This operation solves a system of linear equations using Gaussian elimination.")
