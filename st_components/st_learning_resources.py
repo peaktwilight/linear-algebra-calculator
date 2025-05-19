@@ -425,11 +425,122 @@ def render_learning_resources_page():
                     "So, `AB = [[19, 22], [43, 50]]`.")
         st.markdown("**How to use the calculator for this:**")
         st.markdown(
-            "1. Navigate to **Matrix Operations** in the sidebar."
-            "2. Select the **Matrix Multiplication** tool."
-            "3. Enter Matrix A (e.g., `1,2;3,4`)."
-            "4. Enter Matrix B (e.g., `5,6;7,8`). Ensure dimensions are compatible."
+            "1. Navigate to **Matrix Operations** in the sidebar.\n"
+            "2. Select the **Matrix Multiplication** tool.\n"
+            "3. Enter Matrix A (e.g., `1,2;3,4`).\n"
+            "4. Enter Matrix B (e.g., `5,6;7,8`). Ensure dimensions are compatible.\n"
             "5. The calculator will display the resulting product matrix."
+        )
+        st.markdown("---")
+
+        # --- Matrix Transpose ---
+        st.subheader("Matrix Transpose")
+        st.markdown(
+            "The **transpose** of a matrix `A`, denoted `Aᵀ` or `A'`, is obtained by swapping its rows and columns. "
+            "If `A` is an `m × n` matrix, `Aᵀ` will be an `n × m` matrix."
+        )
+        st.latex("(A^T)_{ij} = A_{ji}")
+        st.markdown("**Conceptual Example (Exercise G3XVHK adaptation):**")
+        st.markdown("If `A = [[1,2,3], [4,5,6]]` (a 2x3 matrix):\n"
+                    "`Aᵀ = [[1,4], [2,5], [3,6]]` (a 3x2 matrix).")
+        st.markdown("The calculator has a **Matrix Transpose** tool under **Matrix Operations**.")
+        st.markdown("---")
+
+        # --- Determinants ---
+        st.subheader("Determinants")
+        st.markdown(
+            "The determinant is a scalar value that can be computed from the elements of a **square matrix**. "
+            "It is denoted as `det(A)` or `|A|`. The determinant provides important information about the matrix, such as whether it is invertible."
+        )
+        st.markdown("**For a 2x2 matrix:** `A = [[a,b], [c,d]]`")
+        st.latex("det(A) = ad - bc")
+        st.markdown("**For a 3x3 matrix:** `A = [[a,b,c], [d,e,f], [g,h,i]]` (Rule of Sarrus)")
+        st.latex("det(A) = a(ei − fh) − b(di − fg) + c(dh − eg)")
+        st.markdown("**Key Property:** A square matrix `A` is invertible if and only if `det(A) ≠ 0`.")
+        
+        st.markdown("**Conceptual Example (2x2 - Exercise 3L8XHF adaptation):**")
+        st.markdown("`A = [[3,8], [4,6]]`. `det(A) = (3*6) - (8*4) = 18 - 32 = -14`.")
+        st.markdown("**Conceptual Example (3x3 - Exercise VFS72X adaptation):**")
+        st.markdown("`B = [[6,1,1], [4,-2,5], [2,8,7]]`.\n"
+                    "`det(B) = 6((-2)*7 - 5*8) - 1(4*7 - 5*2) + 1(4*8 - (-2)*2)`\n"
+                    "`= 6(-14 - 40) - 1(28 - 10) + 1(32 + 4)`\n"
+                    "`= 6(-54) - 1(18) + 1(36) = -324 - 18 + 36 = -306`.")
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. Navigate to **Matrix Operations** in the sidebar.\n"
+            "2. Select the **Determinant** tool.\n"
+            "3. Enter your square matrix (e.g., `3,8;4,6`).\n"
+            "4. The calculator will display the determinant."
+        )
+        st.markdown("---")
+
+        # --- Matrix Inverse ---
+        st.subheader("Matrix Inverse")
+        st.markdown(
+            "The **inverse** of a square matrix `A`, denoted `A⁻¹`, is a matrix such that when multiplied by `A`, it yields the identity matrix `I`."
+        )
+        st.latex("A A^{-1} = A^{-1} A = I")
+        st.markdown("A matrix has an inverse if and only if its determinant is non-zero (`det(A) ≠ 0`). Such a matrix is called **invertible** or **non-singular**.")
+        st.markdown("**For a 2x2 matrix:** `A = [[a,b], [c,d]]`")
+        st.latex("A^{-1} = \frac{1}{ad-bc} \begin{bmatrix} d & -b \\newline -c & a \end{bmatrix}")
+        st.markdown("For 3x3 matrices (and larger), the calculation is more complex, often involving methods like Gaussian elimination or the adjugate matrix method. Our calculator handles this for you.")
+        
+        st.markdown("**Conceptual Example (2x2 - Exercise P32VFS adaptation):**")
+        st.markdown("If `A = [[3,8], [4,6]]`. We found `det(A) = -14`.\n"
+                    "`A⁻¹ = (1/-14) * [[6, -8], [-4, 3]] = [[-6/14, 8/14], [4/14, -3/14]] = [[-3/7, 4/7], [2/7, -3/14]]`.")
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. Navigate to **Matrix Operations** in the sidebar.\n"
+            "2. Select the **Matrix Inverse** tool.\n"
+            "3. Enter your square matrix.\n"
+            "4. The calculator will display the inverse matrix if it exists, or state if the matrix is singular (not invertible)."
+        )
+
+    # Category: Systems of Linear Equations
+    with st.expander("Systems of Linear Equations", expanded=False):
+        st.header("Systems of Linear Equations")
+
+        st.subheader("Solving Systems with Gaussian Elimination")
+        st.markdown(
+            "A system of linear equations can be represented by an **augmented matrix** `[A|b]`, where `A` is the coefficient matrix and `b` is the vector of constants."
+            "Gaussian elimination is a method to solve such systems by transforming this augmented matrix into **Row Echelon Form (REF)** or **Reduced Row Echelon Form (RREF)** using elementary row operations."
+        )
+        st.markdown("**Elementary Row Operations:**")
+        st.markdown(
+            "1. Swapping two rows.\n"
+            "2. Multiplying a row by a non-zero scalar.\n"
+            "3. Adding a multiple of one row to another row."
+        )
+        st.markdown("**Goal (REF):**\n"
+                    "- All non-zero rows are above any rows of all zeros.\n"
+                    "- The leading coefficient (pivot) of a non-zero row is always strictly to the right of the leading coefficient of the row above it.\n"
+                    "- All entries in a column below a leading coefficient are zero."
+        )
+        st.markdown("**Goal (RREF):**\n"
+                    "- It is in REF.\n"
+                    "- Every leading coefficient is 1.\n"
+                    "- Every leading coefficient is the only non-zero entry in its column."
+        )
+        st.markdown("**Interpreting the Result (from RREF):**")
+        st.markdown(
+            "- **Unique Solution:** If the number of non-zero rows equals the number of variables, and there are no contradictions (e.g., `0 = 1`). The RREF will look like an identity matrix on the left side `[I|s]`, where `s` is the solution vector.\n"
+            "- **No Solution:** If any row has the form `[0 0 ... 0 | c]` where `c ≠ 0`. This indicates a contradiction like `0 = c`.\n"
+            "- **Infinitely Many Solutions:** If the number of non-zero rows is less than the number of variables, and there are no contradictions. This means there are free variables."
+        )
+        st.markdown("**Conceptual Example (Adapted from E6PZXQ / N7QLXH / S7A4P2):**")
+        st.markdown("Consider the system: `x + 2y = 5`, `3x + 4y = 11`.\n"
+                    "Augmented Matrix: `[[1,2,5], [3,4,11]]`.\n"
+                    "1. `R₂ → R₂ - 3R₁`: `[[1,2,5], [0,-2,-4]]`.\n"
+                    "2. `R₂ → R₂ / -2`: `[[1,2,5], [0,1,2]]` (This is REF).\n"
+                    "3. `R₁ → R₁ - 2R₂`: `[[1,0,1], [0,1,2]]` (This is RREF).\n"
+                    "Solution: `x = 1`, `y = 2`."
+        )
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. Navigate to **Matrix Operations** in the sidebar.\n"
+            "2. Select the **Solve System (Gauss)** tool.\n"
+            "3. Enter the augmented matrix (coefficient matrix and constant vector combined, e.g., `1,2,5;3,4,11` for the example above).\n"
+            "4. The calculator will perform Gaussian elimination, show the RREF, and provide the solution or indicate the type of solution (no solution, infinitely many)."
         )
 
     st.markdown("---")

@@ -472,8 +472,7 @@ def main():
 
     st.sidebar.markdown("--- ")
     st.sidebar.info("Made with ❤️ by Doruk")
-    st.sidebar.markdown("[GitHub](https://github.com/peaktwilight/linear-algebra-calculator) v1.4 | FHNW Linear Algebra Module")
-    st.sidebar.markdown("**Fully Open-Source Code :)** ")
+    st.sidebar.info("[GitHub](https://github.com/peaktwilight/linear-algebra-calculator) v1.4 | FHNW Linear Algebra Module")
 
 
 if __name__ == "__main__":
