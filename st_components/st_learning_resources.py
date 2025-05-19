@@ -332,14 +332,71 @@ def render_learning_resources_page():
     with st.expander("Lines and Planes", expanded=False):
         st.header("Lines and Planes")
 
-        st.subheader("Distance from a Point to a Line")
+        # --- Hessian Normal Form of a Line (2D) ---
+        st.subheader("Hessian Normal Form of a Line (2D)")
+        st.markdown(
+            "The Hessian Normal Form (HNF) is a specific way to represent a line in 2D (or a plane in 3D). "
+            "For a line in 2D, it's particularly useful for calculating the perpendicular distance from a point to the line."
+        )
+        st.markdown("The general equation of a line in 2D is `Ax + By + C = 0`. The Hessian Normal Form is:")
+        st.latex("x \cdot \cos(\alpha) + y \cdot \sin(\alpha) - p = 0")
+        st.markdown(
+            "Where:\n"
+            "- `p` is the perpendicular distance from the origin to the line (`p >= 0`).\n"
+            "- `α` (alpha) is the angle the normal vector to the line makes with the positive x-axis."
+        )
+        st.markdown("The vector `n = [cos(α), sin(α)]` is a unit normal vector to the line.")
+        st.markdown("If you have the general form `Ax + By + C = 0`, you can convert it to HNF:")
+        st.latex("p = \frac{|C|}{\sqrt{A^2 + B^2}}")
+        st.latex("\cos(\alpha) = \frac{A}{\pm\sqrt{A^2 + B^2}}, \quad \sin(\alpha) = \frac{B}{\pm\sqrt{A^2 + B^2}}")
+        st.markdown(
+            "The sign of the denominator `±√(A² + B²)` is chosen to be opposite to the sign of `C` if `C ≠ 0`. "
+            "If `C = 0`, the sign can be chosen to match the sign of `B` (or `A` if `B=0`). This ensures `p >= 0`."
+        )
+        st.markdown("**Distance from a Point to the Line (using HNF):**")
+        st.markdown(
+            "Given a point `P(x₀, y₀)`, the signed distance `d` to the line `x cos(α) + y sin(α) - p = 0` is:"
+        )
+        st.latex("d = x_0 \cos(\alpha) + y_0 \sin(\alpha) - p")
+        st.markdown(
+            "- If `d > 0`, the point is on one side of the line (opposite to where the origin is, if `p > 0`).\n"
+            "- If `d < 0`, the point is on the other side (same side as the origin, if `p > 0`).\n"
+            "- If `d = 0`, the point is on the line.\n"
+            "The absolute distance is `|d|`."
+        )
+        st.markdown("**Conceptual Example (Exercise 3NSMD9 adaptation):**")
+        st.markdown(
+            "Problem: Find the HNF and distance from origin for the line `3x - 4y + 10 = 0`. "
+            "Then find the distance from point `P(5, 2)` to this line.\n"
+            "1. Identify `A=3, B=-4, C=10`. Denominator: `√(3² + (-4)²) = √25 = 5`. Since `C=10` is positive, we use `-5`.\n"
+            "   `cos(α) = 3/(-5) = -0.6`\n"
+            "   `sin(α) = -4/(-5) = 0.8`\n"
+            "   `p = 10/5 = 2` (using `|C|/√(A²+B²)`, or `p = -C / (-√(A²+B²))` to match `x cos α + y sin α - p = 0` structure, so `p = -10/(-5) = 2`).\n"
+            "   HNF: `-0.6x + 0.8y - 2 = 0`. Distance from origin is `p=2`.\n"
+            "2. Distance from `P(5, 2)`:\n"
+            "   `d = (5)(-0.6) + (2)(0.8) - 2 = -3 + 1.6 - 2 = -3.4`.\n"
+            "   The absolute distance is `|-3.4| = 3.4`."
+        )
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. The **Point-Line Distance** tool in the calculator (under **Lines and Planes**) typically uses the vector cross product method. "
+            "To use HNF concepts directly:\n"
+            "   - You would first convert your line to the form `Ax + By + C = 0`.\n"
+            "   - Manually calculate `p`, `cos(α)`, `sin(α)` as shown above if you need the HNF parameters explicitly.\n"
+            "   - For distance calculation: The calculator's Point-Line Distance tool is effective if you define the line using two points or a point and a direction vector. "
+            "     You can convert `Ax+By+C=0` to this form (e.g., find two points on the line) if needed for the tool. "
+            "     Alternatively, once you have the HNF formula `x₀ cos(α) + y₀ sin(α) - p`, you can compute the distance with simple arithmetic."
+        )
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
+
+        # --- Distance from a Point to a Line ---
+        st.subheader("Distance from a Point to a Line (Vector Method)")
         st.markdown(
             "To find the shortest distance from a point `P` to a line (in 2D or 3D), where the line is defined by a point `A` on the line and a direction vector `v`."
         )
         st.latex("\text{Line Equation: } X = A + t \cdot v")
         st.latex("\text{Distance } h = \frac{|| \vec{AP} \times v ||}{||v||}")
         st.markdown("Where `AP` is the vector from point `A` on the line to point `P` (i.e., `P - A`). Note that `v` must be a non-zero vector.")
-        
         st.markdown("**Conceptual Example (Exercise CJ1IXZ adaptation):**")
         st.markdown("Problem: Find the distance between point `P=(5,10,0)` and the line defined by `A=(3,0,0)` and direction `v=[2,0,0]`.\n"
             "1. Vector `AP = P - A = [5-3, 10-0, 0-0] = [2, 10, 0]`.\n"
@@ -360,7 +417,63 @@ def render_learning_resources_page():
             "5. Enter the coordinates for point `P` (the point to find the distance from).\n"
             "6. The calculator will compute and display the shortest distance."
         )
-        # Placeholder for Hessian Normal Form / Point-Plane distance to be added later
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
+
+        # --- Hessian Normal Form of a Plane (3D) ---
+        st.subheader("Hessian Normal Form of a Plane (3D)")
+        st.markdown(
+            "Similar to lines in 2D, the Hessian Normal Form (HNF) for a plane in 3D provides a standard way to represent the plane and is useful for calculating distances."
+        )
+        st.markdown("The general equation of a plane in 3D is `Ax + By + Cz + D = 0`. The Hessian Normal Form is:")
+        st.latex("n_x x + n_y y + n_z z - p = 0 \quad \text{or} \quad \mathbf{n} \cdot \mathbf{x} - p = 0")
+        st.markdown(
+            "Where:\n"
+            "- `p` is the perpendicular distance from the origin to the plane (`p >= 0`).\n"
+            "- `\mathbf{n} = [n_x, n_y, n_z]` is the unit normal vector to the plane (pointing from the origin towards the plane if p > 0)."
+        )
+        st.markdown("If you have the general form `Ax + By + Cz + D = 0`, you can convert it to HNF:")
+        st.latex("p = \frac{|D|}{\sqrt{A^2 + B^2 + C^2}}")
+        st.latex("n_x = \frac{A}{\pm\sqrt{A^2 + B^2 + C^2}}, \quad n_y = \frac{B}{\pm\sqrt{A^2 + B^2 + C^2}}, \quad n_z = \frac{C}{\pm\sqrt{A^2 + B^2 + C^2}}")
+        st.markdown(
+            "The sign of the denominator `±√(A² + B² + C²)` is chosen to be opposite to the sign of `D` if `D ≠ 0`. "
+            "If `D = 0`, the sign can be chosen arbitrarily (e.g., to make `n_z` positive, or `n_y` if `n_z=0`, etc.), though consistency is good. This ensures `p >= 0`."
+        )
+        st.markdown("**Distance from a Point to the Plane (using HNF):**")
+        st.markdown(
+            "Given a point `P(x₀, y₀, z₀)`, the signed distance `d_signed` to the plane `n_x x + n_y y + n_z z - p = 0` is:"
+        )
+        st.latex("d_{signed} = n_x x_0 + n_y y_0 + n_z z_0 - p")
+        st.markdown(
+            "- If `d_signed > 0`, the point is on the side of the plane pointed to by the normal vector `n` (opposite to the origin if `p > 0`).\n"
+            "- If `d_signed < 0`, the point is on the other side (same side as the origin if `p > 0`).\n"
+            "- If `d_signed = 0`, the point is on the plane.\n"
+            "The absolute distance is `|d_signed|`."
+        )
+        st.markdown("**Conceptual Example (Exercise NBI87W/BXCVJ7 adaptation):**")
+        st.markdown(
+            "Problem: Find the HNF for the plane `2x - y + 2z - 6 = 0`. "
+            "Then find the distance from point `P(3, 5, 1)` to this plane.\n"
+            "1. Identify `A=2, B=-1, C=2, D=-6`. Denominator: `√(2² + (-1)² + 2²) = √9 = 3`. Since `D=-6` is negative, we use `+3`.\n"
+            "   `n_x = 2/3`\n"
+            "   `n_y = -1/3`\n"
+            "   `n_z = 2/3`\n"
+            "   `p = |-6|/3 = 2`. (Or `p = -D/√(A²+B²+C²) = -(-6)/3 = 2` to fit `... - p = 0`)\n"
+            "   HNF: `(2/3)x - (1/3)y + (2/3)z - 2 = 0`. Distance from origin is `p=2`.\n"
+            "2. Distance from `P(3, 5, 1)`:\n"
+            "   `d_signed = (2/3)(3) + (-1/3)(5) + (2/3)(1) - 2 = 2 - 5/3 + 2/3 - 2 = -3/3 = -1`.\n"
+            "   The absolute distance is `|-1| = 1`."
+        )
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. If a **Point-Plane Distance** tool is available under **Lines and Planes** in the calculator, it will likely ask for the plane equation (e.g., `Ax+By+Cz+D=0` or coefficients) and the point's coordinates.\n"
+            "2. If you need to use HNF concepts directly or no direct tool exists:\n"
+            "   - Convert your plane to `Ax + By + Cz + D = 0` form.\n"
+            "   - Manually calculate `p` and the components of the unit normal vector `n` as shown above if you need the HNF parameters explicitly.\n"
+            "   - For distance calculation, once you have the formula `n_x x_0 + n_y y_0 + n_z z_0 - p`, you can compute the distance with simple arithmetic."
+        )
+
+        st.markdown("*(Placeholder for Point-Plane distance and other advanced Line/Plane topics)*")
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
 
     # Category: Matrix Operations
     with st.expander("Matrix Operations", expanded=False):
