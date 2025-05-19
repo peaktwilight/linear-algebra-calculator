@@ -333,35 +333,25 @@ class LinearAlgebraRichUI:
         
         return matches
     
-    def filter_operations(self, text):
-        """Filter operations based on search text for autocomplete"""
-        if not text:
-            return ["Type to search..."]
-            
-        matches = self.search_operations(text.lower())
-        
-        if not matches:
-            return ["No matches found"]
-            
-        # Format choices with category information
-        return [f"{op_name} [dim]({category})[/dim]" for op_name, _, category in matches]
-    
     def show_interactive_search(self):
         """Show interactive search with live filtering"""
         self.display_header("🔍 Interactive Search")
         self.console.print("[cyan]Start typing to see matching operations...[/cyan]")
         self.console.print()
         
-        # Use questionary's autocomplete feature for interactive searching
         try:
-            result = questionary.autocomplete(
+            # Create a full list of all operations with categories
+            all_ops_with_categories = [f"{op_name} [dim]({category})[/dim]" for op_name, _, category in self.all_operations]
+            all_ops_with_categories.append("⬅️ Back to main menu")
+            
+            # Use the fuzzy select control which provides interactive filtering
+            result = questionary.fuzzy(
                 "Search:",
-                completer=self.filter_operations,
-                style=custom_style,
-                validate=lambda x: x != "Type to search..." and x != "No matches found"
+                choices=all_ops_with_categories,
+                style=custom_style
             ).ask()
             
-            if not result or result in ["Type to search...", "No matches found"]:
+            if not result or result == "⬅️ Back to main menu":
                 return
                 
             # Extract the operation name without the category suffix
