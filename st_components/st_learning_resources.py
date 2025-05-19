@@ -696,7 +696,6 @@ def render_learning_resources_page():
             If no direct tool exists, you would set up and solve the system of linear equations manually, possibly using the "Solve System (Gauss)" tool if you formulate the system in matrix form.
             """)
 
-        st.markdown("*(Placeholder for Point-Plane distance and other advanced Line/Plane topics)*")
         st.markdown("--- --- --- --- --- --- --- --- --- ---")
 
         # --- Intersection Line of Two Planes ---
@@ -770,9 +769,110 @@ def render_learning_resources_page():
             2. Manually set one variable (e.g., `z=0`), form the 2x2 system for `x` and `y`, and solve it. (For example, using the **Solve System (Gauss)** tool by inputting the 2x3 augmented matrix like `A₁,B₁,-D₁;A₂,B₂,-D₂`).
             3. Combine the point and direction vector to write the line equation.
             """)
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
+
+        # --- Distance from a Point to a Plane ---
+        st.subheader("Distance from a Point to a Plane")
+        st.markdown("""
+            To find the shortest distance from a point `P(x₀, y₀, z₀)` to a plane defined by the equation `Ax + By + Cz + D = 0`.
+            """)
+        st.markdown("""**Formula:**""")
+        st.latex("\text{Distance} = \frac{|Ax_0 + By_0 + Cz_0 + D|}{\sqrt{A^2 + B^2 + C^2}}")
+        st.markdown("""
+            Where:
+            - `(x₀, y₀, z₀)` are the coordinates of the point.
+            - `A, B, C` are the coefficients of the plane equation, forming the normal vector `\mathbf{n} = [A, B, C]` to the plane.
+            - `D` is the constant term in the plane equation.
+            - The denominator `√(A² + B² + C²)` is the magnitude of the normal vector `||\mathbf{n}||`.
+            """)
+        st.markdown("""
+            **Relation to Hessian Normal Form (HNF):**
+            Recall the HNF of a plane: `n_x x + n_y y + n_z z - p = 0`, where `\mathbf{n_{unit}} = [n_x, n_y, n_z]` is the unit normal vector and `p` is the distance from the origin to the plane.
+            The signed distance from a point `P(x₀, y₀, z₀)` to this plane is `d_s = n_x x₀ + n_y y₀ + n_z z₀ - p`.
+            The formula `|Ax₀ + By₀ + Cz₀ + D| / ||n||` is equivalent to `|d_s|`.
+            If the plane equation `Ax + By + Cz + D = 0` is normalized by dividing by `||n||` (and adjusting D such that `p = -D_{norm} >=0`), it becomes the HNF, and the distance formula simplifies to `|x_0 n_x + y_0 n_y + z_0 n_z + D_{norm}|` which is `|x_0 n_x + y_0 n_y + z_0 n_z - p|`.
+            """)
+        st.markdown("""**Conceptual Example (Exercise NBI87W/3PG76V adaptation):**""")
+        st.markdown("""
+            Problem: Find the distance from point `P(3, 5, 1)` to the plane `2x - y + 2z - 6 = 0`.
+            1. Identify point coordinates: `x₀=3, y₀=5, z₀=1`.
+            2. Identify plane coefficients: `A=2, B=-1, C=2, D=-6`.
+            3. Calculate the numerator: `|A x₀ + B y₀ + C z₀ + D| = |(2)(3) + (-1)(5) + (2)(1) - 6| = |6 - 5 + 2 - 6| = |-3| = 3`.
+            4. Calculate the magnitude of the normal vector: `√(A² + B² + C²) = √(2² + (-1)² + 2²) = √(4 + 1 + 4) = √9 = 3`.
+            5. Distance = `3 / 3 = 1`.
+            (This matches the result obtained using the HNF method in the "Hessian Normal Form of a Plane (3D)" section for the same example.)
+            """)
+        st.markdown("""**How to use the calculator for this:**""")
+        st.markdown("""
+            A "Point-Plane Distance" tool (if available under **Lines and Planes**) would typically require:
+            1. The coefficients of the plane equation (`A, B, C, D`).
+            2. The coordinates of the point (`x₀, y₀, z₀`).
+            The calculator would then directly apply the formula to compute the distance.
+            
+            Alternatively, if the plane is defined by three points, or a point and two vectors, the calculator might first determine the `Ax + By + Cz + D = 0` form before calculating the distance.
+            """)
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
+
+        # --- Intersection of a Line and a Plane ---
+        st.subheader("Intersection of a Line and a Plane")
+        st.markdown("""
+            A line in 3D space can intersect a plane at a single point, lie entirely within the plane, or be parallel to the plane without intersecting it.
+            """)
+        st.markdown("""
+            **Setup:**
+            - Line `L`: Parametric form `\mathbf{x} = P_0 + t \cdot \mathbf{v}`, where `P_0 = (x₀, y₀, z₀)` is a point on the line and `\mathbf{v} = [v_x, v_y, v_z]` is its direction vector.
+            - Plane `Π`: General form `Ax + By + Cz + D = 0`, with normal vector `\mathbf{n} = [A, B, C]`.
+            """)
+        st.markdown("""
+            **Condition for Intersection and Finding the Point:**
+            1.  **Check for Parallelism**: Calculate the dot product `\mathbf{n} \cdot \mathbf{v}`.
+                - If `\mathbf{n} \cdot \mathbf{v} = 0`: The line is parallel to the plane (or lies within it).
+                    - To check if it lies within the plane, take any point on the line (e.g., `P_0`) and substitute its coordinates into the plane equation (`Ax₀ + By₀ + Cz₀ + D`).
+                    - If `Ax₀ + By₀ + Cz₀ + D = 0`, the point is on the plane, so the entire line lies in the plane (infinite intersection points).
+                    - If `Ax₀ + By₀ + Cz₀ + D ≠ 0`, the line is parallel to the plane and does not intersect it (no intersection points).
+                - If `\mathbf{n} \cdot \mathbf{v} ≠ 0`: The line intersects the plane at exactly one point.
+
+            2.  **Finding the Intersection Point (if `\mathbf{n} \cdot \mathbf{v} ≠ 0`):**
+                Substitute the parametric equations of the line into the plane equation:
+                `A(x₀ + t v_x) + B(y₀ + t v_y) + C(z₀ + t v_z) + D = 0`
+                
+                Solve for the parameter `t`:
+                `A x₀ + A t v_x + B y₀ + B t v_y + C z₀ + C t v_z + D = 0`
+                `t (A v_x + B v_y + C v_z) = -(A x₀ + B y₀ + C z₀ + D)`
+                `t (\mathbf{n} \cdot \mathbf{v}) = -(\mathbf{n} \cdot P_0 + D)`
+                """)
+        st.latex("t = - \frac{\mathbf{n} \cdot P_0 + D}{\mathbf{n} \cdot \mathbf{v}}")
+        st.markdown("""
+            Once `t` is found, substitute this value back into the line's parametric equation `\mathbf{x} = P_0 + t \cdot \mathbf{v}` to get the coordinates of the intersection point.
+            """)
+        st.markdown("""**Conceptual Example (XF7SAW adaptation):**""")
+        st.markdown("""
+            Line: `P₀ = (1,2,3)`, `v = (1,1,1)` (so `x=1+t, y=2+t, z=3+t`)
+            Plane: `2x - y + z - 4 = 0` (so `n = [2, -1, 1]`, `D = -4`)
+            
+            1. Check `n ⋅ v`: `(2)(1) + (-1)(1) + (1)(1) = 2 - 1 + 1 = 2`. Since `2 ≠ 0`, they intersect at one point.
+            2. Calculate `n ⋅ P₀`: `(2)(1) + (-1)(2) + (1)(3) = 2 - 2 + 3 = 3`.
+            3. Solve for `t`:
+               `t = - ( (n ⋅ P₀) + D ) / (n ⋅ v) = - (3 - 4) / 2 = - (-1) / 2 = 1/2`.
+            4. Substitute `t = 1/2` into line equation:
+               `x = 1 + 1/2 = 1.5`
+               `y = 2 + 1/2 = 2.5`
+               `z = 3 + 1/2 = 3.5`
+               Intersection point: `(1.5, 2.5, 3.5)`.
+            (Check in plane: `2(1.5) - 2.5 + 3.5 - 4 = 3 - 2.5 + 3.5 - 4 = 0.5 + 3.5 - 4 = 4 - 4 = 0`. Correct.)
+            """)
+        st.markdown("""**How to use the calculator for this:**""")
+        st.markdown("""
+            A "Line-Plane Intersection" tool (if available) would typically require:
+            1. Definition of the line (e.g., point `P₀` and direction vector `\mathbf{v}`).
+            2. Definition of the plane (e.g., coefficients `A, B, C, D`, or normal vector `\mathbf{n}` and point `P₀` on plane).
+            The calculator would then:
+            - Determine if the line is parallel to the plane, lies within it, or intersects at a single point.
+            - If a single intersection point exists, provide its coordinates.
+            If no direct tool exists, you would perform the dot products and solve for `t` manually, then substitute back into the line equation.
+            """)
 
         st.markdown("*(Placeholder for Point-Plane distance and other advanced Line/Plane topics)*")
-        st.markdown("--- --- --- --- --- --- --- --- --- ---")
 
     # Category: Matrix Operations
     with st.expander("Matrix Operations", expanded=False):
