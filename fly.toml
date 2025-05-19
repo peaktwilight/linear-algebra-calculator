@@ -15,7 +15,7 @@ primary_region = 'fra'
 [http_service]
   internal_port = 8501
   force_https = true
-  auto_stop_machines = 'stop'
+  auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
@@ -32,6 +32,16 @@ primary_region = 'fra'
   [http_service.concurrency]
     hard_limit = 25
     soft_limit = 20
+
+[checks]
+  [checks.health]
+    port = 8501
+    type = "http"
+    interval = "15s"
+    timeout = "10s"
+    grace_period = "30s"
+    method = "get"
+    path = "/_stcore/health"
 
 # This section is not needed as we've defined the services in http_service
 # Remove the empty services section
