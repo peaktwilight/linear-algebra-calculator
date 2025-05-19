@@ -1920,6 +1920,16 @@ def main():
         "It provides visualizations and step-by-step calculations for various "
         "linear algebra operations."
     )
+    
+    # Version info and deployment notice
+    st.sidebar.markdown("---")
+    st.sidebar.markdown(
+        "<div style='text-align: center;'>"
+        "<small>Version 1.4.0 | Deployed on Fly.io</small><br>"
+        "<small>© 2025 Doruk | FHNW Linear Algebra Module</small>"
+        "</div>", 
+        unsafe_allow_html=True
+    )
 
 
 if __name__ == "__main__":
