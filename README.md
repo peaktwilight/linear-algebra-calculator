@@ -1,14 +1,17 @@
 # Linear Algebra Exercise Framework
 
-A comprehensive CLI tool for solving linear algebra problems and exercises.
+A comprehensive framework for learning and solving linear algebra problems.
 
 ## Features
 
-- Vector operations (polar coordinates, normalization, shadows, cross products)
-- Matrix operations (addition, scalar multiplication, matrix product)
-- Linear equation systems (Gaussian elimination, pivots, free variables)
-- Geometric calculations (triangles, distances, intersections of planes)
-- Series calculations and symbolic math
+- Interactive UI with detailed explanations and guidance
+- Vector operations (normalization, projections, angles, cross products)
+- Matrix operations (addition, multiplication, transformation)
+- Linear equation systems (Gaussian elimination, parametric solutions)
+- Geometric calculations (distances, plane intersections)
+- Comprehensive help system for learning linear algebra concepts
+- Example exercises with step-by-step solutions
+- Problem recognition quiz to improve problem-solving skills
 
 ## Installation
 
@@ -18,78 +21,105 @@ git clone https://github.com/your-username/linear-algebra-framework.git
 cd linear-algebra-framework
 
 # Install dependencies
-pip install numpy sympy scipy
+pip install numpy sympy scipy rich questionary
 ```
 
 ## Usage
 
-```bash
-python linalg_cli.py <command> [options]
-```
+The framework offers multiple interfaces:
 
-Run with `--help` to see available commands:
+### Enhanced UI (Recommended for Learning)
 
 ```bash
-python linalg_cli.py --help
+./enhanced_ui.py
 ```
+
+Features:
+- Interactive menus with explanations
+- Comprehensive help system
+- Example exercises with solutions
+- Problem recognition guidance
+- Quizzes to test understanding
+
+### Rich UI
+
+```bash
+./ui_rich.py
+```
+
+Features:
+- Interactive interface with color-coded outputs
+- Input format guides
+- Operation explanations
+
+### Command Line Interface
+
+```bash
+./linalg_cli.py <command> [options]
+```
+
+For help on available commands:
+```bash
+./linalg_cli.py --help
+```
+
+## Learning Resources
+
+The Enhanced UI includes a "Learning Resources" section with:
+
+1. **Browse help topics** - Detailed explanations of linear algebra concepts
+2. **Example exercises** - Practice problems with step-by-step solutions
+3. **Linear algebra guide** - Structured learning path for all concepts
+4. **Common homework patterns** - Strategies for typical homework problems
+5. **Problem recognition guide** - Learn to identify problem types
 
 ## Examples
 
 ### Vector Operations
 
-Convert polar coordinates to Cartesian:
-```bash
-python linalg_cli.py polar_to_cartesian --r 5 --phi 45 --degrees
-```
-
 Normalize a vector:
-```bash
-python linalg_cli.py normalize_vector --vector "3, 4"
+```
+Select category: Vector Operations
+Select operation: Normalize a vector
+Enter vector: 3, 4
 ```
 
-Calculate the vector projection (shadow):
-```bash
-python linalg_cli.py vector_shadow --vector_a "3, -4" --vector_b "12, -1"
+Calculate vector projection:
+```
+Select category: Vector Operations
+Select operation: Calculate vector shadow (projection)
+Enter vector to project onto: 3, -4
+Enter vector to be projected: 12, -1
 ```
 
 ### Matrix Operations
 
 Solve a system of linear equations:
-```bash
-python linalg_cli.py solve_gauss --matrix "1, -4, -2, -25; 0, -3, 6, -18; 7, -13, -4, -85"
 ```
-
-Find intersections of planes:
-```bash
-python linalg_cli.py intersection_planes --matrix "2, 1, -2, -1; 1, 8, -4, 10; 6, -1, 18, 81"
+Select category: Matrix Operations
+Select operation: Solve system with Gaussian elimination
+Enter augmented matrix: 1, -4, -2, -25; 0, -3, 6, -18; 7, -13, -4, -85
 ```
 
 Calculate matrix product:
-```bash
-python linalg_cli.py matrix_product --matrix_a "0, 4, 2; 2, -1, 5; 6, 0, -3" --matrix_b "4, 1, 9; 5, 4, 2; -3, 5, 2"
+```
+Select category: Matrix Operations
+Select operation: Calculate matrix product
+Enter first matrix: 0, 4, 2; 2, -1, 5; 6, 0, -3
+Enter second matrix: 4, 1, 9; 5, 4, 2; -3, 5, 2
 ```
 
-### Other Operations
+## For Students
 
-Calculate the sum of a series:
-```bash
-python linalg_cli.py sum_series --start 0 --end 15 --formula "5+3*i"
-```
+The framework is designed to help you learn linear algebra concepts while solving exercises:
 
-Check if vectors are orthogonal:
-```bash
-python linalg_cli.py check_orthogonal --vector "1, 5, 2" --check_vectors "263, -35, -44" "71, 5, -48"
-```
+1. **If you're new to linear algebra**: Start with the "Learning Resources" section in the Enhanced UI to understand the fundamentals.
 
-Calculate the distance from a point to a plane:
-```bash
-python linalg_cli.py point_plane_distance --normal "4, 0, -3" --plane_point "5, 1, -2" --point "10, 4, -12"
-```
+2. **If you're struggling with homework**: Use the "Common homework patterns" guide to identify solution strategies for your specific problem type.
 
-## Input Formats
+3. **If you need to understand concepts**: Each operation includes detailed explanations and formula derivations.
 
-- Vectors: `"x1, x2, x3"` or `"x1 x2 x3"`
-- Matrices: `"a, b, c; d, e, f"` (semicolons separate rows, commas separate elements)
+4. **If you want to practice**: Try the example exercises and problem recognition quiz to test your understanding.
 
 ## License
 
