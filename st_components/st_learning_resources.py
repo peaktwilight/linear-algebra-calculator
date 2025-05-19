@@ -1049,7 +1049,7 @@ Solution: `x = 1`, `y = 2`.""" )
             "4. The calculator will perform Gaussian elimination, show the RREF, and provide the solution or indicate the type of solution (no solution, infinitely many)."
         )
 
-    st.markdown("---")
+        st.markdown("---")
     st.info("More topics and interactive examples will be added soon!")
 
 # Example of how this might be called in streamlit_app.py (for testing purposes)
