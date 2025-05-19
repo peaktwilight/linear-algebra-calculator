@@ -1822,19 +1822,24 @@ class LinAlgCalculator:
                 elif isinstance(result, np.ndarray):
                     # Case: Unique solution
                     st.markdown("The system has a unique solution:")
-                    solution_box = """
-                    <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
-                        <p style="font-size: 16px; text-align: center;">
-                    """
-                    for i, val in enumerate(result):
-                        if abs(val) < 1e-10:  # Handle very small values
-                            val = 0
-                        solution_box += f"$x_{i+1} = {val:.4g}$<br>"
-                    solution_box += """
-                        </p>
+                    
+                    solution_latex_parts = []
+                    for i, val_raw in enumerate(result):
+                        val = 0 if abs(val_raw) < 1e-10 else val_raw # Handle very small values
+                        solution_latex_parts.append(f"x_{{{i+1}}} &= {val:.4g}")
+                    
+                    # Construct the LaTeX string for the aligned environment
+                    # Each part is already like "x_1 &= -1", so we join them with " \\\\ " for LaTeX newline
+                    aligned_content = " \\\\ \\n".join(solution_latex_parts)
+                    solution_latex_aligned = f"\\begin{{aligned}}\\n{aligned_content}\\n\\end{{aligned}}"
+                    
+                    # Embed in the styled div
+                    solution_display_box = f'''
+                    <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px; text-align: center;">
+                        ${solution_latex_aligned}$
                     </div>
-                    """
-                    st.markdown(solution_box, unsafe_allow_html=True)
+                    '''
+                    st.markdown(solution_display_box, unsafe_allow_html=True)
                 else:
                     st.error("No solution exists (system is inconsistent)")
         
