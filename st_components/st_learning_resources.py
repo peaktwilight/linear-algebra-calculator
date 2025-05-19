@@ -387,7 +387,7 @@ def render_learning_resources_page():
             "For a line in 2D, it's particularly useful for calculating the perpendicular distance from a point to the line."
         )
         st.markdown("The general equation of a line in 2D is `Ax + By + C = 0`. The Hessian Normal Form is:")
-        st.latex("x \cdot \cos(\alpha) + y \cdot \sin(\alpha) - p = 0")
+        st.latex(r"x \cdot \cos(\alpha) + y \cdot \sin(\alpha) - p = 0 ") # Raw string
         st.markdown(
             "Where:\n"
             "- `p` is the perpendicular distance from the origin to the line (`p >= 0`).\n"
@@ -395,8 +395,8 @@ def render_learning_resources_page():
         )
         st.markdown("The vector `n = [cos(α), sin(α)]` is a unit normal vector to the line.")
         st.markdown("If you have the general form `Ax + By + C = 0`, you can convert it to HNF:")
-        st.latex("p = \frac{|C|}{\sqrt{A^2 + B^2}}")
-        st.latex("\cos(\alpha) = \frac{A}{\pm\sqrt{A^2 + B^2}}, \quad \sin(\alpha) = \frac{B}{\pm\sqrt{A^2 + B^2}}")
+        st.latex(r"p = \frac{|C|}{\sqrt{A^2 + B^2}}") # Raw string
+        st.latex(r"\cos(\alpha) = \frac{A}{\pm\sqrt{A^2 + B^2}}, \quad \sin(\alpha) = \frac{B}{\pm\sqrt{A^2 + B^2}}") # Raw string
         st.markdown(
             "The sign of the denominator `±√(A² + B²)` is chosen to be opposite to the sign of `C` if `C ≠ 0`. "
             "If `C = 0`, the sign can be chosen to match the sign of `B` (or `A` if `B=0`). This ensures `p >= 0`."
@@ -405,7 +405,7 @@ def render_learning_resources_page():
         st.markdown(
             "Given a point `P(x₀, y₀)`, the signed distance `d` to the line `x cos(α) + y sin(α) - p = 0` is:"
         )
-        st.latex("d = x_0 \cos(\alpha) + y_0 \sin(\alpha) - p")
+        st.latex(r"d = x_0 \cos(\alpha) + y_0 \sin(\alpha) - p") # Raw string
         st.markdown(
             "- If `d > 0`, the point is on one side of the line (opposite to where the origin is, if `p > 0`).\n"
             "- If `d < 0`, the point is on the other side (same side as the origin, if `p > 0`).\n"
