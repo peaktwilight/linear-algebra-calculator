@@ -23,130 +23,118 @@ class LinAlgCalculator:
     def __init__(self):
         self.framework = LinearAlgebraExerciseFramework()
     
-    def display_vector_visualization(self, vectors, names=None, origin=None):
-        """Create a visualization for vectors."""
+    def display_vector_visualization(self, vectors, names=None, origin=None, construction_lines=None):
+        """Create a visualization for vectors, optionally with construction lines."""
         if names is None:
             names = [f"Vector {i+1}" for i in range(len(vectors))]
         
-        # Make sure all vectors are of the same dimensionality (2D or 3D)
-        dim = len(vectors[0])
-        for vec in vectors:
-            if len(vec) != dim:
-                st.warning(f"Cannot visualize vectors with different dimensions: {dim} vs {len(vec)}")
-                return
+        # Determine dimension
+        dim = 0
+        if vectors and len(vectors[0]) > 0:
+            dim = len(vectors[0])
+        elif construction_lines and construction_lines[0][0] is not None and len(construction_lines[0][0]) > 0:
+            dim = len(construction_lines[0][0])
+        elif construction_lines and construction_lines[0][1] is not None and len(construction_lines[0][1]) > 0:
+            dim = len(construction_lines[0][1])
+        else:
+            st.warning("Cannot determine dimension for visualization.")
+            return
+
+        if not vectors: # If primary vectors list is empty, but we have lines
+             st.info("Visualizing construction lines only.")
+        else: # Validate primary vectors
+            for vec in vectors:
+                if len(vec) != dim:
+                    st.warning(f"Cannot visualize. Primary vectors have mixed dimensions or don't match construction lines: expected {dim} vs {len(vec)}")
+                    return
         
         if origin is None:
             origin = np.zeros(dim)
         
+        fig = go.Figure()
+        max_val = 1.0 # Start with a default to avoid issues with all-zero vectors/lines
+
         if dim == 2:
-            # Create a 2D visualization using plotly
-            fig = go.Figure()
+            # Add primary vectors as arrows
+            if vectors:
+                for i, vec in enumerate(vectors):
+                    current_max_coord = max(abs(v_comp) for v_comp in vec[:2]) if len(vec) >= 2 else 0
+                    max_val = max(max_val, current_max_coord)
+                    fig.add_trace(go.Scatter(
+                        x=[origin[0], origin[0] + vec[0]],
+                        y=[origin[1], origin[1] + vec[1]],
+                        mode='lines+markers',
+                        name=names[i] if names and i < len(names) else f"Vector {i+1}",
+                        line=dict(width=3),
+                        marker=dict(size=[0, 10])
+                    ))
+
+            # Add construction lines if any
+            if construction_lines:
+                for p1, p2, name, style_dict in construction_lines:
+                    p1_2d = p1[:2] if len(p1) >= 2 else np.array([0.0, 0.0])
+                    p2_2d = p2[:2] if len(p2) >= 2 else np.array([0.0, 0.0])
+                    current_max_coord = max(abs(p1_2d[0]), abs(p1_2d[1]), abs(p2_2d[0]), abs(p2_2d[1]))
+                    max_val = max(max_val, current_max_coord)
+                    fig.add_trace(go.Scatter(
+                        x=[p1_2d[0], p2_2d[0]],
+                        y=[p1_2d[1], p2_2d[1]],
+                        mode='lines',
+                        name=name,
+                        line=style_dict
+                    ))
             
-            # Add vectors as arrows
-            max_val = 0
-            for i, vec in enumerate(vectors):
-                max_val = max(max_val, max(abs(vec[0]), abs(vec[1])))
-                fig.add_trace(go.Scatter(
-                    x=[origin[0], origin[0] + vec[0]],
-                    y=[origin[1], origin[1] + vec[1]],
-                    mode='lines+markers',
-                    name=names[i],
-                    line=dict(width=3),
-                    marker=dict(size=[0, 10])
-                ))
-            
-            # Add grid and configuration
             fig.update_layout(
-                xaxis=dict(
-                    range=[-max_val * 1.2, max_val * 1.2],
-                    zeroline=True,
-                    zerolinewidth=2,
-                    zerolinecolor='white',
-                    showgrid=True,
-                    gridwidth=1,
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    color='white',
-                ),
-                yaxis=dict(
-                    range=[-max_val * 1.2, max_val * 1.2],
-                    zeroline=True,
-                    zerolinewidth=2,
-                    zerolinecolor='white',
-                    showgrid=True,
-                    gridwidth=1,
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    color='white',
-                ),
-                title="Vector Visualization",
-                title_font_color="white",
-                showlegend=True,
-                width=600,
-                height=600,
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0.1)',
-                legend=dict(font=dict(color="white")),
+                xaxis=dict(range=[-max_val * 1.2, max_val * 1.2], zeroline=True, zerolinewidth=2, zerolinecolor='white', showgrid=True, gridwidth=1, gridcolor='rgba(255, 255, 255, 0.2)', color='white'),
+                yaxis=dict(range=[-max_val * 1.2, max_val * 1.2], zeroline=True, zerolinewidth=2, zerolinecolor='white', showgrid=True, gridwidth=1, gridcolor='rgba(255, 255, 255, 0.2)', color='white'),
+                title="Vector Visualization", title_font_color="white", showlegend=True, width=600, height=600, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0.1)', legend=dict(font=dict(color="white")),
             )
-            
             st.plotly_chart(fig)
         
         elif dim == 3:
-            # Create a 3D visualization using plotly
-            fig = go.Figure()
+            if vectors:
+                for i, vec in enumerate(vectors):
+                    current_max_coord = max(abs(v_comp) for v_comp in vec[:3]) if len(vec) >= 3 else 0
+                    max_val = max(max_val, current_max_coord)
+                    fig.add_trace(go.Scatter3d(
+                        x=[origin[0], origin[0] + vec[0]],
+                        y=[origin[1], origin[1] + vec[1]],
+                        z=[origin[2], origin[2] + vec[2]],
+                        mode='lines+markers',
+                        name=names[i] if names and i < len(names) else f"Vector {i+1}",
+                        line=dict(width=6),
+                        marker=dict(size=[0, 8])
+                    ))
+
+            if construction_lines:
+                for p1, p2, name, style_dict in construction_lines:
+                    p1_3d = p1[:3] if len(p1) >= 3 else np.array([0.0, 0.0, 0.0])
+                    p2_3d = p2[:3] if len(p2) >= 3 else np.array([0.0, 0.0, 0.0])
+                    current_max_coord = max(abs(p1_3d[0]), abs(p1_3d[1]), abs(p1_3d[2]), abs(p2_3d[0]), abs(p2_3d[1]), abs(p2_3d[2]))
+                    max_val = max(max_val, current_max_coord)
+                    fig.add_trace(go.Scatter3d(
+                        x=[p1_3d[0], p2_3d[0]],
+                        y=[p1_3d[1], p2_3d[1]],
+                        z=[p1_3d[2], p2_3d[2]],
+                        mode='lines',
+                        name=name,
+                        line=style_dict
+                    ))
             
-            # Add vectors as arrows
-            max_val = 0
-            for i, vec in enumerate(vectors):
-                max_val = max(max_val, max(abs(vec[0]), abs(vec[1]), abs(vec[2])))
-                fig.add_trace(go.Scatter3d(
-                    x=[origin[0], origin[0] + vec[0]],
-                    y=[origin[1], origin[1] + vec[1]],
-                    z=[origin[2], origin[2] + vec[2]],
-                    mode='lines+markers',
-                    name=names[i],
-                    line=dict(width=6),
-                    marker=dict(size=[0, 8])
-                ))
-            
-            # Add grid and configuration
             fig.update_layout(
                 scene=dict(
-                    xaxis=dict(
-                        range=[-max_val * 1.2, max_val * 1.2], 
-                        title="X",
-                        color="white",
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
-                    ),
-                    yaxis=dict(
-                        range=[-max_val * 1.2, max_val * 1.2], 
-                        title="Y",
-                        color="white",
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
-                    ),
-                    zaxis=dict(
-                        range=[-max_val * 1.2, max_val * 1.2], 
-                        title="Z",
-                        color="white",
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
-                    ),
-                    aspectmode='cube',
-                ),
-                title="3D Vector Visualization",
-                title_font_color="white",
-                width=700,
-                height=700,
-                paper_bgcolor='rgba(0,0,0,0)',
-                legend=dict(font=dict(color="white")),
+                    xaxis=dict(range=[-max_val * 1.2, max_val * 1.2], title="X", color="white", gridcolor='rgba(255, 255, 255, 0.2)', backgroundcolor='rgba(0,0,0,0.1)'),
+                    yaxis=dict(range=[-max_val * 1.2, max_val * 1.2], title="Y", color="white", gridcolor='rgba(255, 255, 255, 0.2)', backgroundcolor='rgba(0,0,0,0.1)'),
+                    zaxis=dict(range=[-max_val * 1.2, max_val * 1.2], title="Z", color="white", gridcolor='rgba(255, 255, 255, 0.2)', backgroundcolor='rgba(0,0,0,0.1)'),
+                    aspectmode='cube'),
+                title="3D Vector Visualization", title_font_color="white", width=700, height=700, paper_bgcolor='rgba(0,0,0,0)', legend=dict(font=dict(color="white")),
             )
-            
             st.plotly_chart(fig)
         else:
             st.info(f"Cannot visualize {dim}-dimensional vectors directly. Using tabular representation instead.")
-            # Display vectors as a table
-            vector_df = pd.DataFrame(vectors, index=names)
-            st.table(vector_df)
+            if vectors: # Only show table if there are primary vectors
+                vector_df = pd.DataFrame(vectors, index=names if names else [f"Vector {i+1}" for i in range(len(vectors))])
+                st.table(vector_df)
     
     def display_matrix_heatmap(self, matrix, title="Matrix Visualization"):
         """Create a heatmap visualization for matrices."""
@@ -261,26 +249,27 @@ class LinAlgCalculator:
             
             # Create a more structured output
             st.markdown("**Input vectors:**")
-            st.markdown(f"$\\vec{{a}} = {a.tolist()}$")
-            st.markdown(f"$\\vec{{b}} = {b.tolist()}$")
+            st.markdown(f"$\\vec{{a}} = {a.tolist()}$") # Corrected LaTeX f-string
+            st.markdown(f"$\\vec{{b}} = {b.tolist()}$") # Corrected LaTeX f-string
             
             st.markdown("**Dot product calculation:**")
             dot_formula = " + ".join([f"({a[i]} \\cdot {b[i]})" for i in range(len(a))])
-            st.markdown(f"$\\vec{{a}} \\cdot \\vec{{b}} = {dot_formula} = {dot_product:.4f}$")
+            st.markdown(f"$\\vec{{a}} \\cdot \\vec{{b}} = {dot_formula} = {dot_product:.4f}$") # Corrected LaTeX f-string
             
             st.markdown("**Magnitude calculations:**")
-            st.markdown(f"$|\\vec{{a}}|^2 = {' + '.join([f'({v})^2' for v in a])} = {norm_a_squared:.4f}$")
-            st.markdown(f"$|\\vec{{a}}| = \\sqrt{{{norm_a_squared:.4f}}} = {norm_a:.4f}$")
+            st.markdown(f"$|\\vec{{a}}|^2 = {' + '.join([f'({v})^2' for v in a])} = {norm_a_squared:.4f}$") # Corrected LaTeX f-string
+            st.markdown(f"$|\\vec{{a}}| = \\sqrt{{{norm_a_squared:.4f}}} = {norm_a:.4f}$") # Corrected LaTeX f-string
             
             st.markdown("**Scalar projection calculation:**")
-            st.markdown(f"$\\text{{scalar_proj}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{|\\vec{{a}}|}} = \\frac{{{dot_product:.4f}}}{{{norm_a:.4f}}} = {scalar_proj:.4f}$")
+            st.markdown(f"$\\text{{scalar_proj}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{|\\vec{{a}}|}} = \\frac{{{dot_product:.4f}}}{{{norm_a:.4f}}} = {scalar_proj:.4f}$") # Corrected LaTeX f-string
             
             st.markdown("**Vector projection calculation:**")
-            st.markdown(f"$\\text{{vector_proj}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{\\vec{{a}} \\cdot \\vec{{a}}}} \\vec{{a}} = \\frac{{{dot_product:.4f}}}{{{norm_a_squared:.4f}}} \\cdot {a.tolist()} = {vector_proj.tolist()}$")
+            st.markdown(f"$\\text{{vector_proj}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{\\vec{{a}} \\cdot \\vec{{a}}}} \\vec{{a}} = \\frac{{{dot_product:.4f}}}{{{norm_a_squared:.4f}}} \\cdot {a.tolist()} = {vector_proj.tolist()}$") # Corrected LaTeX f-string
             
             # Add explanation of what the projection means
             st.markdown("**Interpretation:**")
-            st.markdown("""
+            st.markdown( # Corrected multi-line string
+            """
             The projection of vector b onto vector a represents how much of vector b points in the direction of a.
             - **Scalar projection**: Length of the shadow of vector b when cast onto the line along vector a
             - **Vector projection**: The resulting vector along the direction of a
@@ -288,7 +277,21 @@ class LinAlgCalculator:
         
         with col2:
             st.markdown("### Visualization")
-            self.display_vector_visualization([a, b, vector_proj], names=["Vector a", "Vector b", "Projection of b onto a"])
+            
+            # Define the construction line for the shadow
+            # It goes from the tip of b to the tip of vector_proj
+            # The points are b (tip of vector b) and vector_proj (tip of projection vector, which is itself a vector from origin)
+            # So the line segment is from point b to point vector_proj.
+            shadow_line_style = dict(dash='dash', color='rgba(220, 220, 220, 0.6)', width=2) # Lighter color for dash
+            construction_lines = [
+                (b, vector_proj, "Projection Line", shadow_line_style)
+            ]
+            
+            self.display_vector_visualization(
+                [a, b, vector_proj], 
+                names=["Vector a", "Vector b", "Projection of b onto a"],
+                construction_lines=construction_lines
+            )
             
             # Add projection magnitude display
             projection_box = f"""
