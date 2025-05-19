@@ -334,48 +334,51 @@ class LinearAlgebraRichUI:
         return matches
     
     def show_interactive_search(self):
-        """Show interactive search with live filtering"""
-        self.display_header("🔍 Interactive Search")
-        self.console.print("[cyan]Start typing to see matching operations...[/cyan]")
-        self.console.print()
+        """Show search functionality"""
+        self.display_header("🔍 Search Operations")
         
-        try:
-            # Create a full list of all operations with categories
-            all_ops_with_categories = [f"{op_name} [dim]({category})[/dim]" for op_name, _, category in self.all_operations]
-            all_ops_with_categories.append("⬅️ Back to main menu")
+        # Get search term
+        search_term = questionary.text(
+            "Enter search term:",
+            style=custom_style
+        ).ask()
+        
+        if not search_term or not search_term.strip():
+            return
             
-            # Use the fuzzy select control which provides interactive filtering
-            result = questionary.fuzzy(
-                "Search:",
-                choices=all_ops_with_categories,
-                style=custom_style
-            ).ask()
-            
-            if not result or result == "⬅️ Back to main menu":
-                return
-                
-            # Extract the operation name without the category suffix
-            selected_op = result.split(" [dim]")[0]
-            
-            # Find and execute the selected operation
-            for op_name, op_func, _ in self.all_operations:
-                if op_name == selected_op:
-                    op_func()
-                    break
-        except Exception as e:
-            self.console.print(f"[bold red]Error:[/bold red] {str(e)}")
-            self.wait_for_user()
+        # Find matches
+        matches = self.search_operations(search_term.strip())
+        
+        # Show results
+        self.show_search_results(matches)
             
     def show_search_results(self, matches):
         """Display and handle search results"""
         if not matches:
+            self.display_header("🔍 Search Results")
             self.console.print("[yellow]No matching operations found.[/yellow]")
             self.wait_for_user()
             return
         
-        # Format choices with category information
-        choices = [f"{op_name} [dim]({category})[/dim]" for op_name, _, category in matches]
-        choices.append("Back to main menu")
+        # Group results by category for better organization
+        categories = {}
+        for op_name, op_func, category in matches:
+            if category not in categories:
+                categories[category] = []
+            categories[category].append((op_name, op_func))
+        
+        # Create nicely formatted choices with category headers
+        choices = []
+        for category, operations in categories.items():
+            # Add category header
+            choices.append(questionary.Separator(f"[bold cyan]--- {category} ---[/bold cyan]"))
+            # Add operations under this category
+            for op_name, _ in operations:
+                choices.append(op_name)
+        
+        # Add back option
+        choices.append(questionary.Separator("――――――――――――――――――――――――――"))
+        choices.append("⬅️ Back to main menu")
         
         self.display_header("🔍 Search Results")
         selected = questionary.select(
@@ -384,15 +387,12 @@ class LinearAlgebraRichUI:
             style=custom_style
         ).ask()
         
-        if selected == "Back to main menu" or selected is None:
+        if selected == "⬅️ Back to main menu" or selected is None:
             return
-        
-        # Extract the operation name without the category suffix
-        selected_op = selected.split(" [dim]")[0]
         
         # Find and execute the selected operation
         for op_name, op_func, _ in matches:
-            if op_name == selected_op:
+            if op_name == selected:
                 op_func()
                 break
     
@@ -403,7 +403,7 @@ class LinearAlgebraRichUI:
             # Create list of categories for selection
             categories = list(self.categories.keys())
             # Add search option at the top and exit with emoji
-            main_choices = ["🔍 Interactive Search"] + categories + ["🚪 Exit"]
+            main_choices = ["🔍 Search All Operations"] + categories + ["🚪 Exit"]
             
             selection = questionary.select(
                 "Select a category or search:",
@@ -413,7 +413,7 @@ class LinearAlgebraRichUI:
             
             if selection == "🚪 Exit" or selection is None:
                 sys.exit(0)
-            elif selection == "🔍 Interactive Search":
+            elif selection == "🔍 Search All Operations":
                 self.show_interactive_search()
                 continue
             
