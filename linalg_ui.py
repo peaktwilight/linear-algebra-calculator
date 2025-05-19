@@ -51,47 +51,47 @@ class LinearAlgebraRichUI:
         self.console = Console()
         self.banner = self.generate_banner()
         
-        # Define categories and operations
+        # Define categories and operations with emojis
         self.categories = {
-            "Learning Resources": [
-                ("Browse Help Topics", self.ui_browse_help_topics),
-                ("Show Example Exercises", self.ui_show_example_exercises),
-                ("Linear Algebra Guide", self.ui_linear_algebra_guide),
-                ("Common Homework Patterns", self.ui_common_homework_patterns),
-                ("Recognize Problem Types", self.ui_recognize_problem_types),
+            "📚 Learning Resources": [
+                ("📖 Browse Help Topics", self.ui_browse_help_topics),
+                ("🧪 Show Example Exercises", self.ui_show_example_exercises),
+                ("📘 Linear Algebra Guide", self.ui_linear_algebra_guide),
+                ("🔍 Common Homework Patterns", self.ui_common_homework_patterns),
+                ("📝 Recognize Problem Types", self.ui_recognize_problem_types),
             ],
-            "Vector Basics": [
-                ("Convert polar to Cartesian coordinates", self.ui_polar_to_cartesian),
-                ("Normalize a vector", self.ui_normalize_vector),
-                ("Create vector with direction and length", self.ui_vector_direction_length),
-                ("Check if vectors are collinear", self.ui_check_collinear),
+            "🔢 Vector Basics": [
+                ("🧭 Convert polar to Cartesian coordinates", self.ui_polar_to_cartesian),
+                ("📏 Normalize a vector", self.ui_normalize_vector),
+                ("📐 Create vector with direction and length", self.ui_vector_direction_length),
+                ("📊 Check if vectors are collinear", self.ui_check_collinear),
             ],
-            "Vector Geometry": [
-                ("Calculate vector shadow (projection)", self.ui_vector_shadow),
-                ("Check if vectors are orthogonal", self.ui_check_orthogonal),
-                ("Calculate angle between vectors", self.ui_vector_angle),
-                ("Calculate cross product", self.ui_cross_product),
-                ("Calculate triangle area", self.ui_triangle_area),
-                ("Calculate point-line distance", self.ui_point_line_distance),
+            "📐 Vector Geometry": [
+                ("👥 Calculate vector shadow (projection)", self.ui_vector_shadow),
+                ("⚡ Check if vectors are orthogonal", self.ui_check_orthogonal),
+                ("📐 Calculate angle between vectors", self.ui_vector_angle),
+                ("✖️ Calculate cross product", self.ui_cross_product),
+                ("📐 Calculate triangle area", self.ui_triangle_area),
+                ("📏 Calculate point-line distance", self.ui_point_line_distance),
             ],
-            "Matrix & Linear Systems": [
-                ("Solve system with Gaussian elimination", self.ui_solve_gauss),
-                ("Check if vector is solution to system", self.ui_check_solution),
-                ("Solve vector equation", self.ui_vector_equation),
-                ("Extract matrix elements", self.ui_matrix_element),
-                ("Perform basic matrix operations", self.ui_matrix_operations),
-                ("Calculate matrix product", self.ui_matrix_product),
+            "🧮 Matrix & Linear Systems": [
+                ("🧩 Solve system with Gaussian elimination", self.ui_solve_gauss),
+                ("✅ Check if vector is solution to system", self.ui_check_solution),
+                ("➗ Solve vector equation", self.ui_vector_equation),
+                ("🔢 Extract matrix elements", self.ui_matrix_element),
+                ("➕ Perform basic matrix operations", self.ui_matrix_operations),
+                ("✖️ Calculate matrix product", self.ui_matrix_product),
             ],
-            "Spaces & Subspaces": [
-                ("Check if vectors are coplanar", self.ui_check_coplanar),
-                ("Find intersections of planes", self.ui_intersection_planes),
-                ("Find homogeneous intersections", self.ui_homogeneous_intersection),
-                ("Identify pivot and free variables", self.ui_find_pivot_free_vars),
-                ("Calculate point-plane distance", self.ui_point_plane_distance),
+            "🌌 Spaces & Subspaces": [
+                ("📊 Check if vectors are coplanar", self.ui_check_coplanar),
+                ("🔀 Find intersections of planes", self.ui_intersection_planes),
+                ("🔍 Find homogeneous intersections", self.ui_homogeneous_intersection),
+                ("🔑 Identify pivot and free variables", self.ui_find_pivot_free_vars),
+                ("📏 Calculate point-plane distance", self.ui_point_plane_distance),
             ],
-            "Advanced Math": [
-                ("Calculate sum of series", self.ui_sum_series),
-                ("Check particular solutions", self.ui_check_particular_solution),
+            "🔬 Advanced Math": [
+                ("∑ Calculate sum of series", self.ui_sum_series),
+                ("✓ Check particular solutions", self.ui_check_particular_solution),
             ]
         }
         
@@ -333,6 +333,49 @@ class LinearAlgebraRichUI:
         
         return matches
     
+    def filter_operations(self, text):
+        """Filter operations based on search text for autocomplete"""
+        if not text:
+            return ["Type to search..."]
+            
+        matches = self.search_operations(text.lower())
+        
+        if not matches:
+            return ["No matches found"]
+            
+        # Format choices with category information
+        return [f"{op_name} [dim]({category})[/dim]" for op_name, _, category in matches]
+    
+    def show_interactive_search(self):
+        """Show interactive search with live filtering"""
+        self.display_header("🔍 Interactive Search")
+        self.console.print("[cyan]Start typing to see matching operations...[/cyan]")
+        self.console.print()
+        
+        # Use questionary's autocomplete feature for interactive searching
+        try:
+            result = questionary.autocomplete(
+                "Search:",
+                completer=self.filter_operations,
+                style=custom_style,
+                validate=lambda x: x != "Type to search..." and x != "No matches found"
+            ).ask()
+            
+            if not result or result in ["Type to search...", "No matches found"]:
+                return
+                
+            # Extract the operation name without the category suffix
+            selected_op = result.split(" [dim]")[0]
+            
+            # Find and execute the selected operation
+            for op_name, op_func, _ in self.all_operations:
+                if op_name == selected_op:
+                    op_func()
+                    break
+        except Exception as e:
+            self.console.print(f"[bold red]Error:[/bold red] {str(e)}")
+            self.wait_for_user()
+            
     def show_search_results(self, matches):
         """Display and handle search results"""
         if not matches:
@@ -344,7 +387,7 @@ class LinearAlgebraRichUI:
         choices = [f"{op_name} [dim]({category})[/dim]" for op_name, _, category in matches]
         choices.append("Back to main menu")
         
-        self.display_header("Search Results")
+        self.display_header("🔍 Search Results")
         selected = questionary.select(
             "Select an operation:",
             choices=choices,
@@ -369,8 +412,8 @@ class LinearAlgebraRichUI:
             
             # Create list of categories for selection
             categories = list(self.categories.keys())
-            # Add search option at the top
-            main_choices = ["🔍 Search All Operations"] + categories + ["Exit"]
+            # Add search option at the top and exit with emoji
+            main_choices = ["🔍 Interactive Search"] + categories + ["🚪 Exit"]
             
             selection = questionary.select(
                 "Select a category or search:",
@@ -378,32 +421,25 @@ class LinearAlgebraRichUI:
                 style=custom_style
             ).ask()
             
-            if selection == "Exit" or selection is None:
+            if selection == "🚪 Exit" or selection is None:
                 sys.exit(0)
-            elif selection == "🔍 Search All Operations":
-                search_term = questionary.text(
-                    "Enter search term:",
-                    style=custom_style
-                ).ask()
-                
-                if search_term and search_term.strip():
-                    matches = self.search_operations(search_term.strip())
-                    self.show_search_results(matches)
+            elif selection == "🔍 Interactive Search":
+                self.show_interactive_search()
                 continue
             
             # Handle regular category selection
             category = selection
             operations = self.categories[category]
             operation_names = [op[0] for op in operations]
-            operation_names.append("Back to main menu")
+            operation_names.append("⬅️ Back to main menu")
             
             operation = questionary.select(
-                f"Select an operation from [{category}]:",
+                f"Select an operation from {category}:",
                 choices=operation_names,
                 style=custom_style
             ).ask()
             
-            if operation == "Back to main menu" or operation is None:
+            if operation == "⬅️ Back to main menu" or operation is None:
                 continue
             
             # Find and execute the selected operation function
