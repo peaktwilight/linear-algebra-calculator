@@ -1,6 +1,23 @@
-# Linear Algebra Exercise Framework
+# Doruk's Linear Algebra Calculator
 
-A comprehensive framework for learning and solving linear algebra problems.
+```
+ _____                 _    _        _      _                _               
+|  __ \               | |  | |      | |    (_)              | |              
+| |  | |  ___   _ __  | |  | | ___  | | __  _  _ __    ___  | |  __ _  _ __  
+| |  | | / _ \ | '__| | |/\| |/ __| | |/ / | || '_ \  / _ \ | | / _` || '__| 
+| |__| || (_) || |    \  /\  /\__ \ |   <  | || | | ||  __/ | || (_| || |    
+|_____/  \___/ |_|     \/  \/ |___/ |_|\_\ |_||_| |_| \___| |_| \__,_||_|    
+                                                                            
+    _      _                               _____       _            _       _             
+   | |    (_)                             / ____|     | |          | |     | |            
+   | |     _  _ __    ___   __ _  _ __   | |      __ _| |  ___   _ | | ___ | |_  ___   _ __
+   | |    | || '_ \  / _ \ / _` || '__|  | |     / _` | | / __| | || |/ __|| __|/ _ \ | '__|
+   | |____| || | | ||  __/| (_| || |     | |____| (_| | || (__ | || |\__ \| |_| (_) || |   
+   |______|_||_| |_| \___| \__,_||_|      \_____|\__,_|_| \___||_||_||___/ \__|\___/ |_|   
+                                                                               
+```
+
+A comprehensive toolkit for learning and solving linear algebra problems, developed for the LAG Fachmodul at FHNW.
 
 ## Features
 
@@ -120,6 +137,14 @@ The framework is designed to help you learn linear algebra concepts while solvin
 
 4. **If you want to practice**: Try the example exercises and problem recognition quiz to test your understanding.
 
+## About the Author
+
+This calculator was created by Doruk as a personal project for the Linear Algebra (LAG) module at the University of Applied Sciences and Arts Northwestern Switzerland (FHNW). It was designed to help students understand and solve complex linear algebra problems through an intuitive interface with detailed explanations.
+
 ## License
 
 MIT
+
+---
+
+© 2025 Doruk | FHNW Linear Algebra Module
