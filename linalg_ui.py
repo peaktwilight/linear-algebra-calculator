@@ -97,55 +97,31 @@ class LinearAlgebraRichUI:
         
     def generate_banner(self):
         """Generate ASCII art banner for Linear Algebra Framework"""
-        if PYFIGLET_AVAILABLE:
-            try:
-                # Create Figlet objects with different fonts
-                fig_standard = Figlet(font='slant')
-                fig_big = Figlet(font='slant')
-                
-                # Generate ASCII art for "Doruk's" with standard font
-                doruk_ascii = fig_standard.renderText("Doruk's Linear")
-                
-                # Generate ASCII art for "Linear Algebra Calculator" with big font
-                calc_ascii = fig_big.renderText("Algebra Calculator")
-                
-                # Combine the two banners with box drawing characters
-                border_top = "╭" + "─" * 73 + "╮"
-                border_bottom = "╰" + "─" * 73 + "╯"
-                
-                banner = f"{border_top}\n{doruk_ascii}{calc_ascii}{border_bottom}"
-                return banner
-            except Exception as e:
-                # Fallback to original ASCII art if any error occurs
-                print(f"Error generating banner: {e}")
-                return self._fallback_banner()
-        else:
-            return self._fallback_banner()
-    
-    def _fallback_banner(self):
-        """Fallback ASCII art if pyfiglet is not available"""
-        return """
-    _     _                          _    _            _               
-    | |   (_)_ __   ___  __ _ _ __   / \  | | __ _  ___| |__  _ __ __ _ 
-    | |   | | '_ \ / _ \/ _` | '__| / _ \ | |/ _` |/ _ \ '_ \| '__/ _` |
-    | |___| | | | |  __/ (_| | |   / ___ \| | (_| |  __/ |_) | | | (_| |
-    |_____|_|_| |_|\___|\__,_|_|  /_/   \_\_|\__, |\___|_.__/|_|  \__,_|
-                                             |___/                      
-     _____                                             _    
-    |  ___|_ __ __ _ _ __ ___   _____      _____  _ __| | __
-    | |_ | '__/ _` | '_ ` _ \ / _ \ \ /\ / / _ \| '__| |/ /
-    |  _|| | | (_| | | | | | |  __/\ V  V / (_) | |  |   < 
-    |_|  |_|  \__,_|_| |_| |_|\___| \_/\_/ \___/|_|  |_|\_\\
-                                                           
-    """
+        # Create Figlet objects with different fonts
+        fig_standard = Figlet(font='slant')
+        fig_big = Figlet(font='slant')
+        
+        # Generate ASCII art for "Doruk's" with standard font
+        doruk_ascii = fig_standard.renderText("Doruk's Linear")
+        
+        # Generate ASCII art for "Linear Algebra Calculator" with big font
+        calc_ascii = fig_big.renderText("Algebra Calculator")
+        
+        # Combine the two banners with box drawing characters
+        border_top = "╭" + "─" * 73 + "╮"
+        border_bottom = "╰" + "─" * 73 + "╯"
+        
+        banner = f"{border_top}\n{doruk_ascii}{calc_ascii}{border_bottom}"
+        return banner
     
     def display_header(self, title="Linear Algebra Exercise Framework"):
         self.clear_screen()
         # Only show the banner on the main menu
         if title == "Linear Algebra Exercise Framework":
-            self.console.print(self.banner)
-            # Show a message if pyfiglet is not available
-            if not PYFIGLET_AVAILABLE:
+            if PYFIGLET_AVAILABLE:
+                self.console.print(self.banner)
+            else:
+                self.console.print("[bold]Linear Algebra Framework[/bold]")
                 self.console.print("[dim](Install pyfiglet for fancy banners: pip install pyfiglet)[/dim]")
         self.console.print(Panel.fit(f"[bold cyan]{title}[/bold cyan]", border_style="blue"))
         self.console.print()

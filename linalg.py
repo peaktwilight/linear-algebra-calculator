@@ -10,20 +10,8 @@ import argparse
 
 def generate_banner():
     """Generate ASCII art banner for Linear Algebra Framework"""
-    return """
-    _     _                          _    _            _               
-    | |   (_)_ __   ___  __ _ _ __   / \  | | __ _  ___| |__  _ __ __ _ 
-    | |   | | '_ \ / _ \/ _` | '__| / _ \ | |/ _` |/ _ \ '_ \| '__/ _` |
-    | |___| | | | |  __/ (_| | |   / ___ \| | (_| |  __/ |_) | | | (_| |
-    |_____|_|_| |_|\___|\__,_|_|  /_/   \_\_|\__, |\___|_.__/|_|  \__,_|
-                                             |___/                      
-     _____                                             _    
-    |  ___|_ __ __ _ _ __ ___   _____      _____  _ __| | __
-    | |_ | '__/ _` | '_ ` _ \ / _ \ \ /\ / / _ \| '__| |/ /
-    |  _|| | | (_| | | | | | |  __/\ V  V / (_) | |  |   < 
-    |_|  |_|  \__,_|_| |_| |_|\___| \_/\_/ \___/|_|  |_|\_\\
-                                                           
-    """
+    # Simple placeholder message if someone tries to run the CLI mode
+    return "Linear Algebra Framework\n(For fancy banner, run in UI mode with 'pyfiglet' installed)"
 
 def clear_screen():
     """Clear the terminal screen"""
