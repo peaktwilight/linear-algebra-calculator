@@ -361,25 +361,12 @@ class LinAlgCalculator:
             st.markdown("### Visualization")
             self.display_vector_visualization([a, b], names=["Vector a", "Vector b"])
             
-            # Add mathematical representation of the angle with easter eggs
-            special_message = ""
-            if abs(angle_deg - 90) < 5:  # Increased tolerance to make it easier to trigger
-                special_message = f'<div style="margin-top: 5px; font-style: italic; text-align: center;">Right angle! These vectors are perpendicular to each other ⊥</div>'
-            elif abs(angle_deg) < 5 or abs(angle_deg - 180) < 5:  # Increased tolerance
-                special_message = f'<div style="margin-top: 5px; font-style: italic; text-align: center;">These vectors are pointing in the same (or opposite) direction! ↔️</div>'
-            elif abs(angle_deg - 45) < 5:  # Increased tolerance
-                special_message = f'<div style="margin-top: 5px; font-style: italic; text-align: center;">Perfect diagonal! Exactly 45° between these vectors 🔀</div>'
-            elif abs(angle_deg - 60) < 5:
-                special_message = f'<div style="margin-top: 5px; font-style: italic; text-align: center;">Equilateral triangle alert! 60° is a special angle 🔺</div>'
-            elif abs(angle_deg - 30) < 5:
-                special_message = f'<div style="margin-top: 5px; font-style: italic; text-align: center;">30° is 1/12 of a full circle! 🕐</div>'
-            
+            # Add mathematical representation of the angle
             angle_box = f"""
             <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
                 <p style="font-size: 18px; text-align: center;">
                     Angle between vectors: {angle_deg:.2f}° ({angle_rad:.4f} radians)
                 </p>
-                {special_message}
             </div>
             """
             st.markdown(angle_box, unsafe_allow_html=True)
