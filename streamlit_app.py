@@ -471,8 +471,8 @@ def main():
         """)
 
     st.sidebar.markdown("--- ")
-    st.sidebar.info("Made with ❤️ by Doruk")
-    st.sidebar.info("[GitHub](https://github.com/peaktwilight/linear-algebra-calculator) v1.5 | FHNW Linear Algebra Module")
+    st.sidebar.markdown("<div title='Hoping we all get 6s in the LAG module 🤞'>Made with ❤️ by Doruk</div>", unsafe_allow_html=True)
+    st.sidebar.markdown("<div title='The person reading this will ace their next math test'><a href='https://github.com/peaktwilight/linear-algebra-calculator'>GitHub</a> v1.5 | FHNW Linear Algebra Module</div>", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
