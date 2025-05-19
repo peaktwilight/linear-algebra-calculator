@@ -222,7 +222,7 @@ class LinAlgCalculator:
         with col2:
         # Display a visualization of the original and normalized vectors
             st.markdown("### Visualization")
-        self.display_vector_visualization([vector, result], names=["Original Vector", "Normalized Vector"])
+            self.display_vector_visualization([vector, result], names=["Original Vector", "Normalized Vector"])
         
         return result
     
@@ -261,8 +261,8 @@ class LinAlgCalculator:
             
             # Create a more structured output
             st.markdown("**Input vectors:**")
-            st.markdown(f"$\\vec{{a}} = {a.tolist()}$ (to project onto)")
-            st.markdown(f"$\\vec{{b}} = {b.tolist()}$ (to be projected)")
+            st.markdown(f"$\\vec{{a}} = {a.tolist()}$")
+            st.markdown(f"$\\vec{{b}} = {b.tolist()}$")
             
             st.markdown("**Dot product calculation:**")
             dot_formula = " + ".join([f"({a[i]} \\cdot {b[i]})" for i in range(len(a))])
