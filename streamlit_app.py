@@ -20,7 +20,7 @@ import streamlit as st
 from st_components.st_utils import StreamOutput # StreamOutput is not used directly in streamlit_app.py, but LinAlgCalculator needs it.
 from st_components.st_calculator_operations import LinAlgCalculator
 from st_components.st_quiz_ui import QuizComponent
-from st_components.st_learning_resources import render_learning_resources
+from st_components.st_learning_resources import render_learning_resources_page
 
 # Set page configuration
 st.set_page_config(
@@ -453,35 +453,29 @@ def main():
                     st.error("Please enter the augmented matrix.")
     
     elif category == "Quiz Mode":
-        # Render the quiz component
-        quiz_component.render()
+        quiz_component.render_quiz_ui()
     
     elif category == "Learning Resources":
-        render_learning_resources()
+        render_learning_resources_page()
     
-    # How to use this calculator section
-    st.sidebar.markdown("---") # Separator
+    # Quick Start & Tips Expander
+    with st.sidebar.expander("💡 Quick Start & Tips", expanded=False):
+        st.markdown("""
+        #### How to use this calculator:
+        1.  **Select a Category:** Choose from Vector Ops, Matrix Ops, etc., in the sidebar.
+        2.  **Select an Operation:** Further specify the exact calculation.
+        3.  **Enter Inputs:** Provide vectors/matrices in the specified format (e.g., `1,2,3` or `1,2;3,4`).
+        4.  **Get Results:** Outputs and explanations will appear below the inputs.
+        5.  **Explore Quiz Mode:** Test your knowledge with interactive questions.
+        6.  **Visit Learning Resources:** For guides, examples, and concept explanations.
+        """)
 
-    with st.sidebar.expander("Quick Start & Tips", expanded=False):
-        st.markdown(
-            """
-            **Quick Start:**
-            - Select an operation category from the sidebar.
-            - Choose a specific operation.
-            - Enter your values in the input fields.
-            - Click the calculate button.
-            - View the step-by-step solution and visual representation.
-            
-            **Tips:**
-            - Hover over visualizations for more details.
-            - Expand the "Help" sections for formula explanations.
-            - For vector/matrix inputs, use format: `x1, x2, ...` or separate rows with newlines.
-            """
-        )
-
-    st.sidebar.caption("Made with ❤️ by Doruk")
-    st.sidebar.caption("Version 1.4 | FHNW Linear Algebra Module")
-    st.sidebar.caption("Fully Open-Source Code :) [GitHub](https://github.com/peaktwilight/linear-algebra-calculator)")
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**Fully Open-Source Code :)**")
+    st.sidebar.markdown("[GitHub](https://github.com/peaktwilight/linear-algebra-calculator)")
+    st.sidebar.markdown("--- ")
+    st.sidebar.info("Made with ❤️ by Doruk")
+    st.sidebar.markdown("Version 1.4 | FHNW Linear Algebra Module")
 
 
 if __name__ == "__main__":
