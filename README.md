@@ -24,6 +24,8 @@ cd linear-algebra-framework
 pip install numpy sympy scipy rich questionary
 ```
 
+> **Note**: The `core.py` module is located in the `given_reference` directory and imported from there.
+
 ## Usage
 
 The framework offers multiple interfaces:

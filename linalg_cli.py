@@ -9,7 +9,7 @@ import sympy as sym
 import scipy.linalg as sp
 import argparse
 import textwrap
-from core import eliminate, mrref, mnull, FirstNonZero, SortRows
+from given_reference.core import eliminate, mrref, mnull, FirstNonZero, SortRows
 
 class LinearAlgebraExerciseFramework:
     def __init__(self):
