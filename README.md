@@ -1,4 +1,4 @@
-# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/peaktwilight/python_25fs/releases/tag/v1.0.0)
+# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/peaktwilight/python_25fs/releases/tag/v1.1.0)
 
 ```
 ╭───────────────────────────────────────────────────────────────────────╮
@@ -24,6 +24,7 @@ A comprehensive toolkit for learning and solving linear algebra problems, develo
 - Matrix operations (addition, multiplication, transformation)
 - Linear equation systems (Gaussian elimination, parametric solutions)
 - Geometric calculations (distances, plane intersections)
+- Enhanced search functionality with interactive filtering and clear results organization
 - Comprehensive help system for learning linear algebra concepts
 - Example exercises with step-by-step solutions
 - Problem recognition quiz to improve problem-solving skills
@@ -34,7 +35,6 @@ A comprehensive toolkit for learning and solving linear algebra problems, develo
 - `linalg_cli.py` - Core linear algebra functionality with command-line interface
 - `linalg_ui.py` - Rich user interface with ASCII banner (directly runnable)
 - `help_guides.py` - Help content and learning resources for the framework
-- `generate_banner.py` - Helper script for generating ASCII art banner
 - `given_reference/` - Directory with reference code including core functionality
 
 ## Installation
@@ -86,6 +86,7 @@ python linalg_ui.py --no-color    # Disable colored output
 
 Features:
 - Interactive menus with explanations
+- Advanced search functionality with real-time filtering and organized results
 - Comprehensive help system
 - Example exercises with solutions
 - Problem recognition guidance
@@ -119,6 +120,21 @@ The Interactive UI includes a "Learning Resources" section with:
 5. **Problem recognition guide** - Learn to identify problem types
 
 ## Examples
+
+### Search Functionality
+
+Search for specific concepts or operations:
+```
+Select: Search
+Enter search term: projection
+```
+
+Filter search results interactively:
+```
+Select: Search
+Enter search term: matrix
+Filter by category: [Use arrow keys to select categories]
+```
 
 ### Vector Operations
 
