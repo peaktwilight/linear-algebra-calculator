@@ -255,14 +255,12 @@ curl -L https://fly.io/install.sh | sh  # On Linux
 fly auth login
 
 # Deploy the app
-cd /path/to/python_25fs
+cd /path/to/linear-algebra-calculator
 fly launch
 fly deploy
 ```
 
 For more details on deployment, see the [DEPLOY.md](DEPLOY.md) file.
-
-![Streamlit Interface](https://github.com/peaktwilight/linear-algebra-calculator/raw/main/screenshots/streamlit_ui.png)
 
 ---
 
