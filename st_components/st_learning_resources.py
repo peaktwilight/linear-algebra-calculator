@@ -699,186 +699,80 @@ def render_learning_resources_page():
         st.markdown("*(Placeholder for Point-Plane distance and other advanced Line/Plane topics)*")
         st.markdown("--- --- --- --- --- --- --- --- --- ---")
 
-    # Category: Matrix Operations
-    with st.expander("Matrix Operations", expanded=False):
-        st.header("Matrix Operations")
+        # --- Intersection Line of Two Planes ---
+        st.subheader("Intersection Line of Two Planes")
+        st.markdown("""
+            In 3D space, two distinct planes can either be parallel or they intersect in a straight line.
+            """)
+        st.markdown("""
+            **Conditions for Intersection:**
+            - Let the two planes be given by their general equations:
+              `Π₁: A₁x + B₁y + C₁z + D₁ = 0` (with normal vector `\mathbf{n₁} = [A₁, B₁, C₁]`)
+              `Π₂: A₂x + B₂y + C₂z + D₂ = 0` (with normal vector `\mathbf{n₂} = [A₂, B₂, C₂]`)
+            - **Parallel Planes**: If `\mathbf{n₁}` and `\mathbf{n₂}` are parallel (i.e., `\mathbf{n₁} = k \cdot \mathbf{n₂}` for some scalar `k`, or `\mathbf{n₁} \times \mathbf{n₂} = \mathbf{0}`), the planes are parallel.
+                - If they are parallel and distinct (e.g., `D₁/||n1|| ≠ D₂/||n2||` after normalizing D by normal vector length, or the equations cannot be made identical by scaling), they do not intersect.
+                - If they are parallel and the equations are equivalent (one is a scalar multiple of the other, including the D term), they are the same plane and intersect everywhere.
+            - **Intersecting Planes**: If `\mathbf{n₁}` and `\mathbf{n₂}` are not parallel, the planes intersect in a line.
+            """)
+        st.markdown("""
+            **1. Finding the Direction Vector (v) of the Intersection Line:**
+            The intersection line lies in both planes. Therefore, its direction vector `\mathbf{v}` must be perpendicular to both normal vectors `\mathbf{n₁}` and `\mathbf{n₂}`.
+            Thus, the direction vector of the intersection line can be found using the cross product:
+            """)
+        st.latex("\mathbf{v} = \mathbf{n₁} \times \mathbf{n₂}")
+        st.markdown("""If `\mathbf{v} = \mathbf{0}`, it means the normal vectors were parallel, and the planes do not intersect in a single line (they are parallel or identical).""")
+        st.markdown("""
+            **2. Finding a Point (P₀) on the Intersection Line:**
+            To find a specific point `P₀ = (x₀, y₀, z₀)` on the line, we need to find a common solution to the two plane equations:
+            `A₁x + B₁y + C₁z = -D₁`
+            `A₂x + B₂y + C₂z = -D₂`
+            This is a system of two linear equations with three unknowns. 
+            - **Method**: Assume one variable is a constant (e.g., set `z₀ = 0`). This reduces the system to two equations with two unknowns (x, y):
+              `A₁x + B₁y = -D₁`
+              `A₂x + B₂y = -D₂` (if `C₁` and `C₂` were zero, then this `z=0` step wouldn't remove z. More generally, `A₁x + B₁y = -D₁ - C₁z₀`)
+            - Solve this 2x2 system for `x` and `y`. If a unique solution exists, then `(x, y, 0)` is a point on the line.
+            - **If the 2x2 system has no unique solution (or is inconsistent) after setting `z=0`**: This might mean the intersection line is parallel to the xy-plane (e.g., `v_z = 0`), or that our choice `z=0` was unlucky (e.g. the line passes through the origin and `z=0` made the equations trivial). Try setting another variable to zero (e.g., `y=0` or `x=0`) and solve for the remaining two. At least one such choice should work if the planes truly intersect in a line.
+            """)
+        st.markdown("""
+            **3. Parametric Equation of the Intersection Line:**
+            Once you have a point `P₀` on the line and the direction vector `\mathbf{v}`, the parametric equation of the intersection line is:
+            """)
+        st.latex("L(t) = P_0 + t \cdot \mathbf{v}")
+        st.markdown("""**Conceptual Example (P23RCO adaptation):**""")
+        st.markdown("""
+            Problem: Find the intersection line of `Π₁: x - y + z - 1 = 0` and `Π₂: 2x + y - z - 2 = 0`.
+            1. Normal vectors: `\mathbf{n₁} = [1, -1, 1]`, `\mathbf{n₂} = [2, 1, -1]`.
+            2. Direction vector of intersection line `\mathbf{v} = \mathbf{n₁} \times \mathbf{n₂}`:
+               `v_x = (-1)(-1) - (1)(1) = 1 - 1 = 0`
+               `v_y = (1)(2) - (1)(-1) = 2 + 1 = 3`
+               `v_z = (1)(1) - (-1)(2) = 1 + 2 = 3`
+               So, `\mathbf{v} = [0, 3, 3]`. (Since `v ≠ 0`, the planes intersect in a line).
+            3. Find a point on the line. Set `z = 0` in the plane equations:
+               `x - y - 1 = 0  => x - y = 1`
+               `2x + y - 2 = 0 => 2x + y = 2`
+               Adding the two equations: `3x = 3 => x = 1`.
+               Substitute `x = 1` into `x - y = 1`: `1 - y = 1 => y = 0`.
+               So, a point on the line is `P₀ = (1, 0, 0)`.
+            4. Parametric equation of the line: `L(t) = [1, 0, 0] + t[0, 3, 3]`.
+               Component-wise: `x(t) = 1`, `y(t) = 3t`, `z(t) = 3t`.
+            """)
+        st.markdown("""**How to use the calculator for this:**""")
+        st.markdown("""
+            A "Plane-Plane Intersection" tool (if available under **Lines and Planes**) would typically:
+            1. Ask for the coefficients of Plane 1 (`A₁, B₁, C₁, D₁`).
+            2. Ask for the coefficients of Plane 2 (`A₂, B₂, C₂, D₂`).
+            3. The calculator would then:
+                - Determine if the planes are parallel, identical, or intersect.
+                - If they intersect, provide the parametric equation of the intersection line (a point on the line and its direction vector).
 
-        # --- What is a Matrix? ---
-        st.subheader("What is a Matrix?")
-        st.markdown(
-            "A matrix is a rectangular array of numbers, symbols, or expressions, arranged in rows and columns. "
-            "It's a fundamental tool for representing and solving systems of linear equations, transformations, and much more."
-        )
-        st.markdown("An `m × n` matrix has `m` rows and `n` columns. Example of a 2x3 matrix A:")
-        st.latex("A = \\begin{bmatrix} a_{11} & a_{12} & a_{13} \\newline a_{21} & a_{22} & a_{23} \\end{bmatrix}")
-        st.markdown("Matrices are typically denoted by uppercase letters (e.g., A, B), and their elements by lowercase letters with subscripts (e.g., `aᵢⱼ` is the element in the i-th row and j-th column). Handling matrices often involves libraries like NumPy in Python.")
-        st.markdown("---")
+            If no direct tool exists:
+            1. Calculate `\mathbf{v} = \mathbf{n₁} \times \mathbf{n₂}` using the **Cross Product** tool.
+            2. Manually set one variable (e.g., `z=0`), form the 2x2 system for `x` and `y`, and solve it. (For example, using the **Solve System (Gauss)** tool by inputting the 2x3 augmented matrix like `A₁,B₁,-D₁;A₂,B₂,-D₂`).
+            3. Combine the point and direction vector to write the line equation.
+            """)
 
-        # --- Matrix Addition and Subtraction ---
-        st.subheader("Matrix Addition and Subtraction")
-        st.markdown(
-            "Matrices can be added or subtracted if and only if they have the **same dimensions** (same number of rows and same number of columns). "
-            "The operation is performed element-wise."
-        )
-        st.markdown("If A and B are both `m × n` matrices:")
-        st.latex("(A+B)_{ij} = a_{ij} + b_{ij}")
-        st.latex("(A-B)_{ij} = a_{ij} - b_{ij}")
-        st.markdown("**Conceptual Example (Exercise C85VFS / 4I8XHJ adaptation):**")
-        st.markdown("Given `A = [[1,0], [0,1]]` and `B = [[1,0], [0,1]]` (both are 2x2 identity matrices in this case):\n"
-                    "`A + B = [[1+1, 0+0], [0+0, 1+1]] = [[2,0], [0,2]]`\n"
-                    "`A - B = [[1-1, 0-0], [0-0, 1-1]] = [[0,0], [0,0]]` (the zero matrix)")
-        st.markdown("These operations are generally performed manually as preliminary steps for more complex problems. The calculator does not have separate tools for just matrix addition/subtraction.")
-        st.markdown("---")
-
-        # --- Scalar Multiplication of Matrices ---
-        st.subheader("Scalar Multiplication of Matrices")
-        st.markdown("To multiply a matrix by a scalar, multiply every element of the matrix by that scalar.")
-        st.markdown("If `k` is a scalar and `A` is a matrix:")
-        st.latex("(k \cdot A)_{ij} = k \cdot a_{ij}")
-        st.markdown("**Conceptual Example:**")
-        st.markdown("If `k = 3` and `A = [[1,2], [3,4]]`:\n"
-                    "`3A = [[3*1, 3*2], [3*3, 3*4]] = [[3,6], [9,12]]`")
-        st.markdown("Like addition/subtraction, this is usually a manual step. The calculator does not have a dedicated tool for scalar matrix multiplication.")
-        st.markdown("---")
-
-        # --- Matrix Multiplication (Product) ---
-        st.subheader("Matrix Multiplication (Product)")
-        st.markdown(
-            "The product `AB` of two matrices `A` and `B` is defined if and only if the number of columns in `A` is equal to the number of rows in `B`. "
-            "If `A` is an `m × n` matrix and `B` is an `n × p` matrix, then their product `AB` will be an `m × p` matrix."
-        )
-        st.latex("(AB)_{ij} = \\sum_{k=1}^{n} a_{ik} b_{kj}")
-        st.markdown("This means the element `(AB)ᵢⱼ` is the dot product of the i-th row of `A` with the j-th column of `B`.")
-        st.markdown("**Key Properties:**\n"
-                    "- **Not Commutative in general:** `AB ≠ BA`\n"
-                    "- Associative: `(AB)C = A(BC)`\n"
-                    "- Distributive: `A(B+C) = AB + AC` and `(A+B)C = AC + BC`")
-        st.markdown("**Conceptual Example (Exercise N2L782 / 7QG9AW adaptation):**")
-        st.markdown("Let `A = [[1,2], [3,4]]` (2x2) and `B = [[5,6], [7,8]]` (2x2). Their product `C = AB` will be 2x2.\n"
-                    "`C₁₁ = (1*5) + (2*7) = 5 + 14 = 19` (Row 1 of A ⋅ Col 1 of B)\n"
-                    "`C₁₂ = (1*6) + (2*8) = 6 + 16 = 22` (Row 1 of A ⋅ Col 2 of B)\n"
-                    "`C₂₁ = (3*5) + (4*7) = 15 + 28 = 43` (Row 2 of A ⋅ Col 1 of B)\n"
-                    "`C₂₂ = (3*6) + (4*8) = 18 + 32 = 50` (Row 2 of A ⋅ Col 2 of B)\n"
-                    "So, `AB = [[19, 22], [43, 50]]`.")
-        st.markdown("**How to use the calculator for this:**")
-        st.markdown(
-            "1. Navigate to **Matrix Operations** in the sidebar.\n"
-            "2. Select the **Matrix Multiplication** tool.\n"
-            "3. Enter Matrix A (e.g., `1,2;3,4`).\n"
-            "4. Enter Matrix B (e.g., `5,6;7,8`). Ensure dimensions are compatible.\n"
-            "5. The calculator will display the resulting product matrix."
-        )
-        st.markdown("---")
-
-        # --- Matrix Transpose ---
-        st.subheader("Matrix Transpose")
-        st.markdown(
-            "The **transpose** of a matrix `A`, denoted `Aᵀ` or `A'`, is obtained by swapping its rows and columns. "
-            "If `A` is an `m × n` matrix, `Aᵀ` will be an `n × m` matrix."
-        )
-        st.latex("(A^T)_{ij} = A_{ji}")
-        st.markdown("**Conceptual Example (Exercise G3XVHK adaptation):**")
-        st.markdown("If `A = [[1,2,3], [4,5,6]]` (a 2x3 matrix):\n"
-                    "`Aᵀ = [[1,4], [2,5], [3,6]]` (a 3x2 matrix).")
-        st.markdown("The calculator has a **Matrix Transpose** tool under **Matrix Operations**.")
-        st.markdown("---")
-
-        # --- Determinants ---
-        st.subheader("Determinants")
-        st.markdown(
-            "The determinant is a scalar value that can be computed from the elements of a **square matrix**. "
-            "It is denoted as `det(A)` or `|A|`. The determinant provides important information about the matrix, such as whether it is invertible."
-        )
-        st.markdown("**For a 2x2 matrix:** `A = [[a,b], [c,d]]`")
-        st.latex("det(A) = ad - bc")
-        st.markdown("**For a 3x3 matrix:** `A = [[a,b,c], [d,e,f], [g,h,i]]` (Rule of Sarrus)")
-        st.latex("det(A) = a(ei − fh) − b(di − fg) + c(dh − eg)")
-        st.markdown("**Key Property:** A square matrix `A` is invertible if and only if `det(A) ≠ 0`.")
-        
-        st.markdown("**Conceptual Example (2x2 - Exercise 3L8XHF adaptation):**")
-        st.markdown("`A = [[3,8], [4,6]]`. `det(A) = (3*6) - (8*4) = 18 - 32 = -14`.")
-        st.markdown("**Conceptual Example (3x3 - Exercise VFS72X adaptation):**")
-        st.markdown("`B = [[6,1,1], [4,-2,5], [2,8,7]]`.\n"
-                    "`det(B) = 6((-2)*7 - 5*8) - 1(4*7 - 5*2) + 1(4*8 - (-2)*2)`\n"
-                    "`= 6(-14 - 40) - 1(28 - 10) + 1(32 + 4)`\n"
-                    "`= 6(-54) - 1(18) + 1(36) = -324 - 18 + 36 = -306`.")
-        st.markdown("**How to use the calculator for this:**")
-        st.markdown(
-            "1. Navigate to **Matrix Operations** in the sidebar.\n"
-            "2. Select the **Determinant** tool.\n"
-            "3. Enter your square matrix (e.g., `3,8;4,6`).\n"
-            "4. The calculator will display the determinant."
-        )
-        st.markdown("---")
-
-        # --- Matrix Inverse ---
-        st.subheader("Matrix Inverse")
-        st.markdown(
-            "The **inverse** of a square matrix `A`, denoted `A⁻¹`, is a matrix such that when multiplied by `A`, it yields the identity matrix `I`."
-        )
-        st.latex("A A^{-1} = A^{-1} A = I")
-        st.markdown("A matrix has an inverse if and only if its determinant is non-zero (`det(A) ≠ 0`). Such a matrix is called **invertible** or **non-singular**.")
-        st.markdown("**For a 2x2 matrix:** `A = [[a,b], [c,d]]`")
-        st.latex("A^{-1} = \frac{1}{ad-bc} \begin{bmatrix} d & -b \\newline -c & a \end{bmatrix}")
-        st.markdown("For 3x3 matrices (and larger), the calculation is more complex, often involving methods like Gaussian elimination or the adjugate matrix method. Our calculator handles this for you.")
-        
-        st.markdown("**Conceptual Example (2x2 - Exercise P32VFS adaptation):**")
-        st.markdown("If `A = [[3,8], [4,6]]`. We found `det(A) = -14`.\n"
-                    "`A⁻¹ = (1/-14) * [[6, -8], [-4, 3]] = [[-6/14, 8/14], [4/14, -3/14]] = [[-3/7, 4/7], [2/7, -3/14]]`.")
-        st.markdown("**How to use the calculator for this:**")
-        st.markdown(
-            "1. Navigate to **Matrix Operations** in the sidebar.\n"
-            "2. Select the **Matrix Inverse** tool.\n"
-            "3. Enter your square matrix.\n"
-            "4. The calculator will display the inverse matrix if it exists, or state if the matrix is singular (not invertible)."
-        )
-
-    # Category: Systems of Linear Equations
-    with st.expander("Systems of Linear Equations", expanded=False):
-        st.header("Systems of Linear Equations")
-
-        st.subheader("Solving Systems with Gaussian Elimination")
-        st.markdown(
-            "A system of linear equations can be represented by an **augmented matrix** `[A|b]`, where `A` is the coefficient matrix and `b` is the vector of constants."
-            "Gaussian elimination is a method to solve such systems by transforming this augmented matrix into **Row Echelon Form (REF)** or **Reduced Row Echelon Form (RREF)** using elementary row operations."
-        )
-        st.markdown("**Elementary Row Operations:**")
-        st.markdown(
-            "1. Swapping two rows.\n"
-            "2. Multiplying a row by a non-zero scalar.\n"
-            "3. Adding a multiple of one row to another row."
-        )
-        st.markdown("**Goal (REF):**\n"
-                    "- All non-zero rows are above any rows of all zeros.\n"
-                    "- The leading coefficient (pivot) of a non-zero row is always strictly to the right of the leading coefficient of the row above it.\n"
-                    "- All entries in a column below a leading coefficient are zero."
-        )
-        st.markdown("**Goal (RREF):**\n"
-                    "- It is in REF.\n"
-                    "- Every leading coefficient is 1.\n"
-                    "- Every leading coefficient is the only non-zero entry in its column."
-        )
-        st.markdown("**Interpreting the Result (from RREF):**")
-        st.markdown(
-            "- **Unique Solution:** If the number of non-zero rows equals the number of variables, and there are no contradictions (e.g., `0 = 1`). The RREF will look like an identity matrix on the left side `[I|s]`, where `s` is the solution vector.\n"
-            "- **No Solution:** If any row has the form `[0 0 ... 0 | c]` where `c ≠ 0`. This indicates a contradiction like `0 = c`.\n"
-            "- **Infinitely Many Solutions:** If the number of non-zero rows is less than the number of variables, and there are no contradictions. This means there are free variables."
-        )
-        st.markdown("**Conceptual Example (Adapted from E6PZXQ / N7QLXH / S7A4P2):**")
-        st.markdown("Consider the system: `x + 2y = 5`, `3x + 4y = 11`.\n"
-                    "Augmented Matrix: `[[1,2,5], [3,4,11]]`.\n"
-                    "1. `R₂ → R₂ - 3R₁`: `[[1,2,5], [0,-2,-4]]`.\n"
-                    "2. `R₂ → R₂ / -2`: `[[1,2,5], [0,1,2]]` (This is REF).\n"
-                    "3. `R₁ → R₁ - 2R₂`: `[[1,0,1], [0,1,2]]` (This is RREF).\n"
-                    "Solution: `x = 1`, `y = 2`."
-        )
-        st.markdown("**How to use the calculator for this:**")
-        st.markdown(
-            "1. Navigate to **Matrix Operations** in the sidebar.\n"
-            "2. Select the **Solve System (Gauss)** tool.\n"
-            "3. Enter the augmented matrix (coefficient matrix and constant vector combined, e.g., `1,2,5;3,4,11` for the example above).\n"
-            "4. The calculator will perform Gaussian elimination, show the RREF, and provide the solution or indicate the type of solution (no solution, infinitely many)."
-        )
+        st.markdown("*(Placeholder for Point-Plane distance and other advanced Line/Plane topics)*")
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
 
     st.markdown("---")
     st.info("More topics and interactive examples will be added soon!")
