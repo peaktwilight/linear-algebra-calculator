@@ -1,4 +1,4 @@
-# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/peaktwilight/python_25fs/releases/tag/v1.4.0)
+# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.4.0)
 
 ```
 ╭───────────────────────────────────────────────────────────────────────╮
@@ -41,8 +41,8 @@ A comprehensive toolkit for learning and solving linear algebra problems, develo
 
 ```bash
 # Clone the repository
-git clone https://github.com/peaktwilight/python_25fs.git
-cd python_25fs
+git clone https://github.com/peaktwilight/linear-algebra-calculator.git
+cd linear-algebra-calculator
 
 # Install dependencies
 pip install numpy sympy scipy rich questionary
@@ -262,7 +262,7 @@ fly deploy
 
 For more details on deployment, see the [DEPLOY.md](DEPLOY.md) file.
 
-![Streamlit Interface](https://github.com/peaktwilight/python_25fs/raw/main/screenshots/streamlit_ui.png)
+![Streamlit Interface](https://github.com/peaktwilight/linear-algebra-calculator/raw/main/screenshots/streamlit_ui.png)
 
 ---
 

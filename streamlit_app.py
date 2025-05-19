@@ -25,8 +25,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'Get Help': 'https://github.com/peaktwilight/python_25fs/issues',
-        'Report a bug': 'https://github.com/peaktwilight/python_25fs/issues',
+        'Get Help': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
+        'Report a bug': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
         'About': "# Linear Algebra Calculator\nA comprehensive toolkit for learning and solving linear algebra problems. Made with ❤️ by Doruk for the LAG Fachmodul at FHNW."
     }
 )
