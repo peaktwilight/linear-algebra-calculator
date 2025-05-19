@@ -335,94 +335,106 @@ class LinearAlgebraRichUI:
     
     def show_interactive_search(self):
         """Show search functionality with interactive results"""
-        # Create a flat list of all operations for searching
-        all_operations_list = []
-        for op_name, op_func, category in self.all_operations:
-            # Include category in the display text for context
-            display_text = f"{op_name} ({category})"
-            all_operations_list.append((display_text, op_name, op_func))
+        self.display_header("🔍 Interactive Search")
+        
+        # Get initial search term
+        self.console.print("[cyan]Type to start searching. Press Enter when done typing.[/cyan]")
+        search_term = questionary.text(
+            "Search term:",
+            style=custom_style
+        ).ask()
+        
+        if search_term is None:
+            return
             
-        # Sort operations alphabetically for easier scanning
-        all_operations_list.sort(key=lambda x: x[0])
-        
-        # Add back option
-        all_operations_list.append(("⬅️ Back to main menu", "back", None))
-        
-        # Use a loop to implement interactive search
-        current_search = ""
+        # Create a loop for refining search
         while True:
             # Clear screen and show header each time
             self.display_header("🔍 Interactive Search")
             
             # Show current search term
-            if current_search:
-                self.console.print(f"[cyan]Current search:[/cyan] [bold]{current_search}[/bold]")
+            if search_term:
+                self.console.print(f"[cyan]Current search:[/cyan] [bold]{search_term}[/bold]")
             else:
-                self.console.print("[cyan]Start typing to search. Use ↑/↓ keys to navigate, Enter to select.[/cyan]")
+                self.console.print("[cyan]Showing all operations. Type to start searching.[/cyan]")
             self.console.print()
             
-            # Filter operations based on current search
-            if current_search:
-                filtered_ops = [(display, op, func) for display, op, func in all_operations_list
-                                if current_search.lower() in display.lower() and op != "back"]
-                # Always include back option
-                if filtered_ops:
-                    filtered_ops.append(("⬅️ Back to main menu", "back", None))
-                else:
-                    filtered_ops = [("No matches found - Press Enter to continue searching", "continue", None),
-                                   ("⬅️ Back to main menu", "back", None)]
+            # Find matches
+            if search_term:
+                matches = self.search_operations(search_term.strip())
             else:
-                # When no search term, show all operations but limit to avoid too many
-                filtered_ops = all_operations_list[:30]  # Limit initial view to not overwhelm
-                if len(all_operations_list) > 30:
-                    filtered_ops.append((f"... {len(all_operations_list)-30} more operations (type to search)", "continue", None))
-            
-            # Show the filtered operations menu
-            display_texts = [display for display, _, _ in filtered_ops]
-            
-            # Choose from filtered operations
-            selection = questionary.select(
-                "Select or type to refine search:",
-                choices=display_texts,
-                style=custom_style
-            ).ask()
-            
-            if selection is None:
-                # User pressed ESC or Ctrl+C
-                return
+                # When no search term, show all operations
+                matches = self.all_operations
                 
-            if selection == "⬅️ Back to main menu":
-                return
-                
-            if selection == "No matches found - Press Enter to continue searching" or \
-               "more operations (type to search)" in selection:
-                # Prompt for new search term
-                search_update = questionary.text(
-                    "Refine search term:",
-                    default=current_search,
+            # Handle no matches case
+            if not matches:
+                self.console.print("[yellow]No matching operations found.[/yellow]")
+                search_term = questionary.text(
+                    "Try another search term (or press Enter with empty text to exit):",
                     style=custom_style
                 ).ask()
                 
-                if search_update is not None:  # User didn't cancel
-                    current_search = search_update
-                continue
-            
-            # Find the selected operation
-            for display, op_name, op_func in filtered_ops:
-                if display == selection and op_func is not None:
-                    # Execute the selected operation
-                    op_func()
+                if not search_term:
                     return
+                continue
+                
+            # Group matches by category for better organization
+            categories = {}
+            for op_name, op_func, category in matches:
+                if category not in categories:
+                    categories[category] = []
+                categories[category].append((op_name, op_func))
+                
+            # Display results grouped by category in a table
+            self.console.print(f"[bold green]Found {len(matches)} operations matching '{search_term}':[/bold green]")
             
-            # If we get here, ask for refined search
-            search_update = questionary.text(
-                "Refine search term:",
-                default=current_search,
+            # Create a nice table to display the categorized results
+            table = Table(box=box.SIMPLE)
+            table.add_column("Category", style="cyan")
+            table.add_column("Operations", style="green")
+            
+            for category, operations in categories.items():
+                operations_text = "\n".join([f"• {op_name}" for op_name, _ in operations])
+                table.add_row(category, operations_text)
+                
+            self.console.print(table)
+            self.console.print()
+            
+            # Create a flat list of operations for selection
+            flat_operations = []
+            for op_name, op_func, _ in matches:
+                # Include category in display for context
+                flat_operations.append((op_name, op_func))
+                
+            # Add options to search again or exit
+            operation_names = [op_name for op_name, _ in flat_operations]
+            choices = operation_names + ["🔎 New search", "⬅️ Back to main menu"]
+            
+            # Let user select an operation
+            selected = questionary.select(
+                "Select an operation:",
+                choices=choices,
                 style=custom_style
             ).ask()
             
-            if search_update is not None:  # User didn't cancel
-                current_search = search_update
+            if selected is None or selected == "⬅️ Back to main menu":
+                return
+                
+            if selected == "🔎 New search":
+                search_term = questionary.text(
+                    "New search term:",
+                    style=custom_style
+                ).ask()
+                
+                if search_term is None:
+                    return
+                continue
+                
+            # Execute the selected operation
+            for op_name, op_func in flat_operations:
+                if op_name == selected:
+                    op_func()
+                    return
             
     def show_search_results(self, matches):
         """Display and handle search results"""
