@@ -521,6 +521,57 @@ def render_learning_resources_page():
                - For distance calculation, once you have the formula `n_x x_0 + n_y y_0 + n_z z_0 - p`, you can compute the distance with simple arithmetic.
             """)
 
+        # --- Parametric Representation of a Line ---
+        st.subheader("Parametric Representation of a Line")
+        st.markdown("""
+            The parametric representation is a common way to define a line in both 2D and 3D space. 
+            It describes the coordinates of any point on the line as a function of a single parameter, usually denoted by `t`.
+            """)
+        st.markdown("""**Formula:**""")
+        st.latex("L(t) = P_0 + t \cdot \mathbf{v}")
+        st.markdown("""
+            Where:
+            - `P_0` is a specific known point on the line (e.g., `[x₀, y₀]` in 2D, or `[x₀, y₀, z₀]` in 3D).
+            - `\mathbf{v}` is a non-zero direction vector parallel to the line (e.g., `[v_x, v_y]` in 2D, or `[v_x, v_y, v_z]` in 3D).
+            - `t` is a scalar parameter. As `t` varies over all real numbers, `L(t)` traces out all points on the line.
+            """)
+        st.markdown("""
+            This can be written component-wise:
+            - **In 2D:** `x(t) = x₀ + t \cdot v_x`, `y(t) = y₀ + t \cdot v_y`
+            - **In 3D:** `x(t) = x₀ + t \cdot v_x`, `y(t) = y₀ + t \cdot v_y`, `z(t) = z₀ + t \cdot v_z`
+            """)
+        st.markdown("""
+            **Finding the Direction Vector from Two Points:**
+            If you are given two distinct points `P_0` and `P_1` on the line, the direction vector `\mathbf{v}` can be found by: 
+            `\mathbf{v} = P_1 - P_0`.
+            """)
+        st.markdown("""**Conceptual Example (2D - IOVMXJ adaptation):**""")
+        st.markdown("""
+            Problem: Find the parametric equation of the line passing through `P_0 = (1, 2)` and `P_1 = (4, 6)`.
+            1. Find the direction vector: `\mathbf{v} = P_1 - P_0 = [4-1, 6-2] = [3, 4]`.
+            2. Choose `P_0 = (1, 2)` as the base point.
+            3. The parametric equations are:
+               `x(t) = 1 + 3t`
+               `y(t) = 2 + 4t`
+            Or in vector form: `L(t) = [1, 2] + t[3, 4]`.
+            """)
+        st.markdown("""**Conceptual Example (3D - V8X27N adaptation):**""")
+        st.markdown("""
+            Problem: Find the parametric equation of the line passing through `A = (1, 0, 2)` and `B = (3, -1, 5)`.
+            1. Find the direction vector: `\mathbf{v} = B - A = [3-1, -1-0, 5-2] = [2, -1, 3]`.
+            2. Choose `A = (1, 0, 2)` as the base point `P_0`.
+            3. The parametric equations are:
+               `x(t) = 1 + 2t`
+               `y(t) = 0 - 1t = -t`
+               `z(t) = 2 + 3t`
+            Or in vector form: `L(t) = [1, 0, 2] + t[2, -1, 3]`.
+            """)
+        st.markdown("""**How this relates to calculator usage:**""")
+        st.markdown("""
+            Many tools in our calculator that deal with lines (e.g., Point-Line Distance, Line Intersection, etc.) will ask you to define a line by providing a point on the line (`P_0`) and its direction vector (`\mathbf{v}`). 
+            Understanding the parametric form helps you provide this input correctly, especially if a problem gives you two points on the line instead of a point and direction vector directly.
+            """)
+
         st.markdown("*(Placeholder for Point-Plane distance and other advanced Line/Plane topics)*")
         st.markdown("--- --- --- --- --- --- --- --- --- ---")
 
