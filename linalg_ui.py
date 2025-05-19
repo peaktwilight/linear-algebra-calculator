@@ -2422,7 +2422,7 @@ This guide will help you identify the type of problem you're dealing with and ch
     
     def run(self):
         parser = argparse.ArgumentParser(description='Linear Algebra Exercise Framework with Rich UI')
-        parser.add_argument('--version', action='version', version='Linear Algebra Framework 1.0')
+        parser.add_argument('--version', action='version', version='Linear Algebra Framework 1.5')
         parser.add_argument('--no-color', action='store_true', help='Disable colored output')
         
         args = parser.parse_args()
@@ -2437,7 +2437,7 @@ def main():
     """Main entry point with welcome message"""
     # Parse arguments
     parser = argparse.ArgumentParser(description='Linear Algebra Exercise Framework with Rich UI')
-    parser.add_argument('--version', action='version', version='Linear Algebra Framework 1.0')
+    parser.add_argument('--version', action='version', version='Linear Algebra Framework 1.5')
     parser.add_argument('--no-color', action='store_true', help='Disable colored output')
     parser.add_argument('--no-banner', action='store_true', help='Skip displaying the banner')
     

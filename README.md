@@ -1,4 +1,4 @@
-# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.4-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.4.1)
+# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.5-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.5)
 
 ![CLI Demo](public/Doruks_Algebra_Calculator_CLI.gif)
 

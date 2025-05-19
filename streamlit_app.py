@@ -31,7 +31,7 @@ st.set_page_config(
     menu_items={
         'Get Help': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
         'Report a bug': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
-        'About': "# Linear Algebra Calculator\nA comprehensive toolkit for learning and solving linear algebra problems. Made with ❤️ by Doruk for the LAG Fachmodul at FHNW.\n\nVersion 1.4.0 | Open source at https://github.com/peaktwilight/linear-algebra-calculator"
+        'About': "# Linear Algebra Calculator\nA comprehensive toolkit for learning and solving linear algebra problems. Made with ❤️ by Doruk for the LAG Fachmodul at FHNW.\n\nVersion 1.5.0 | Open source at https://github.com/peaktwilight/linear-algebra-calculator"
     }
 )
 
@@ -472,7 +472,7 @@ def main():
 
     st.sidebar.markdown("--- ")
     st.sidebar.info("Made with ❤️ by Doruk")
-    st.sidebar.info("[GitHub](https://github.com/peaktwilight/linear-algebra-calculator) v1.4 | FHNW Linear Algebra Module")
+    st.sidebar.info("[GitHub](https://github.com/peaktwilight/linear-algebra-calculator) v1.5 | FHNW Linear Algebra Module")
 
 
 if __name__ == "__main__":
