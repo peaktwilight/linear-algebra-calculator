@@ -72,28 +72,6 @@ The Interactive UI (`python linalg.py`) includes a "Learning Resources" section 
 - Example exercises with solutions.
 - Problem-solving guides & quizzes.
 
-## Examples (Interactive UI)
-
-The interactive UI provides a user-friendly way to perform operations.
-
-**Normalize a vector:**
-1.  Select category: `Vector Operations`
-2.  Select operation: `Normalize a vector`
-3.  Enter vector: `3, 4`
-
-**Solve a system of linear equations:**
-1.  Select category: `Matrix Operations`
-2.  Select operation: `Solve system with Gaussian elimination`
-3.  Enter augmented matrix: `1,-4,-2,-25; 0,-3,6,-18; 7,-13,-4,-85`
-
-## For Students
-
-This framework is designed to aid your learning:
-1.  **New to Linear Algebra?** Start with "Learning Resources" in the UI.
-2.  **Stuck on homework?** Use the "Common homework patterns" guide.
-3.  **Need conceptual clarity?** Each operation in the UI has detailed explanations.
-4.  **Want to practice?** Try example exercises and quizzes.
-
 ## Web Interface (Streamlit)
 
 A Streamlit web interface offers a graphical experience. It is hosted online at:
