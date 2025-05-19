@@ -1773,14 +1773,20 @@ class LinAlgCalculator:
             
             # Get the reduced row echelon form
             reduced = mrref(augmented)
-            
-            # Display the reduced row echelon form
+        
+        # Display the reduced row echelon form
             st.markdown("**Reduced Row Echelon Form:**")
             matrix_str = "\\begin{bmatrix}\n"
             for i, row in enumerate(reduced):
-                # Format each number: remove scientific notation, show fewer decimals
-                formatted_row = [f"{x:.4g}" for x in row]
-                matrix_str += " & ".join(formatted_row)
+                # Format each number: remove scientific notation for very small numbers (display as 0),
+                # ensuring consistency with the final solution display.
+                formatted_elements = []
+                for x_val in row:
+                    if abs(x_val) < 1e-10:  # Threshold for displaying as zero
+                        formatted_elements.append("0")
+                    else:
+                        formatted_elements.append(f"{x_val:.4g}")
+                matrix_str += " & ".join(formatted_elements)
                 if i < len(reduced) - 1:
                     matrix_str += "\\\\\\\n"
             matrix_str += "\\end{bmatrix}"
