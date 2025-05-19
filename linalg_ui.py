@@ -334,23 +334,95 @@ class LinearAlgebraRichUI:
         return matches
     
     def show_interactive_search(self):
-        """Show search functionality"""
-        self.display_header("🔍 Search Operations")
-        
-        # Get search term
-        search_term = questionary.text(
-            "Enter search term:",
-            style=custom_style
-        ).ask()
-        
-        if not search_term or not search_term.strip():
-            return
+        """Show search functionality with interactive results"""
+        # Create a flat list of all operations for searching
+        all_operations_list = []
+        for op_name, op_func, category in self.all_operations:
+            # Include category in the display text for context
+            display_text = f"{op_name} ({category})"
+            all_operations_list.append((display_text, op_name, op_func))
             
-        # Find matches
-        matches = self.search_operations(search_term.strip())
+        # Sort operations alphabetically for easier scanning
+        all_operations_list.sort(key=lambda x: x[0])
         
-        # Show results
-        self.show_search_results(matches)
+        # Add back option
+        all_operations_list.append(("⬅️ Back to main menu", "back", None))
+        
+        # Use a loop to implement interactive search
+        current_search = ""
+        while True:
+            # Clear screen and show header each time
+            self.display_header("🔍 Interactive Search")
+            
+            # Show current search term
+            if current_search:
+                self.console.print(f"[cyan]Current search:[/cyan] [bold]{current_search}[/bold]")
+            else:
+                self.console.print("[cyan]Start typing to search. Use ↑/↓ keys to navigate, Enter to select.[/cyan]")
+            self.console.print()
+            
+            # Filter operations based on current search
+            if current_search:
+                filtered_ops = [(display, op, func) for display, op, func in all_operations_list
+                                if current_search.lower() in display.lower() and op != "back"]
+                # Always include back option
+                if filtered_ops:
+                    filtered_ops.append(("⬅️ Back to main menu", "back", None))
+                else:
+                    filtered_ops = [("No matches found - Press Enter to continue searching", "continue", None),
+                                   ("⬅️ Back to main menu", "back", None)]
+            else:
+                # When no search term, show all operations but limit to avoid too many
+                filtered_ops = all_operations_list[:30]  # Limit initial view to not overwhelm
+                if len(all_operations_list) > 30:
+                    filtered_ops.append((f"... {len(all_operations_list)-30} more operations (type to search)", "continue", None))
+            
+            # Show the filtered operations menu
+            display_texts = [display for display, _, _ in filtered_ops]
+            
+            # Choose from filtered operations
+            selection = questionary.select(
+                "Select or type to refine search:",
+                choices=display_texts,
+                style=custom_style
+            ).ask()
+            
+            if selection is None:
+                # User pressed ESC or Ctrl+C
+                return
+                
+            if selection == "⬅️ Back to main menu":
+                return
+                
+            if selection == "No matches found - Press Enter to continue searching" or \
+               "more operations (type to search)" in selection:
+                # Prompt for new search term
+                search_update = questionary.text(
+                    "Refine search term:",
+                    default=current_search,
+                    style=custom_style
+                ).ask()
+                
+                if search_update is not None:  # User didn't cancel
+                    current_search = search_update
+                continue
+            
+            # Find the selected operation
+            for display, op_name, op_func in filtered_ops:
+                if display == selection and op_func is not None:
+                    # Execute the selected operation
+                    op_func()
+                    return
+            
+            # If we get here, ask for refined search
+            search_update = questionary.text(
+                "Refine search term:",
+                default=current_search,
+                style=custom_style
+            ).ask()
+            
+            if search_update is not None:  # User didn't cancel
+                current_search = search_update
             
     def show_search_results(self, matches):
         """Display and handle search results"""
@@ -394,7 +466,7 @@ class LinearAlgebraRichUI:
             # Create list of categories for selection
             categories = list(self.categories.keys())
             # Add search option at the top and exit with emoji
-            main_choices = ["🔍 Search All Operations"] + categories + ["🚪 Exit"]
+            main_choices = ["🔍 Interactive Search"] + categories + ["🚪 Exit"]
             
             selection = questionary.select(
                 "Select a category or search:",
@@ -404,7 +476,7 @@ class LinearAlgebraRichUI:
             
             if selection == "🚪 Exit" or selection is None:
                 sys.exit(0)
-            elif selection == "🔍 Search All Operations":
+            elif selection == "🔍 Interactive Search":
                 self.show_interactive_search()
                 continue
             
