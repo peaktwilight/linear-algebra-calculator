@@ -1019,266 +1019,338 @@ class LinAlgCalculator:
         if len(B) < 3:
             B = np.pad(B, (0, 3 - len(B)), 'constant')
         
-        # Display steps calculation
-        st.write("### Step-by-step Calculation")
+        # Calculate intermediate values for the formulas
+        v_norm = np.linalg.norm(v)
+        v_unit = v / v_norm if v_norm > 0 else v
+        B_minus_A = B - A
+        cross_product = np.cross(v, B_minus_A)
+        cross_norm = np.linalg.norm(cross_product)
+        distance = cross_norm / v_norm
         
-        step_output = output.get_output().split('\n')
-        for line in step_output:
-            if line.strip():
-                st.write(line)
+        # Calculate the closest point on the line to B
+        # Formula: closest = A + ((B-A)·v_unit) * v_unit
+        t_closest = np.dot(B_minus_A, v_unit)
+        closest = A + t_closest * v_unit
         
-        # Display a visualization of the point and line
-        st.subheader("Visualization")
+        # Create a formatted display of the calculations
+        col1, col2 = st.columns([1, 1])
         
-        # We'll create either a 2D or 3D visualization based on inputs
-        if A[2] == 0 and v[2] == 0 and B[2] == 0:
-            # 2D visualization (all z-coordinates are 0)
-            fig = go.Figure()
+        with col1:
+            st.markdown("### Mathematical Calculation")
             
-            # Create the line by extending in both directions
-            # Find appropriate line segment length based on the distance to point B
-            line_length = max(10, 3 * np.linalg.norm(B - A))
+            # Create a more structured output with LaTeX formatting
+            st.markdown("**Input parameters:**")
+            st.markdown(f"$A = {A.tolist()}$ (point on the line)")
+            st.markdown(f"$\\vec{{v}} = {v.tolist()}$ (direction vector of the line)")
+            st.markdown(f"$B = {B.tolist()}$ (point to find distance from the line)")
             
-            # Normalize direction vector
-            v_unit = v / np.linalg.norm(v)
+            # Show the calculation method
+            st.markdown("**Method: Cross Product Formula**")
+            st.markdown("""
+            To find the shortest distance from a point to a line, we use the cross product formula:
             
-            # Create line points extending in both directions
-            t_vals = np.linspace(-line_length, line_length, 100)
-            line_points = np.array([A + t * v_unit for t in t_vals])
+            $d = \\frac{|\\vec{v} \\times (B-A)|}{|\\vec{v}|}$
             
-            # Add the line
-            fig.add_trace(go.Scatter(
-                x=line_points[:, 0],
-                y=line_points[:, 1],
-                mode='lines',
-                name='Line',
-                line=dict(width=2, color='blue')
-            ))
+            Where:
+            - $A$ is a point on the line
+            - $\\vec{v}$ is the direction vector of the line
+            - $B$ is the point to find the distance from
+            - $\\times$ represents the cross product
+            """)
             
-            # Add point A (on the line)
-            fig.add_trace(go.Scatter(
-                x=[A[0]],
-                y=[A[1]],
-                mode='markers',
-                name='Point A (on line)',
-                marker=dict(size=10, color='blue')
-            ))
+            # Step 1: Calculate B-A
+            st.markdown("**Step 1: Calculate vector from point on line to point B**")
+            st.markdown(f"$B - A = {B.tolist()} - {A.tolist()} = {B_minus_A.tolist()}$")
             
-            # Add point B (to find distance from)
-            fig.add_trace(go.Scatter(
-                x=[B[0]],
-                y=[B[1]],
-                mode='markers',
-                name='Point B',
-                marker=dict(size=10, color='red')
-            ))
+            # Step 2: Calculate the cross product
+            st.markdown("**Step 2: Calculate the cross product $\\vec{v} \\times (B-A)$**")
+            st.markdown(f"$\\vec{{v}} \\times (B-A) = {v.tolist()} \\times {B_minus_A.tolist()} = {cross_product.tolist()}$")
             
-            # Calculate the closest point on the line to B
-            # Formula: closest = A + ((B-A)·v_unit) * v_unit
-            closest = A + np.dot(B - A, v_unit) * v_unit
+            # Step 3: Calculate the magnitude of the cross product and direction vector
+            st.markdown("**Step 3: Calculate magnitudes**")
+            st.markdown(f"$|\\vec{{v}} \\times (B-A)| = {cross_norm:.4f}$")
+            st.markdown(f"$|\\vec{{v}}| = {v_norm:.4f}$")
             
-            # Add the closest point on the line
-            fig.add_trace(go.Scatter(
-                x=[closest[0]],
-                y=[closest[1]],
-                mode='markers',
-                name='Closest Point',
-                marker=dict(size=8, color='green')
-            ))
+            # Step 4: Calculate the distance
+            st.markdown("**Step 4: Calculate the distance**")
+            st.markdown(f"$d = \\frac{{|\\vec{{v}} \\times (B-A)|}}{{|\\vec{{v}}|}} = \\frac{{{cross_norm:.4f}}}{{{v_norm:.4f}}} = {distance:.4f}$")
             
-            # Draw the distance line (perpendicular to the original line)
-            fig.add_trace(go.Scatter(
-                x=[B[0], closest[0]],
-                y=[B[1], closest[1]],
-                mode='lines',
-                name=f'Distance: {result:.4f}',
-                line=dict(width=2, color='red', dash='dash')
-            ))
+            # Alternative calculation using the closest point
+            st.markdown("**Verification: Alternative Method**")
+            st.markdown("We can also find the closest point on the line to B, then calculate the direct distance:")
+            st.markdown(f"1. Find parameter $t$ such that the point $P = A + t\\vec{{v}}_{{unit}}$ is closest to B:")
+            st.markdown(f"$t = (B-A) \\cdot \\vec{{v}}_{{unit}} = {B_minus_A.tolist()} \\cdot {v_unit.tolist()} = {t_closest:.4f}$")
+            st.markdown(f"2. Calculate the closest point: $P = A + t\\vec{{v}}_{{unit}} = {A.tolist()} + {t_closest:.4f} \\cdot {v_unit.tolist()} = {closest.tolist()}$")
+            st.markdown(f"3. Calculate direct distance: $|B - P| = |{B.tolist()} - {closest.tolist()}| = {np.linalg.norm(B - closest):.4f}$")
             
-            # Set layout
-            points = np.vstack([A, B, closest])
-            x_min, x_max = points[:, 0].min(), points[:, 0].max()
-            y_min, y_max = points[:, 1].min(), points[:, 1].max()
+        with col2:
+            st.markdown("### Visualization")
             
-            # Add some padding
-            padding_x = max(1, (x_max - x_min) * 0.2)
-            padding_y = max(1, (y_max - y_min) * 0.2)
-            
-            fig.update_layout(
-                xaxis=dict(
-                    range=[x_min - padding_x, x_max + padding_x],
-                    title="X",
-                    zeroline=True,
-                    zerolinewidth=2,
-                    zerolinecolor='white',
-                    showgrid=True,
-                    gridwidth=1,
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    color='white',
-                ),
-                yaxis=dict(
-                    range=[y_min - padding_y, y_max + padding_y],
-                    title="Y",
-                    zeroline=True,
-                    zerolinewidth=2,
-                    zerolinecolor='white',
-                    showgrid=True,
-                    gridwidth=1,
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    color='white',
-                ),
-                title="Point-Line Distance Visualization",
-                title_font_color="white",
-                showlegend=True,
-                width=700,
-                height=600,
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0.1)',
-                legend=dict(font=dict(color="white")),
-            )
-            
-            # Add formula annotation
-            fig.add_annotation(
-                x=(B[0] + closest[0]) / 2,
-                y=(B[1] + closest[1]) / 2 + padding_y * 0.3,
-                text=f"Distance = {result:.4f}",
-                showarrow=False,
-                font=dict(size=14, color="red")
-            )
-            
-            st.plotly_chart(fig)
-            
-        else:
-            # 3D visualization
-            fig = go.Figure()
-            
-            # Create the line by extending in both directions
-            line_length = max(10, 3 * np.linalg.norm(B - A))
-            
-            # Normalize direction vector
-            v_unit = v / np.linalg.norm(v)
-            
-            # Create line points extending in both directions
-            t_vals = np.linspace(-line_length, line_length, 100)
-            line_points = np.array([A + t * v_unit for t in t_vals])
-            
-            # Add the line
-            fig.add_trace(go.Scatter3d(
-                x=line_points[:, 0],
-                y=line_points[:, 1],
-                z=line_points[:, 2],
-                mode='lines',
-                name='Line',
-                line=dict(width=4, color='blue')
-            ))
-            
-            # Add point A (on the line)
-            fig.add_trace(go.Scatter3d(
-                x=[A[0]],
-                y=[A[1]],
-                z=[A[2]],
-                mode='markers',
-                name='Point A (on line)',
-                marker=dict(size=8, color='blue')
-            ))
-            
-            # Add point B (to find distance from)
-            fig.add_trace(go.Scatter3d(
-                x=[B[0]],
-                y=[B[1]],
-                z=[B[2]],
-                mode='markers',
-                name='Point B',
-                marker=dict(size=8, color='red')
-            ))
-            
-            # Calculate the closest point on the line to B
-            closest = A + np.dot(B - A, v_unit) * v_unit
-            
-            # Add the closest point on the line
-            fig.add_trace(go.Scatter3d(
-                x=[closest[0]],
-                y=[closest[1]],
-                z=[closest[2]],
-                mode='markers',
-                name='Closest Point',
-                marker=dict(size=6, color='green')
-            ))
-            
-            # Draw the distance line (perpendicular to the original line)
-            fig.add_trace(go.Scatter3d(
-                x=[B[0], closest[0]],
-                y=[B[1], closest[1]],
-                z=[B[2], closest[2]],
-                mode='lines',
-                name=f'Distance: {result:.4f}',
-                line=dict(width=5, color='red', dash='dash')
-            ))
-            
-            # Configure the 3D layout
-            points = np.vstack([A, B, closest])
-            x_min, x_max = points[:, 0].min(), points[:, 0].max()
-            y_min, y_max = points[:, 1].min(), points[:, 1].max()
-            z_min, z_max = points[:, 2].min(), points[:, 2].max()
-            
-            # Calculate the ranges for each axis with padding
-            max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
-            x_pad = (max_range - (x_max - x_min)) / 2
-            y_pad = (max_range - (y_max - y_min)) / 2
-            z_pad = (max_range - (z_max - z_min)) / 2
-            
-            padding = max_range * 0.2
-            
-            fig.update_layout(
-                scene=dict(
+            # We'll create either a 2D or 3D visualization based on inputs
+            if A[2] == 0 and v[2] == 0 and B[2] == 0:
+                # 2D visualization (all z-coordinates are 0)
+                fig = go.Figure()
+                
+                # Create the line by extending in both directions
+                # Find appropriate line segment length based on the distance to point B
+                line_length = max(10, 3 * np.linalg.norm(B - A))
+                
+                # Create line points extending in both directions
+                t_vals = np.linspace(-line_length, line_length, 100)
+                line_points = np.array([A + t * v_unit for t in t_vals])
+                
+                # Add the line
+                fig.add_trace(go.Scatter(
+                    x=line_points[:, 0],
+                    y=line_points[:, 1],
+                    mode='lines',
+                    name='Line',
+                    line=dict(width=2, color='blue')
+                ))
+                
+                # Add point A (on the line)
+                fig.add_trace(go.Scatter(
+                    x=[A[0]],
+                    y=[A[1]],
+                    mode='markers',
+                    name='Point A (on line)',
+                    marker=dict(size=10, color='blue')
+                ))
+                
+                # Add the direction vector
+                scaled_v = v_unit * min(5, line_length / 3)  # Scale for better visualization
+                fig.add_trace(go.Scatter(
+                    x=[A[0], A[0] + scaled_v[0]],
+                    y=[A[1], A[1] + scaled_v[1]],
+                    mode='lines+markers',
+                    name='Direction Vector v',
+                    line=dict(width=2, color='purple', dash='dot'),
+                    marker=dict(size=[0, 8], color='purple')
+                ))
+                
+                # Add point B (to find distance from)
+                fig.add_trace(go.Scatter(
+                    x=[B[0]],
+                    y=[B[1]],
+                    mode='markers',
+                    name='Point B',
+                    marker=dict(size=10, color='red')
+                ))
+                
+                # Add the closest point on the line
+                fig.add_trace(go.Scatter(
+                    x=[closest[0]],
+                    y=[closest[1]],
+                    mode='markers',
+                    name='Closest Point P',
+                    marker=dict(size=8, color='green')
+                ))
+                
+                # Draw the distance line (perpendicular to the original line)
+                fig.add_trace(go.Scatter(
+                    x=[B[0], closest[0]],
+                    y=[B[1], closest[1]],
+                    mode='lines',
+                    name=f'Distance: {distance:.4f}',
+                    line=dict(width=2, color='red', dash='dash')
+                ))
+                
+                # Set layout
+                points = np.vstack([A, B, closest])
+                x_min, x_max = points[:, 0].min(), points[:, 0].max()
+                y_min, y_max = points[:, 1].min(), points[:, 1].max()
+                
+                # Add some padding
+                padding_x = max(1, (x_max - x_min) * 0.2)
+                padding_y = max(1, (y_max - y_min) * 0.2)
+                
+                fig.update_layout(
                     xaxis=dict(
-                        range=[x_min - x_pad - padding, x_max + x_pad + padding],
+                        range=[x_min - padding_x, x_max + padding_x],
                         title="X",
-                        color="white",
+                        zeroline=True,
+                        zerolinewidth=2,
+                        zerolinecolor='white',
+                        showgrid=True,
+                        gridwidth=1,
                         gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
+                        color='white',
                     ),
                     yaxis=dict(
-                        range=[y_min - y_pad - padding, y_max + y_pad + padding],
+                        range=[y_min - padding_y, y_max + padding_y],
                         title="Y",
-                        color="white",
+                        zeroline=True,
+                        zerolinewidth=2,
+                        zerolinecolor='white',
+                        showgrid=True,
+                        gridwidth=1,
                         gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
+                        color='white',
                     ),
-                    zaxis=dict(
-                        range=[z_min - z_pad - padding, z_max + z_pad + padding],
-                        title="Z",
-                        color="white",
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
+                    title="Point-Line Distance Visualization",
+                    title_font_color="white",
+                    showlegend=True,
+                    width=700,
+                    height=600,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0.1)',
+                    legend=dict(font=dict(color="white")),
+                )
+                
+                # Add formula annotation
+                fig.add_annotation(
+                    x=(B[0] + closest[0]) / 2,
+                    y=(B[1] + closest[1]) / 2 + padding_y * 0.3,
+                    text=f"Distance = {distance:.4f}",
+                    showarrow=False,
+                    font=dict(size=14, color="red")
+                )
+                
+                st.plotly_chart(fig)
+                
+            else:
+                # 3D visualization
+                fig = go.Figure()
+                
+                # Create the line by extending in both directions
+                line_length = max(10, 3 * np.linalg.norm(B - A))
+                
+                # Create line points extending in both directions
+                t_vals = np.linspace(-line_length, line_length, 100)
+                line_points = np.array([A + t * v_unit for t in t_vals])
+                
+                # Add the line
+                fig.add_trace(go.Scatter3d(
+                    x=line_points[:, 0],
+                    y=line_points[:, 1],
+                    z=line_points[:, 2],
+                    mode='lines',
+                    name='Line',
+                    line=dict(width=4, color='blue')
+                ))
+                
+                # Add point A (on the line)
+                fig.add_trace(go.Scatter3d(
+                    x=[A[0]],
+                    y=[A[1]],
+                    z=[A[2]],
+                    mode='markers',
+                    name='Point A (on line)',
+                    marker=dict(size=8, color='blue')
+                ))
+                
+                # Add the direction vector
+                scaled_v = v_unit * min(5, line_length / 3)  # Scale for better visualization
+                fig.add_trace(go.Scatter3d(
+                    x=[A[0], A[0] + scaled_v[0]],
+                    y=[A[1], A[1] + scaled_v[1]],
+                    z=[A[2], A[2] + scaled_v[2]],
+                    mode='lines',
+                    name='Direction Vector v',
+                    line=dict(width=5, color='purple', dash='dot')
+                ))
+                
+                # Add point B (to find distance from)
+                fig.add_trace(go.Scatter3d(
+                    x=[B[0]],
+                    y=[B[1]],
+                    z=[B[2]],
+                    mode='markers',
+                    name='Point B',
+                    marker=dict(size=8, color='red')
+                ))
+                
+                # Add the closest point on the line
+                fig.add_trace(go.Scatter3d(
+                    x=[closest[0]],
+                    y=[closest[1]],
+                    z=[closest[2]],
+                    mode='markers',
+                    name='Closest Point P',
+                    marker=dict(size=6, color='green')
+                ))
+                
+                # Draw the distance line (perpendicular to the original line)
+                fig.add_trace(go.Scatter3d(
+                    x=[B[0], closest[0]],
+                    y=[B[1], closest[1]],
+                    z=[B[2], closest[2]],
+                    mode='lines',
+                    name=f'Distance: {distance:.4f}',
+                    line=dict(width=5, color='red', dash='dash')
+                ))
+                
+                # Configure the 3D layout
+                points = np.vstack([A, B, closest])
+                x_min, x_max = points[:, 0].min(), points[:, 0].max()
+                y_min, y_max = points[:, 1].min(), points[:, 1].max()
+                z_min, z_max = points[:, 2].min(), points[:, 2].max()
+                
+                # Calculate the ranges for each axis with padding
+                max_range = max(x_max - x_min, y_max - y_min, z_max - z_min)
+                x_pad = (max_range - (x_max - x_min)) / 2
+                y_pad = (max_range - (y_max - y_min)) / 2
+                z_pad = (max_range - (z_max - z_min)) / 2
+                
+                padding = max_range * 0.2
+                
+                fig.update_layout(
+                    scene=dict(
+                        xaxis=dict(
+                            range=[x_min - x_pad - padding, x_max + x_pad + padding],
+                            title="X",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        yaxis=dict(
+                            range=[y_min - y_pad - padding, y_max + y_pad + padding],
+                            title="Y",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        zaxis=dict(
+                            range=[z_min - z_pad - padding, z_max + z_pad + padding],
+                            title="Z",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        aspectmode='cube',
                     ),
-                    aspectmode='cube',
-                ),
-                title=f"Point-Line Distance in 3D - Distance: {result:.4f}",
-                title_font_color="white",
-                width=700,
-                height=700,
-                paper_bgcolor='rgba(0,0,0,0)',
-                legend=dict(font=dict(color="white")),
-            )
+                    title=f"Point-Line Distance in 3D",
+                    title_font_color="white",
+                    width=700,
+                    height=700,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    legend=dict(font=dict(color="white")),
+                )
+                
+                st.plotly_chart(fig)
             
-            st.plotly_chart(fig)
-        
-        # Add verification notes
-        st.write("### Verification")
-        
-        # Show the vector from A to B
-        AB = B - A
-        
-        # Show the distance calculation
-        st.write("**Distance Calculation:**")
-        st.write(f"- |v × (B-A)| / |v| = {np.linalg.norm(np.cross(v, B - A)) / np.linalg.norm(v):.4f} ✓")
-        
-        # Compare to the distance between the point and the closest point on the line
-        closest = A + np.dot(B - A, v_unit) * v_unit
-        direct_distance = np.linalg.norm(B - closest)
-        
-        st.write(f"- Alternate calculation (direct distance to closest point): {direct_distance:.4f} ✓")
+            # Add result info box
+            result_box = f"""
+            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                <p style="font-size: 18px; text-align: center; font-weight: bold;">
+                    Distance from Point to Line: {distance:.4f}
+                </p>
+                <p style="font-size: 14px; text-align: center;">
+                    Calculated using the formula: |v × (B-A)| / |v|
+                </p>
+            </div>
+            """
+            st.markdown(result_box, unsafe_allow_html=True)
+            
+            # Add some key facts about point-line distance
+            st.markdown("### Key Facts")
+            st.info("""
+            **Properties of Point-Line Distance:**
+            
+            1. The shortest distance from a point to a line is always along the perpendicular path.
+            2. The cross product formula gives the exact distance regardless of where point A is on the line.
+            3. This distance remains constant for any point on the line to point B.
+            """)
         
         return result
         
