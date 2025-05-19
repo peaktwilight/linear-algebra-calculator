@@ -247,19 +247,62 @@ class LinAlgCalculator:
         a = self.framework.parse_vector(vector_a)
         b = self.framework.parse_vector(vector_b)
         vector_proj = result["vector_proj"]
+        scalar_proj = result["scalar_proj"]
         
-        # Display steps calculation 
-        st.write("### Step-by-step Calculation")
+        # Calculate dot products and normalization for the formulas
+        dot_product = np.dot(a, b)
+        norm_a_squared = np.dot(a, a)
+        norm_a = np.linalg.norm(a)
         
-        step_output = output.get_output().split('\n')
-        for line in step_output:
-            if line.strip():
-                st.write(line)
+        # Create a formatted display of the calculations
+        col1, col2 = st.columns([1, 1])
         
-        # Display a visualization of the vectors and the projection
-        st.subheader("Visualization")
-        self.display_vector_visualization([a, b, vector_proj], names=["Vector a", "Vector b", "Projection of b onto a"])
+        with col1:
+            st.markdown("### Step-by-step Calculation")
+            
+            # Create a more structured output
+            st.markdown("**Input vectors:**")
+            st.markdown(f"$\\vec{{a}} = {a.tolist()}$ (to project onto)")
+            st.markdown(f"$\\vec{{b}} = {b.tolist()}$ (to be projected)")
+            
+            st.markdown("**Dot product calculation:**")
+            dot_formula = " + ".join([f"({a[i]} \\cdot {b[i]})" for i in range(len(a))])
+            st.markdown(f"$\\vec{{a}} \\cdot \\vec{{b}} = {dot_formula} = {dot_product:.4f}$")
+            
+            st.markdown("**Magnitude calculations:**")
+            st.markdown(f"$|\\vec{{a}}|^2 = {' + '.join([f'({v})^2' for v in a])} = {norm_a_squared:.4f}$")
+            st.markdown(f"$|\\vec{{a}}| = \\sqrt{{{norm_a_squared:.4f}}} = {norm_a:.4f}$")
+            
+            st.markdown("**Scalar projection calculation:**")
+            st.markdown(f"$\\text{{scalar_proj}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{|\\vec{{a}}|}} = \\frac{{{dot_product:.4f}}}{{{norm_a:.4f}}} = {scalar_proj:.4f}$")
+            
+            st.markdown("**Vector projection calculation:**")
+            st.markdown(f"$\\text{{vector_proj}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{\\vec{{a}} \\cdot \\vec{{a}}}} \\vec{{a}} = \\frac{{{dot_product:.4f}}}{{{norm_a_squared:.4f}}} \\cdot {a.tolist()} = {vector_proj.tolist()}$")
+            
+            # Add explanation of what the projection means
+            st.markdown("**Interpretation:**")
+            st.markdown("""
+            The projection of vector b onto vector a represents how much of vector b points in the direction of vector a.
+            - **Scalar projection**: Length of the shadow of vector b when cast onto the line along vector a
+            - **Vector projection**: The resulting vector along the direction of a
+            """)
         
+        with col2:
+            st.markdown("### Visualization")
+            
+            # Display a visualization of the vectors and the projection
+            self.display_vector_visualization([a, b, vector_proj], names=["Vector a", "Vector b", "Projection of b onto a"])
+            
+            # Add projection magnitude display
+            projection_box = f"""
+            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                <p style="font-size: 16px; text-align: center;">
+                    <strong>Scalar Projection:</strong> {scalar_proj:.4f}<br>
+                    <strong>Vector Projection:</strong> {vector_proj.tolist()}
+                </p>
+            </div>
+            """
+            st.markdown(projection_box, unsafe_allow_html=True)
         
         return result
     
@@ -284,118 +327,152 @@ class LinAlgCalculator:
         a = self.framework.parse_vector(vector_a)
         b = self.framework.parse_vector(vector_b)
         
-        # Display steps calculation 
-        st.write("### Step-by-step Calculation")
+        # Calculate values for displaying in the formula
+        dot_product = np.dot(a, b)
+        norm_a = np.linalg.norm(a)
+        norm_b = np.linalg.norm(b)
+        cos_angle = dot_product / (norm_a * norm_b)
+        angle_rad = result["radians"]
+        angle_deg = result["degrees"]
         
-        step_output = output.get_output().split('\n')
-        for line in step_output:
-            if line.strip():
-                st.write(line)
+        # Create a formatted display of the calculations
+        col1, col2 = st.columns([1, 1])
         
-        # Display a visualization of the vectors and angle
-        st.subheader("Visualization")
+        with col1:
+            st.markdown("### Step-by-step Calculation")
+            
+            # Create a more structured output
+            st.markdown("**Input vectors:**")
+            st.markdown(f"$\\vec{{a}} = {a.tolist()}$")
+            st.markdown(f"$\\vec{{b}} = {b.tolist()}$")
+            
+            st.markdown("**Dot product calculation:**")
+            dot_formula = " + ".join([f"({a[i]} \\cdot {b[i]})" for i in range(len(a))])
+            st.markdown(f"$\\vec{{a}} \\cdot \\vec{{b}} = {dot_formula} = {dot_product:.4f}$")
+            
+            st.markdown("**Vector magnitudes:**")
+            st.markdown(f"$|\\vec{{a}}| = \\sqrt{{{' + '.join([f'({v})^2' for v in a])}}} = {norm_a:.4f}$")
+            st.markdown(f"$|\\vec{{b}}| = \\sqrt{{{' + '.join([f'({v})^2' for v in b])}}} = {norm_b:.4f}$")
+            
+            st.markdown("**Angle calculation:**")
+            st.markdown(f"$\\cos(\\theta) = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{|\\vec{{a}}| \\cdot |\\vec{{b}}|}} = \\frac{{{dot_product:.4f}}}{{{norm_a:.4f} \\cdot {norm_b:.4f}}} = {cos_angle:.4f}$")
+            
+            st.markdown("**Final angle:**")
+            st.markdown(f"$\\theta = \\arccos({cos_angle:.4f}) = {angle_rad:.4f}$ radians")
+            st.markdown(f"$\\theta = {angle_rad:.4f} \\cdot \\frac{{180^\\circ}}{{\\pi}} = {angle_deg:.4f}^\\circ$")
         
-        # For 2D vectors, create a special angle visualization
-        if len(a) == 2 and len(b) == 2:
-            # Create a figure for the angle visualization
-            fig = go.Figure()
+        with col2:
+            st.markdown("### Visualization")
             
-            # Add the vectors
-            fig.add_trace(go.Scatter(
-                x=[0, a[0]], y=[0, a[1]],
-                mode='lines+markers',
-                name='Vector a',
-                line=dict(width=3),
-                marker=dict(size=[0, 10])
-            ))
-            
-            fig.add_trace(go.Scatter(
-                x=[0, b[0]], y=[0, b[1]],
-                mode='lines+markers',
-                name='Vector b',
-                line=dict(width=3),
-                marker=dict(size=[0, 10])
-            ))
-            
-            # Add an arc to show the angle
-            angle_deg = result["degrees"]
-            r = min(np.linalg.norm(a), np.linalg.norm(b)) * 0.3
-            
-            # Calculate reference angle to x-axis for vector a
-            angle_a = np.arctan2(a[1], a[0])
-            angle_b = np.arctan2(b[1], b[0])
-            
-            # Ensure we draw the smaller angle
-            if angle_b - angle_a > np.pi:
-                angle_a += 2 * np.pi
-            elif angle_a - angle_b > np.pi:
-                angle_b += 2 * np.pi
-            
-            # Create points for the arc
-            if angle_a <= angle_b:
-                theta = np.linspace(angle_a, angle_b, 50)
+            # For 2D vectors, create a special angle visualization
+            if len(a) == 2 and len(b) == 2:
+                # Create a figure for the angle visualization
+                fig = go.Figure()
+                
+                # Add the vectors
+                fig.add_trace(go.Scatter(
+                    x=[0, a[0]], y=[0, a[1]],
+                    mode='lines+markers',
+                    name='Vector a',
+                    line=dict(width=3),
+                    marker=dict(size=[0, 10])
+                ))
+                
+                fig.add_trace(go.Scatter(
+                    x=[0, b[0]], y=[0, b[1]],
+                    mode='lines+markers',
+                    name='Vector b',
+                    line=dict(width=3),
+                    marker=dict(size=[0, 10])
+                ))
+                
+                # Add an arc to show the angle
+                r = min(np.linalg.norm(a), np.linalg.norm(b)) * 0.3
+                
+                # Calculate reference angle to x-axis for vector a
+                angle_a = np.arctan2(a[1], a[0])
+                angle_b = np.arctan2(b[1], b[0])
+                
+                # Ensure we draw the smaller angle
+                if angle_b - angle_a > np.pi:
+                    angle_a += 2 * np.pi
+                elif angle_a - angle_b > np.pi:
+                    angle_b += 2 * np.pi
+                
+                # Create points for the arc
+                if angle_a <= angle_b:
+                    theta = np.linspace(angle_a, angle_b, 50)
+                else:
+                    theta = np.linspace(angle_b, angle_a, 50)
+                
+                x_arc = r * np.cos(theta)
+                y_arc = r * np.sin(theta)
+                
+                fig.add_trace(go.Scatter(
+                    x=x_arc, y=y_arc,
+                    mode='lines',
+                    name=f'Angle: {angle_deg:.2f}°',
+                    line=dict(width=2, color='red', dash='dash'),
+                ))
+                
+                # Add a label for the angle
+                mid_angle = (angle_a + angle_b) / 2
+                label_r = r * 1.2
+                fig.add_annotation(
+                    x=label_r * np.cos(mid_angle),
+                    y=label_r * np.sin(mid_angle),
+                    text=f"{angle_deg:.2f}°",
+                    showarrow=False,
+                    font=dict(size=14, color="red")
+                )
+                
+                # Configure the layout
+                max_norm = max(np.linalg.norm(a), np.linalg.norm(b))
+                fig.update_layout(
+                    xaxis=dict(
+                        range=[-max_norm * 1.2, max_norm * 1.2],
+                        zeroline=True,
+                        zerolinewidth=2,
+                        zerolinecolor='white',
+                        showgrid=True,
+                        gridwidth=1,
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        color='white',
+                    ),
+                    yaxis=dict(
+                        range=[-max_norm * 1.2, max_norm * 1.2],
+                        zeroline=True,
+                        zerolinewidth=2,
+                        zerolinecolor='white',
+                        showgrid=True,
+                        gridwidth=1,
+                        gridcolor='rgba(255, 255, 255, 0.2)',
+                        color='white',
+                    ),
+                    title="Angle Visualization",
+                    title_font_color="white",
+                    showlegend=True,
+                    width=600,
+                    height=600,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0.1)',
+                    legend=dict(font=dict(color="white")),
+                )
+                
+                st.plotly_chart(fig)
             else:
-                theta = np.linspace(angle_b, angle_a, 50)
-            
-            x_arc = r * np.cos(theta)
-            y_arc = r * np.sin(theta)
-            
-            fig.add_trace(go.Scatter(
-                x=x_arc, y=y_arc,
-                mode='lines',
-                name=f'Angle: {angle_deg:.2f}°',
-                line=dict(width=2, color='red', dash='dash'),
-            ))
-            
-            # Add a label for the angle
-            mid_angle = (angle_a + angle_b) / 2
-            label_r = r * 1.2
-            fig.add_annotation(
-                x=label_r * np.cos(mid_angle),
-                y=label_r * np.sin(mid_angle),
-                text=f"{angle_deg:.2f}°",
-                showarrow=False,
-                font=dict(size=14, color="red")
-            )
-            
-            # Configure the layout
-            max_norm = max(np.linalg.norm(a), np.linalg.norm(b))
-            fig.update_layout(
-                xaxis=dict(
-                    range=[-max_norm * 1.2, max_norm * 1.2],
-                    zeroline=True,
-                    zerolinewidth=2,
-                    zerolinecolor='white',
-                    showgrid=True,
-                    gridwidth=1,
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    color='white',
-                ),
-                yaxis=dict(
-                    range=[-max_norm * 1.2, max_norm * 1.2],
-                    zeroline=True,
-                    zerolinewidth=2,
-                    zerolinecolor='white',
-                    showgrid=True,
-                    gridwidth=1,
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    color='white',
-                ),
-                title="Angle Visualization",
-                title_font_color="white",
-                showlegend=True,
-                width=600,
-                height=600,
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0.1)',
-                legend=dict(font=dict(color="white")),
-            )
-            
-            st.plotly_chart(fig)
-        else:
-            # For higher dimensions, just show the vectors
-            self.display_vector_visualization([a, b], names=["Vector a", "Vector b"])
-        
+                # For higher dimensions, just show the vectors
+                self.display_vector_visualization([a, b], names=["Vector a", "Vector b"])
+                
+                # Add mathematical representation of the angle
+                angle_box = f"""
+                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                    <p style="font-size: 18px; text-align: center;">
+                        Angle between vectors: {angle_deg:.2f}° ({angle_rad:.4f} radians)
+                    </p>
+                </div>
+                """
+                st.markdown(angle_box, unsafe_allow_html=True)
         
         return result
         
@@ -411,114 +488,190 @@ class LinAlgCalculator:
         # Parse the vectors from input
         a = self.framework.parse_vector(args.vector_a)
         b = self.framework.parse_vector(args.vector_b)
+        cross = result  # The cross product result
         
-        # Display steps calculation 
-        st.write("### Step-by-step Calculation")
+        # Ensure vectors are at least 3D (pad with zeros if needed)
+        if len(a) < 3:
+            a = np.pad(a, (0, 3 - len(a)), 'constant')
+        if len(b) < 3:
+            b = np.pad(b, (0, 3 - len(b)), 'constant')
+            
+        # Calculate magnitudes and angle for the formulas
+        norm_a = np.linalg.norm(a)
+        norm_b = np.linalg.norm(b)
+        dot_product = np.dot(a, b)
+        cos_angle = dot_product / (norm_a * norm_b) if norm_a * norm_b > 1e-10 else 0
+        cos_angle = np.clip(cos_angle, -1.0, 1.0)  # Clip to avoid domain errors
+        angle_rad = np.arccos(cos_angle)
+        angle_deg = angle_rad * 180 / np.pi
+        sin_angle = np.sin(angle_rad)
+        cross_magnitude = np.linalg.norm(cross)
         
-        step_output = output.get_output().split('\n')
-        for line in step_output:
-            if line.strip():
-                st.write(line)
+        # Check orthogonality with both input vectors
+        dot_a = np.dot(cross, a)
+        dot_b = np.dot(cross, b)
         
-        # Display a visualization of the vectors and the cross product
-        st.subheader("Visualization")
+        # Create a formatted display of the calculations
+        col1, col2 = st.columns([1, 1])
         
-        if len(a) == 3 and len(b) == 3:
-            # For 3D vectors, visualize in 3D space
-            cross = result  # The cross product result
+        with col1:
+            st.markdown("### Mathematical Calculation")
             
-            # Create a 3D visualization using plotly
-            fig = go.Figure()
+            # Create a more structured output with LaTeX formatting
+            st.markdown("**Input vectors:**")
+            st.markdown(f"$\\vec{{a}} = {a.tolist()}$")
+            st.markdown(f"$\\vec{{b}} = {b.tolist()}$")
             
-            # Add the vectors
-            vectors = [a, b, cross]
-            names = ["Vector a", "Vector b", "Cross Product (a × b)"]
-            colors = ["blue", "green", "red"]
+            st.markdown("**Cross product formula:**")
+            st.markdown(r"""
+            For 3D vectors $\vec{a} = [a_1, a_2, a_3]$ and $\vec{b} = [b_1, b_2, b_3]$, the cross product is:
             
-            for i, vec in enumerate(vectors):
-                fig.add_trace(go.Scatter3d(
-                    x=[0, vec[0]],
-                    y=[0, vec[1]],
-                    z=[0, vec[2]],
-                    mode='lines+markers',
-                    name=names[i],
-                    line=dict(width=6, color=colors[i]),
-                    marker=dict(size=[0, 8], color=colors[i])
-                ))
+            $\vec{a} \times \vec{b} = \begin{vmatrix} 
+            \vec{i} & \vec{j} & \vec{k} \\
+            a_1 & a_2 & a_3 \\
+            b_1 & b_2 & b_3
+            \end{vmatrix}$
             
-            # Add grid and configuration
-            max_val = max([max(abs(v)) for v in vectors])
-            fig.update_layout(
-                scene=dict(
-                    xaxis=dict(
-                        range=[-max_val * 1.2, max_val * 1.2], 
-                        title="X",
-                        color="white",
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
-                    ),
-                    yaxis=dict(
-                        range=[-max_val * 1.2, max_val * 1.2], 
-                        title="Y",
-                        color="white",
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
-                    ),
-                    zaxis=dict(
-                        range=[-max_val * 1.2, max_val * 1.2], 
-                        title="Z",
-                        color="white",
-                        gridcolor='rgba(255, 255, 255, 0.2)',
-                        backgroundcolor='rgba(0,0,0,0.1)',
-                    ),
-                    aspectmode='cube',
-                ),
-                title="Cross Product Visualization",
-                title_font_color="white",
-                width=700,
-                height=700,
-                paper_bgcolor='rgba(0,0,0,0)',
-                legend=dict(font=dict(color="white")),
-            )
+            $= \vec{i} \begin{vmatrix} a_2 & a_3 \\ b_2 & b_3 \end{vmatrix} - 
+            \vec{j} \begin{vmatrix} a_1 & a_3 \\ b_1 & b_3 \end{vmatrix} + 
+            \vec{k} \begin{vmatrix} a_1 & a_2 \\ b_1 & b_2 \end{vmatrix}$
+            """)
             
-            st.plotly_chart(fig)
+            # Component-by-component calculation
+            st.markdown("**Component calculations:**")
+            c1 = a[1]*b[2] - a[2]*b[1]
+            c2 = a[2]*b[0] - a[0]*b[2]
+            c3 = a[0]*b[1] - a[1]*b[0]
             
-            # Add verification notes
-            st.write("### Verification")
+            st.markdown(f"$c_1 = a_2b_3 - a_3b_2 = ({a[1]})({b[2]}) - ({a[2]})({b[1]}) = {c1:.4f}$")
+            st.markdown(f"$c_2 = a_3b_1 - a_1b_3 = ({a[2]})({b[0]}) - ({a[0]})({b[2]}) = {c2:.4f}$")
+            st.markdown(f"$c_3 = a_1b_2 - a_2b_1 = ({a[0]})({b[1]}) - ({a[1]})({b[0]}) = {c3:.4f}$")
             
-            # Check orthogonality with both input vectors
-            dot_a = np.dot(cross, a)
-            dot_b = np.dot(cross, b)
+            st.markdown("**Result:**")
+            st.markdown(f"$\\vec{{a}} \\times \\vec{{b}} = [{c1:.4f}, {c2:.4f}, {c3:.4f}]$")
             
-            st.write(f"**Orthogonality Check:**")
-            st.write(f"- Dot product with Vector a: {dot_a:.10f} ≈ 0 ✓")
-            st.write(f"- Dot product with Vector b: {dot_b:.10f} ≈ 0 ✓")
+            # Magnitude and orientation properties
+            st.markdown("**Properties of the cross product:**")
             
-            # Show magnitude relationship
-            # Ensure denominator is not zero before division
-            norm_a = np.linalg.norm(a)
-            norm_b = np.linalg.norm(b)
-            dot_ab_norm = np.dot(a, b) / (norm_a * norm_b) if norm_a * norm_b > 1e-10 else 0
-            # Clip to avoid domain errors with arccos
-            angle_rad_for_mag = np.arccos(np.clip(dot_ab_norm, -1.0, 1.0))
-            denominator_mag = norm_a * norm_b * np.sin(angle_rad_for_mag)
-
-            if abs(denominator_mag) > 1e-10:
-                magnitude_relation = np.linalg.norm(cross) / denominator_mag
-                st.write(f"**Magnitude Relationship:**")
-                st.write(f"- |a × b| = |a|·|b|·sin(θ) ✓ (Ratio: {magnitude_relation:.6f} ≈ 1)")
-            else:
-                st.write(f"**Magnitude Relationship:**")
-                st.write(f"- Could not verify magnitude relationship due to zero or near-zero denominator (vectors might be collinear).")
+            st.markdown("**1. Magnitude:**")
+            st.markdown(f"$|\\vec{{a}} \\times \\vec{{b}}| = |\\vec{{a}}||\\vec{{b}}|\\sin(\\theta)$")
+            st.markdown(f"$= {norm_a:.4f} \\cdot {norm_b:.4f} \\cdot \\sin({angle_deg:.2f}°)$")
+            st.markdown(f"$= {norm_a:.4f} \\cdot {norm_b:.4f} \\cdot {sin_angle:.4f} = {norm_a * norm_b * sin_angle:.4f}$")
+            st.markdown(f"Actual magnitude: $|\\vec{{a}} \\times \\vec{{b}}| = {cross_magnitude:.4f}$")
             
-        else:
-            # For 2D vectors or padded vectors, show the 3 vectors
-            if len(a) < 3:
-                a = np.pad(a, (0, 3 - len(a)), 'constant')
-            if len(b) < 3:
-                b = np.pad(b, (0, 3 - len(b)), 'constant')
+            st.markdown("**2. Orthogonality:**")
+            st.markdown(f"$\\vec{{a}} \\cdot (\\vec{{a}} \\times \\vec{{b}}) = {dot_a:.10f} \\approx 0$ ✓")
+            st.markdown(f"$\\vec{{b}} \\cdot (\\vec{{a}} \\times \\vec{{b}}) = {dot_b:.10f} \\approx 0$ ✓")
+            
+        with col2:
+            st.markdown("### Visualization")
+            
+            if a[2] != 0 or b[2] != 0 or cross[2] != 0:  # At least one vector has a z component
+                # For 3D vectors, visualize in 3D space
+                # Create a 3D visualization using plotly
+                fig = go.Figure()
                 
-            self.display_vector_visualization([a, b, result], names=["Vector a", "Vector b", "Cross Product (a × b)"])
+                # Add the vectors
+                vectors = [a, b, cross]
+                names = ["Vector a", "Vector b", "Cross Product (a × b)"]
+                colors = ["blue", "green", "red"]
+                
+                for i, vec in enumerate(vectors):
+                    fig.add_trace(go.Scatter3d(
+                        x=[0, vec[0]],
+                        y=[0, vec[1]],
+                        z=[0, vec[2]],
+                        mode='lines+markers',
+                        name=names[i],
+                        line=dict(width=6, color=colors[i]),
+                        marker=dict(size=[0, 8], color=colors[i])
+                    ))
+                
+                # Add a semi-transparent plane to show perpendicularity
+                # Get corners of a square in the plane containing a and b
+                max_val = max([max(abs(v)) for v in vectors])
+                
+                # Create a mesh for the plane (if vectors aren't collinear)
+                if sin_angle > 0.01:  # Only create plane if angle is substantial
+                    # Use a and b to define the plane
+                    normal = cross / np.linalg.norm(cross)
+                    
+                    # Create a grid of points for the plane
+                    u = np.linspace(-max_val, max_val, 10)
+                    v = np.linspace(-max_val, max_val, 10)
+                    U, V = np.meshgrid(u, v)
+                    
+                    # Create orthogonal vectors in the plane
+                    v1 = a / np.linalg.norm(a)
+                    v2 = np.cross(normal, v1)
+                    v2 = v2 / np.linalg.norm(v2)
+                    
+                    # Compute the points on the plane
+                    X = U[:,:,np.newaxis] * v1[np.newaxis,np.newaxis,:] + V[:,:,np.newaxis] * v2[np.newaxis,np.newaxis,:]
+                    
+                    # Add the plane to the figure
+                    fig.add_trace(go.Surface(
+                        x=X[:,:,0], y=X[:,:,1], z=X[:,:,2],
+                        opacity=0.2,
+                        colorscale=[[0, 'purple'], [1, 'purple']],
+                        showscale=False,
+                        name="Plane containing a and b"
+                    ))
+                
+                # Add grid and configuration
+                fig.update_layout(
+                    scene=dict(
+                        xaxis=dict(
+                            range=[-max_val * 1.2, max_val * 1.2], 
+                            title="X",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        yaxis=dict(
+                            range=[-max_val * 1.2, max_val * 1.2], 
+                            title="Y",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        zaxis=dict(
+                            range=[-max_val * 1.2, max_val * 1.2], 
+                            title="Z",
+                            color="white",
+                            gridcolor='rgba(255, 255, 255, 0.2)',
+                            backgroundcolor='rgba(0,0,0,0.1)',
+                        ),
+                        aspectmode='cube',
+                    ),
+                    title="Cross Product Visualization",
+                    title_font_color="white",
+                    width=700,
+                    height=700,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    legend=dict(font=dict(color="white")),
+                )
+                
+                st.plotly_chart(fig)
+            else:
+                # For 2D vectors (z=0), create a simpler visualization
+                self.display_vector_visualization([a, b, cross], names=["Vector a", "Vector b", "Cross Product (a × b)"])
+            
+            # Add result info box
+            result_box = f"""
+            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                <p style="font-size: 16px; text-align: center;">
+                    <strong>Cross Product:</strong> {cross.tolist()}<br>
+                    <strong>Magnitude:</strong> {cross_magnitude:.4f}<br>
+                    <strong>Angle between vectors:</strong> {angle_deg:.2f}°
+                </p>
+                <p style="font-size: 14px; text-align: center; font-style: italic;">
+                    The cross product is perpendicular to both input vectors,<br>
+                    following the right-hand rule orientation.
+                </p>
+            </div>
+            """
+            st.markdown(result_box, unsafe_allow_html=True)
         
         return result
         
