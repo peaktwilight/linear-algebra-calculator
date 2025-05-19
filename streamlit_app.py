@@ -82,13 +82,13 @@ def main():
             with col1:
                 vector_a = st.text_input(
                     "Enter Vector a (to project onto):",
-                    value="3, -4"
+                    value="4, 1"
                 )
             
             with col2:
                 vector_b = st.text_input(
                     "Enter Vector b (to be projected):",
-                    value="12, -1"
+                    value="1, 8"
                 )
             
             if st.button("Calculate Projection"):

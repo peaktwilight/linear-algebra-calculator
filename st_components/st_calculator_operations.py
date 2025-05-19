@@ -222,7 +222,7 @@ class LinAlgCalculator:
                 self.vector_a = vector_a
                 self.vector_b = vector_b
         
-        args = Args(vector_b, vector_a) # Swapped here: now framework calculates proj of b onto a
+        args = Args(vector_a, vector_b) # Reverted: framework should now calculate proj of b onto a
         
         # Get the result from the framework
         result = self.framework.vector_shadow(args)
