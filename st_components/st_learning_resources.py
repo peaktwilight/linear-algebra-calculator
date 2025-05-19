@@ -17,7 +17,7 @@ def render_learning_resources_page():
     st.markdown("Explore fundamental concepts of linear algebra, learn problem-solving approaches, and see how to use the calculator tools for various exercises.")
 
     # Category: Introduction to Vectors
-    with st.expander("Introduction to Vectors", expanded=True):
+    with st.expander("Introduction to Vectors", expanded=False):
         st.header("Introduction to Vectors")
 
         # --- What is a Vector? ---
@@ -268,10 +268,99 @@ def render_learning_resources_page():
             "4. The calculator will output the scalar projection (length of shadow) and the vector projection."
         )
 
-    # Placeholder for next category: Vector (Cross) Product
-    # with st.expander("Vector (Cross) Product", expanded=False):
-    #     st.header("Vector (Cross) Product")
-    #     # ... content for cross product ...
+    # Category: Vector (Cross) Product
+    with st.expander("Vector (Cross) Product", expanded=False):
+        st.header("Vector (Cross) Product")
+
+        st.subheader("Definition and Calculation (3D Vectors)")
+        st.markdown(
+            "The **vector product** (or **cross product**) of two 3D vectors `a = [a₁, a₂, a₃]` and `b = [b₁, b₂, b₃]` results in a new 3D vector `c = a × b` "
+            "that is **orthogonal** (perpendicular) to both `a` and `b`."
+        )
+        st.latex("a \\times b = [a_2 b_3 - a_3 b_2, \\quad a_3 b_1 - a_1 b_3, \\quad a_1 b_2 - a_2 b_1]")
+        st.markdown("**Properties:**\n"
+                    "- Anti-commutative: `a × b = - (b × a)` (Order matters!)\n"
+                    "- Distributive over vector addition: `a × (b + c) = a × b + a × c`\n"
+                    "- Not associative in general."
+                   )
+        st.markdown("**Conceptual Example (Exercise BT8J1D adaptation):**")
+        st.markdown("Problem: Calculate `a × b` for `a = [-2, 0, 0]` and `b = [0, 9, 8]`.\n"
+                    "`c₁ = (0)(8) - (0)(9) = 0`\n"
+                    "`c₂ = (0)(0) - (-2)(8) = 16`\n"
+                    "`c₃ = (-2)(9) - (0)(0) = -18`\n"
+                    "So, `a × b = [0, 16, -18]`.")
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. Navigate to **Vector Operations** in the sidebar.\n"
+            "2. Select the **Cross Product** tool.\n"
+            "3. Enter the components for Vector a and Vector b (they must be 3D, or 2D vectors which will be treated as 3D with z=0).\n"
+            "4. The calculator will output the resulting cross product vector."
+        )
+        st.markdown("---")
+
+        st.subheader("Geometric Interpretation: Area and Orthogonality")
+        st.markdown(
+            "- The **magnitude** of the cross product `||a × b||` is equal to the **area of the parallelogram** formed by vectors `a` and `b`.\n"
+            "- Consequently, the **area of the triangle** formed by `a` and `b` (if they share a starting point) is `(1/2) * ||a × b||`. (Or, if A,B,C are points, Area = `(1/2) * ||AB × AC||` ).\n"
+            "- The **direction** of `a × b` is given by the right-hand rule. It is always perpendicular to the plane containing `a` and `b`."
+        )
+        st.latex("\\text{Area of Parallelogram} = ||a \\times b|| = ||a|| \\cdot ||b|| \\cdot |\\sin(\\theta)|")
+        st.latex("\\text{Area of Triangle (vertices A,B,C)} = \\frac{1}{2} || \\vec{AB} \\times \\vec{AC} ||")
+
+        st.markdown("**Conceptual Example (Triangle Area - Exercise 62FVCH adaptation):**")
+        st.markdown("Problem: Calculate the area of the triangle with vertices `A=(0,4,2)`, `B=(0,8,5)`, `C=(0,8,-1)`.\n"
+                    "1. Define vectors from one vertex: `AB = B - A = [0, 4, 3]`. `AC = C - A = [0, 4, -3]`.\n"
+                    "2. Calculate cross product `AB × AC`:\n"
+                    "    `c₁ = (4)(-3) - (3)(4) = -12 - 12 = -24`\n"
+                    "    `c₂ = (3)(0) - (0)(-3) = 0`\n"
+                    "    `c₃ = (0)(4) - (4)(0) = 0`\n"
+                    "    `AB × AC = [-24, 0, 0]`.\n"
+                    "3. Calculate magnitude: `||AB × AC|| = \\sqrt{(-24)^2 + 0^2 + 0^2} = \\sqrt{576} = 24`.\n"
+                    "4. Area of triangle = `(1/2) * 24 = 12`."
+        )
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "- For **Cross Product Calculation**: Use the **Vector Operations -> Cross Product** tool.\n"
+            "- For **Triangle Area**: \n"
+            "    1. If given vertices A,B,C, first manually calculate two vectors forming two sides of the triangle (e.g., AB = B-A, AC = C-A).\n"
+            "    2. Navigate to **Vector Operations -> Triangle Area**.\n"
+            "    3. Input the three original points A, B, C. The calculator handles the vector creation and cross product internally.\n"
+            "    Alternatively, if you already have the two side vectors, calculate their cross product using the Cross Product tool, then find its magnitude (e.g., using Vector Normalization tool which shows magnitude) and divide by 2 manually."
+        )
+    
+    # Category: Lines and Planes
+    with st.expander("Lines and Planes", expanded=False):
+        st.header("Lines and Planes")
+
+        st.subheader("Distance from a Point to a Line")
+        st.markdown(
+            "To find the shortest distance from a point `P` to a line (in 2D or 3D), where the line is defined by a point `A` on the line and a direction vector `v`."
+        )
+        st.latex("\text{Line Equation: } X = A + t \cdot v")
+        st.latex("\text{Distance } h = \frac{|| \vec{AP} \times v ||}{||v||}")
+        st.markdown("Where `AP` is the vector from point `A` on the line to point `P` (i.e., `P - A`). Note that `v` must be a non-zero vector.")
+        
+        st.markdown("**Conceptual Example (Exercise CJ1IXZ adaptation):**")
+        st.markdown("Problem: Find the distance between point `P=(5,10,0)` and the line defined by `A=(3,0,0)` and direction `v=[2,0,0]`.\n"
+            "1. Vector `AP = P - A = [5-3, 10-0, 0-0] = [2, 10, 0]`.\n"
+            "2. Cross product `AP × v`:\n"
+            "    `c₁ = (10)(0) - (0)(0) = 0`\n"
+            "    `c₂ = (0)(2) - (2)(0) = 0`\n"
+            "    `c₃ = (2)(0) - (10)(2) = -20`\n"
+            "    `AP × v = [0, 0, -20]`.\n"
+            "3. Magnitudes: `||AP × v|| = \\sqrt{0^2+0^2+(-20)^2} = 20`. `||v|| = \\sqrt{2^2+0^2+0^2} = 2`.\n"
+            "4. Distance `h = 20 / 2 = 10`."
+        )
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. Navigate to **Vector Operations** in the sidebar.\n"
+            "2. Select the **Point-Line Distance** tool.\n"
+            "3. Enter the coordinates for point `A` on the line.\n"
+            "4. Enter the components for the direction vector `v` of the line.\n"
+            "5. Enter the coordinates for point `P` (the point to find the distance from).\n"
+            "6. The calculator will compute and display the shortest distance."
+        )
+        # Placeholder for Hessian Normal Form / Point-Plane distance to be added later
 
     st.markdown("---")
     st.info("More topics and interactive examples will be added soon!")
