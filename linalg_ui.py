@@ -367,42 +367,38 @@ class LinearAlgebraRichUI:
                 categories[category] = []
             categories[category].append((op_name, op_func))
         
-        # Create nicely formatted choices
-        choices = []
-        for category, operations in categories.items():
-            # Display the category as a plain header before the operations
-            choices.append(f"[{category}]")
-            # Add operations under this category
-            for op_name, _ in operations:
-                choices.append(op_name)
-        
-        # Add back option
-        choices.append("⬅️ Back to main menu")
-        
         self.display_header("🔍 Search Results")
         
-        # Create a nice visual display for the search results first
-        self.console.print("[bold cyan]Search Results by Category:[/bold cyan]")
-        self.console.print()
+        # Display results as a list first
+        table = Table(show_header=False, box=None, padding=(0, 1, 0, 1))
+        table.add_column("")
         
         for category, operations in categories.items():
             # Display the category header
-            self.console.print(f"[bold cyan]{category}[/bold cyan]")
+            table.add_row(f"[bold cyan]{category}[/bold cyan]")
             # Display operations in this category
             for op_name, _ in operations:
-                self.console.print(f"  {op_name}")
-            self.console.print()
+                table.add_row(f"  {op_name}")
+            table.add_row("")
         
-        # Display the selection menu without category headers to avoid issues
-        operation_choices = []
-        for _, operations in categories.items():
-            for op_name, _ in operations:
-                operation_choices.append(op_name)
-        operation_choices.append("⬅️ Back to main menu")
+        self.console.print(table)
+        self.console.print()
+        
+        # Display the operation selection menu
+        flat_operations = []
+        for category_ops in categories.values():
+            flat_operations.extend([op_name for op_name, _ in category_ops])
+        
+        if not flat_operations:
+            self.console.print("[yellow]No operations to select.[/yellow]")
+            self.wait_for_user()
+            return
+            
+        flat_operations.append("⬅️ Back to main menu")
         
         selected = questionary.select(
             "Select an operation:",
-            choices=operation_choices,
+            choices=flat_operations,
             style=custom_style
         ).ask()
         
