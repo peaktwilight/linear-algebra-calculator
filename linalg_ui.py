@@ -367,23 +367,42 @@ class LinearAlgebraRichUI:
                 categories[category] = []
             categories[category].append((op_name, op_func))
         
-        # Create nicely formatted choices with category headers
+        # Create nicely formatted choices
         choices = []
         for category, operations in categories.items():
-            # Add category header
-            choices.append(questionary.Separator(f"[bold cyan]--- {category} ---[/bold cyan]"))
+            # Display the category as a plain header before the operations
+            choices.append(f"[{category}]")
             # Add operations under this category
             for op_name, _ in operations:
                 choices.append(op_name)
         
         # Add back option
-        choices.append(questionary.Separator("――――――――――――――――――――――――――"))
         choices.append("⬅️ Back to main menu")
         
         self.display_header("🔍 Search Results")
+        
+        # Create a nice visual display for the search results first
+        self.console.print("[bold cyan]Search Results by Category:[/bold cyan]")
+        self.console.print()
+        
+        for category, operations in categories.items():
+            # Display the category header
+            self.console.print(f"[bold cyan]{category}[/bold cyan]")
+            # Display operations in this category
+            for op_name, _ in operations:
+                self.console.print(f"  {op_name}")
+            self.console.print()
+        
+        # Display the selection menu without category headers to avoid issues
+        operation_choices = []
+        for _, operations in categories.items():
+            for op_name, _ in operations:
+                operation_choices.append(op_name)
+        operation_choices.append("⬅️ Back to main menu")
+        
         selected = questionary.select(
             "Select an operation:",
-            choices=choices,
+            choices=operation_choices,
             style=custom_style
         ).ask()
         
