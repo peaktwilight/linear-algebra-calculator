@@ -11,6 +11,14 @@ import argparse
 import numpy as np
 from linalg_cli import LinearAlgebraExerciseFramework
 
+# Import pyfiglet with fallback
+try:
+    import pyfiglet
+    from pyfiglet import Figlet
+    PYFIGLET_AVAILABLE = True
+except ImportError:
+    PYFIGLET_AVAILABLE = False
+
 try:
     from rich.console import Console
     from rich.panel import Panel
@@ -89,6 +97,33 @@ class LinearAlgebraRichUI:
         
     def generate_banner(self):
         """Generate ASCII art banner for Linear Algebra Framework"""
+        if PYFIGLET_AVAILABLE:
+            try:
+                # Create Figlet objects with different fonts
+                fig_standard = Figlet(font='slant')
+                fig_big = Figlet(font='slant')
+                
+                # Generate ASCII art for "Doruk's" with standard font
+                doruk_ascii = fig_standard.renderText("Doruk's Linear")
+                
+                # Generate ASCII art for "Linear Algebra Calculator" with big font
+                calc_ascii = fig_big.renderText("Algebra Calculator")
+                
+                # Combine the two banners with box drawing characters
+                border_top = "╭" + "─" * 73 + "╮"
+                border_bottom = "╰" + "─" * 73 + "╯"
+                
+                banner = f"{border_top}\n{doruk_ascii}{calc_ascii}{border_bottom}"
+                return banner
+            except Exception as e:
+                # Fallback to original ASCII art if any error occurs
+                print(f"Error generating banner: {e}")
+                return self._fallback_banner()
+        else:
+            return self._fallback_banner()
+    
+    def _fallback_banner(self):
+        """Fallback ASCII art if pyfiglet is not available"""
         return """
     _     _                          _    _            _               
     | |   (_)_ __   ___  __ _ _ __   / \  | | __ _  ___| |__  _ __ __ _ 
@@ -109,6 +144,9 @@ class LinearAlgebraRichUI:
         # Only show the banner on the main menu
         if title == "Linear Algebra Exercise Framework":
             self.console.print(self.banner)
+            # Show a message if pyfiglet is not available
+            if not PYFIGLET_AVAILABLE:
+                self.console.print("[dim](Install pyfiglet for fancy banners: pip install pyfiglet)[/dim]")
         self.console.print(Panel.fit(f"[bold cyan]{title}[/bold cyan]", border_style="blue"))
         self.console.print()
     
