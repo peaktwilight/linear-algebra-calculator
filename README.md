@@ -208,9 +208,42 @@ The web interface provides:
 - Intuitive input fields for all operations
 - Beautiful, modern UI with dedicated sections for different operation types
 
+### Local Testing with Docker
+
+You can easily test the application locally using Docker Compose with our provided script:
+
+```bash
+# Run with the convenience script
+./run_docker.sh
+
+# Or manually with Docker Compose
+docker-compose up
+
+# Access at http://localhost:8501
+```
+
+For more details on using Docker, see the [DOCKER.md](DOCKER.md) file.
+
 ### Deployment to Fly.io
 
-The Streamlit app can be deployed to Fly.io for online access:
+The Streamlit app can be deployed to Fly.io for online access using our provided scripts:
+
+```bash
+# Deploy with the convenience script
+./deploy_to_fly.sh
+
+# Optional: Set up a custom domain (CNAME method - recommended)
+./setup_custom_domain_cname.sh lag.doruk.ch
+
+# Or with dedicated IPs if needed
+./setup_custom_domain.sh lag.doruk.ch
+
+# Or manually with Fly CLI
+fly launch
+fly deploy
+```
+
+#### Manual Deployment Steps
 
 ```bash
 # Install the Fly CLI

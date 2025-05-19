@@ -1502,8 +1502,17 @@ class LinAlgCalculator:
 def main():
     calculator = LinAlgCalculator()
     
-    # Header
-    st.title("Linear Algebra Calculator")
+    # Header with branding
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.title("Linear Algebra Calculator")
+    with col2:
+        st.markdown(
+            "<div style='text-align: right; padding-top: 1.5rem;'>"
+            "<small>Made with ❤️ by Doruk</small>"
+            "</div>",
+            unsafe_allow_html=True
+        )
     
     # Sidebar with categories
     st.sidebar.title("Categories")
@@ -1912,21 +1921,29 @@ def main():
                 else:
                     st.error("Please enter the augmented matrix.")
     
-    # Footer
+    # Help section
     st.sidebar.markdown("---")
-    st.sidebar.info(
-        "This Linear Algebra Calculator is built with Streamlit and leverages "
-        "the existing functions from the Linear Algebra CLI framework. "
-        "It provides visualizations and step-by-step calculations for various "
-        "linear algebra operations."
-    )
+    with st.sidebar.expander("How to use this calculator"):
+        st.markdown("""
+        **Quick Start Guide:**
+        1. Select an operation category from the sidebar
+        2. Choose a specific operation
+        3. Enter your values in the input fields
+        4. Click the calculate button
+        5. View the step-by-step solution and visual representation
+        
+        **Tips:**
+        - Hover over visualizations for more details
+        - Expand the "Help" sections for formula explanations
+        - For vector/matrix inputs, use format: "x1, x2, ..." or separate rows with newlines
+        """)
     
-    # Version info and deployment notice
+    # Footer with branding
     st.sidebar.markdown("---")
     st.sidebar.markdown(
         "<div style='text-align: center;'>"
-        "<small>Version 1.4.0 | Deployed on Fly.io</small><br>"
-        "<small>© 2025 Doruk | FHNW Linear Algebra Module</small>"
+        "<h4>Made with ❤️ by Doruk</h4>"
+        "<small>Version 1.4.0 | FHNW Linear Algebra Module</small><br>"
         "</div>", 
         unsafe_allow_html=True
     )

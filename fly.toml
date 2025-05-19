@@ -1,24 +1,44 @@
-app = "linear-algebra-calculator"
-primary_region = "fra"  # You can change this to a region closer to you
+# fly.toml app configuration file generated for linear-algebra-calculator on 2025-05-19T13:04:01+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'linear-algebra-calculator'
+primary_region = 'fra'
 
 [build]
+
+[[mounts]]
+  source = 'linalgdata'
+  destination = '/data'
 
 [http_service]
   internal_port = 8501
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
-  processes = ["app"]
+  processes = ['app']
 
-[services.concurrency]
-  hard_limit = 25
-  soft_limit = 20
+  [[http_service.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[http_service.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+    
+  [http_service.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+
+# This section is not needed as we've defined the services in http_service
+# Remove the empty services section
+
+[[vm]]
+  size = 'shared-cpu-1x'
 
 [[statics]]
-  guest_path = "/app/staticfiles"
-  url_prefix = "/static"
-
-[mounts]
-  source="linalgdata"
-  destination="/data"
+  guest_path = '/app/staticfiles'
+  url_prefix = '/static'
