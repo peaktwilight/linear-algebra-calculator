@@ -462,29 +462,26 @@ def main():
     # How to use this calculator section
     st.sidebar.markdown("---") # Separator
 
-    with st.sidebar.expander("Quick Start Guide", expanded=False):
+    with st.sidebar.expander("Quick Start & Tips", expanded=False):
         st.markdown(
             """
+            **Quick Start:**
             - Select an operation category from the sidebar.
             - Choose a specific operation.
             - Enter your values in the input fields.
             - Click the calculate button.
             - View the step-by-step solution and visual representation.
+            
+            **Tips:**
+            - Hover over visualizations for more details.
+            - Expand the "Help" sections for formula explanations.
+            - For vector/matrix inputs, use format: `x1, x2, ...` or separate rows with newlines.
             """
         )
 
-    st.sidebar.markdown("##### Tips") # Using H5 for "Tips"
-    st.sidebar.markdown(
-        """
-        - Hover over visualizations for more details.
-        - Expand the "Help" sections for formula explanations.
-        - For vector/matrix inputs, use format: "x1, x2, ..." or separate rows with newlines.
-        """
-    )
-
     st.sidebar.caption("Made with ❤️ by Doruk")
     st.sidebar.caption("Version 1.4 | FHNW Linear Algebra Module")
-    st.sidebar.caption("Open source at [github.com/peaktwilight/linear-algebra-calculator](https://github.com/peaktwilight/linear-algebra-calculator)")
+    st.sidebar.caption("Fully Open-Source Code :) [GitHub](https://github.com/peaktwilight/linear-algebra-calculator)")
 
 
 if __name__ == "__main__":
