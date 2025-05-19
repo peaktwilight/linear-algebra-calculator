@@ -166,10 +166,112 @@ def render_learning_resources_page():
             "The **Vector Normalization** tool itself is an application of scalar multiplication, where the scalar is `1/||v||`."
         )
 
-    # Placeholder for next category: Scalar (Dot) Product
-    # with st.expander("Scalar (Dot) Product", expanded=False):
-    #     st.header("Scalar (Dot) Product")
-    #     # ... content for dot product ...
+    # Category: Scalar (Dot) Product
+    with st.expander("Scalar (Dot) Product", expanded=False):
+        st.header("Scalar (Dot) Product")
+
+        # --- Definition and Properties ---
+        st.subheader("Definition and Calculation")
+        st.markdown(
+            "The **scalar product** (or **dot product**) of two vectors `u` and `v` (of the same dimension) results in a single scalar value. "
+            "It is calculated by multiplying corresponding components and summing the results."
+        )
+        st.markdown("If `u = [u₁, u₂, ..., uₙ]` and `v = [v₁, v₂, ..., vₙ]`:")
+        st.latex("u \\cdot v = u_1 v_1 + u_2 v_2 + \\dots + u_n v_n = \\sum_{i=1}^{n} u_i v_i")
+        st.markdown("**Properties:**\n"
+                    "- Commutative: `u ⋅ v = v ⋅ u`\n"
+                    "- Distributive over vector addition: `u ⋅ (v + w) = u ⋅ v + u ⋅ w`\n"
+                    "- Associative with scalar multiplication: `(k * u) ⋅ v = k * (u ⋅ v)`"
+                   )
+        st.markdown("**Conceptual Example:**")
+        st.markdown("If `u = [1, 2, 3]` and `v = [4, -5, 6]`:\n"
+                    "`u ⋅ v = (1)(4) + (2)(-5) + (3)(6) = 4 - 10 + 18 = 12`.")
+        st.markdown("The main calculator tools for 'Vector Angle' and 'Vector Projection' inherently use the dot product. You typically don't need to calculate *just* the dot product in isolation using a dedicated tool, but understanding its calculation is crucial for these other operations.")
+        st.markdown("---")
+
+        # --- Geometric Interpretation: Angle Between Two Vectors ---
+        st.subheader("Geometric Interpretation: Angle Between Two Vectors")
+        st.markdown("The dot product can also be defined geometrically:")
+        st.latex("u \\cdot v = ||u|| \\cdot ||v|| \\cdot \\cos(\\theta)")
+        st.markdown("Where `θ` is the angle between the vectors `u` and `v`.")
+        st.markdown("This formula can be rearranged to find the angle `θ`:")
+        st.latex("\\cos(\\theta) = \\frac{u \\cdot v}{||u|| \\cdot ||v||}")
+        st.latex("\\theta = \\arccos\\left(\\frac{u \\cdot v}{||u|| \\cdot ||v||}\\right)")
+        st.markdown("The angle `θ` will be between 0° and 180° (0 and π radians).\n"
+                    "- If `u ⋅ v > 0`, then `θ` is acute (0° ≤ θ < 90°).\n"
+                    "- If `u ⋅ v < 0`, then `θ` is obtuse (90° < θ ≤ 180°).\n"
+                    "- If `u ⋅ v = 0`, then `θ` is a right angle (90°), meaning vectors are orthogonal (see next section)."
+                   )
+        st.markdown("**Conceptual Example (Exercise 520784 adaptation):**")
+        st.markdown("Problem: Calculate the angle between `a = [1, 1, -1]` and `b = [1, -1, 1]`.\n"
+                    "1. Calculate dot product: `a ⋅ b = (1)(1) + (1)(-1) + (-1)(1) = 1 - 1 - 1 = -1`.\n"
+                    "2. Calculate magnitudes: `||a|| = \\sqrt{1^2+1^2+(-1)^2} = \\sqrt{3}`. `||b|| = \\sqrt{1^2+(-1)^2+1^2} = \\sqrt{3}`.\n"
+                    "3. Calculate cos(θ): `cos(θ) = -1 / (\\sqrt{3} * \\sqrt{3}) = -1 / 3`.\n"
+                    "4. Calculate θ: `θ = arccos(-1/3) ≈ 1.9106` radians (or `109.47°`)."
+        )
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. Navigate to **Vector Operations** in the sidebar.\n"
+            "2. Select the **Vector Angle** tool.\n"
+            "3. Enter the components for Vector a (e.g., `1,1,-1`) and Vector b (e.g., `1,-1,1`).\n"
+            "4. The calculator will output the angle in both radians and degrees, and will show the intermediate dot product and magnitude calculations."
+        )
+        st.markdown("---")
+        
+        # --- Orthogonality ---
+        st.subheader("Orthogonality (Perpendicular Vectors)")
+        st.markdown(
+            "Two non-zero vectors `u` and `v` are **orthogonal** (perpendicular) if and only if their dot product is zero."
+        )
+        st.latex("u \\perp v \\iff u \\cdot v = 0")
+        st.markdown("This is a direct consequence of the angle formula: if `u ⋅ v = 0`, then `cos(θ) = 0`, which means `θ = 90°` (or π/2 radians). The zero vector is considered orthogonal to all vectors.")
+
+        st.markdown("**Conceptual Example (Exercise 891584 adaptation):**")
+        st.markdown("Problem: Determine which of the vectors `a=[263,-35,-44]`, `b=[-121,15,-48]`, `c=[71,5,-48]` are orthogonal to `v=[1,5,2]`.\n"
+                    "- Test `v ⋅ a`: `(1)(263) + (5)(-35) + (2)(-44) = 263 - 175 - 88 = 0`. So, `v` is orthogonal to `a`.\n"
+                    "- Test `v ⋅ b`: `(1)(-121) + (5)(15) + (2)(-48) = -121 + 75 - 96 = -142`. Not 0, so not orthogonal.\n"
+                    "- Test `v ⋅ c`: `(1)(71) + (5)(5) + (2)(-48) = 71 + 25 - 96 = 0`. So, `v` is orthogonal to `c`."
+        )
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "While there isn't a specific 'Check Orthogonality' tool, you can use the **Vector Angle** tool:\n"
+            "1. Navigate to **Vector Operations -> Vector Angle**.\n"
+            "2. Input the two vectors you want to check.\n"
+            "3. If the calculated angle is 90° (or π/2 radians), or if the displayed dot product is 0 (or very close to 0 due to potential floating-point inaccuracies), the vectors are orthogonal."
+        )
+        st.markdown("---")
+
+        # --- Vector Projection (Shadow) ---
+        st.subheader("Vector Projection (Shadow)")
+        st.markdown(
+            "The **projection** of vector `b` onto vector `a` (denoted `projₐb`) is like the 'shadow' that `b` casts on the line defined by `a`."
+        )
+        st.markdown("First, the **scalar projection** of `b` onto `a` (length of the shadow):")
+        st.latex("s = \\text{comp}_a b = \\frac{a \\cdot b}{||a||}")
+        st.markdown("This scalar `s` can be positive (projection in same direction as `a`), negative (opposite direction), or zero (if orthogonal). ")
+        st.markdown("Then, the **vector projection** of `b` onto `a` is this scalar length multiplied by the unit vector in the direction of `a`:")
+        st.latex("\\text{proj}_a b = \\left(\\frac{a \\cdot b}{||a||^2}\\right) a = \\left(\\frac{a \\cdot b}{a \\cdot a}\\right) a")
+
+        st.markdown("**Conceptual Example (Exercise QHZIHW adaptation):**")
+        st.markdown("Problem: Find the length of the shadow of `b=[12, -1]` on `a=[3, -4]`. (Note: in the exercise, `a` was already normalized, here we use the general form). Also, find the shadow vector.\n"
+                    "1. Given `a=[3,-4]` and `b=[12,-1.0]`. `||a|| = \\sqrt{3^2 + (-4)^2} = 5`. `a \\cdot a = ||a||^2 = 25`.\n"
+                    "2. Dot product: `a ⋅ b = (3)(12) + (-4)(-1) = 36 + 4 = 40`.\n"
+                    "3. Scalar projection (length of shadow): `s = (a ⋅ b) / ||a|| = 40 / 5 = 8`.\n"
+                    "   (Since `s > 0`, the angle between `a` and `b` is acute.)\n"
+                    "4. Vector projection (shadow vector): `projₐb = ( (a ⋅ b) / (a ⋅ a) ) * a = (40 / 25) * [3, -4] = 1.6 * [3, -4] = [4.8, -6.4]`."
+        )
+        st.markdown("**How to use the calculator for this:**")
+        st.markdown(
+            "1. Navigate to **Vector Operations** in the sidebar.\n"
+            "2. Select the **Vector Projection/Shadow** tool.\n"
+            "3. Enter Vector `a` (the vector being projected onto) and Vector `b` (the vector to be projected).\n"
+            "4. The calculator will output the scalar projection (length of shadow) and the vector projection."
+        )
+
+    # Placeholder for next category: Vector (Cross) Product
+    # with st.expander("Vector (Cross) Product", expanded=False):
+    #     st.header("Vector (Cross) Product")
+    #     # ... content for cross product ...
 
     st.markdown("---")
     st.info("More topics and interactive examples will be added soon!")
