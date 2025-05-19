@@ -327,7 +327,55 @@ def render_learning_resources_page():
             "    3. Input the three original points A, B, C. The calculator handles the vector creation and cross product internally.\n"
             "    Alternatively, if you already have the two side vectors, calculate their cross product using the Cross Product tool, then find its magnitude (e.g., using Vector Normalization tool which shows magnitude) and divide by 2 manually."
         )
-    
+        st.markdown("--- --- --- --- --- --- --- --- --- ---")
+
+        # --- Scalar Triple Product (Spatprodukt) ---
+        st.subheader("Scalar Triple Product (Spatprodukt)")
+        st.markdown("""
+            The **scalar triple product** (also known as the mixed product or box product) involves three 3D vectors. 
+            It is calculated as the dot product of one vector with the cross product of the other two.
+            """)
+        st.latex("V = a \cdot (b \times c)")
+        st.markdown("""
+            **Geometric Interpretation: Volume**
+            - The absolute value of the scalar triple product, `|a ⋅ (b × c)|`, represents the **volume of the parallelepiped** whose adjacent sides are defined by the vectors `a`, `b`, and `c`.
+            - The volume of the **tetrahedron** formed by these three vectors (if they share a common origin, along with the origin itself as the fourth vertex) is `(1/6) * |a ⋅ (b × c)|`.
+            """)
+        st.markdown("""
+            **Properties & Calculation:**
+            - The scalar triple product can also be calculated as the determinant of the 3x3 matrix whose rows (or columns) are the components of the vectors `a`, `b`, and `c`:
+            """)
+        st.latex("a \cdot (b \times c) = \begin{vmatrix} a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \\ c_1 & c_2 & c_3 \end{vmatrix}")
+        st.markdown("""
+            - Cyclic permutation of the vectors does not change the value: `a ⋅ (b × c) = b ⋅ (c × a) = c ⋅ (a × b)`.
+            - Swapping any two vectors negates the result: `a ⋅ (b × c) = - a ⋅ (c × b)`.
+            - If the scalar triple product is zero, the three vectors are **coplanar** (they lie in the same plane). This means the parallelepiped they form has zero volume.
+            """)
+
+        st.markdown("""**Conceptual Example (Exercise T6WEYD adaptation):**""")
+        st.markdown("""
+            Problem: Find the volume of the parallelepiped spanned by `a = [1,4,-7]`, `b = [2,5,0]`, and `c = [3,6,12]`.
+            1. First, calculate the cross product `b × c`:
+               `b × c = [(5)(12) - (0)(6), (0)(3) - (2)(12), (2)(6) - (5)(3)]`
+                       `= [60 - 0, 0 - 24, 12 - 15] = [60, -24, -3]`.
+            2. Then, calculate the dot product `a ⋅ (b × c)`:
+               `a ⋅ (b × c) = (1)(60) + (4)(-24) + (-7)(-3)`
+                             `= 60 - 96 + 21 = -15`.
+            3. The volume of the parallelepiped is `| -15 | = 15` cubic units.
+            """)
+        st.markdown("""**How to use the calculator for this:**""")
+        st.markdown("""
+            - **Direct Calculation:** Many calculators (including potentially this one if a 'Scalar Triple Product' or 'Volume of Parallelepiped' tool is added) might take three vectors as input.
+            - **Manual Steps with existing tools:**
+                1. Use the **Cross Product** tool to find `d = b × c`.
+                2. Then, manually calculate the dot product `a ⋅ d`. The **Vector Angle** tool can be used to find a dot product if you observe its intermediate calculations, or you can do it component-wise: `a₁d₁ + a₂d₂ + a₃d₃`.
+                3. The absolute value of this result is the volume.
+            - **Using Determinant Tool:**
+                1. Form a 3x3 matrix where the rows are your vectors `a`, `b`, and `c`.
+                2. Use the **Determinant** tool under **Matrix Operations**.
+                3. The absolute value of the determinant is the volume of the parallelepiped.
+            """)
+
     # Category: Lines and Planes
     with st.expander("Lines and Planes", expanded=False):
         st.header("Lines and Planes")
@@ -421,56 +469,57 @@ def render_learning_resources_page():
 
         # --- Hessian Normal Form of a Plane (3D) ---
         st.subheader("Hessian Normal Form of a Plane (3D)")
-        st.markdown(
-            "Similar to lines in 2D, the Hessian Normal Form (HNF) for a plane in 3D provides a standard way to represent the plane and is useful for calculating distances."
-        )
-        st.markdown("The general equation of a plane in 3D is `Ax + By + Cz + D = 0`. The Hessian Normal Form is:")
+        st.markdown("""
+            Similar to lines in 2D, the Hessian Normal Form (HNF) for a plane in 3D provides a standard way to represent the plane and is useful for calculating distances.
+            """)
+        st.markdown("""The general equation of a plane in 3D is `Ax + By + Cz + D = 0`. The Hessian Normal Form is:""")
         st.latex("n_x x + n_y y + n_z z - p = 0 \quad \text{or} \quad \mathbf{n} \cdot \mathbf{x} - p = 0")
-        st.markdown(
-            "Where:\n"
-            "- `p` is the perpendicular distance from the origin to the plane (`p >= 0`).\n"
-            "- `\mathbf{n} = [n_x, n_y, n_z]` is the unit normal vector to the plane (pointing from the origin towards the plane if p > 0)."
-        )
-        st.markdown("If you have the general form `Ax + By + Cz + D = 0`, you can convert it to HNF:")
+        st.markdown("""
+            Where:\n
+            - `p` is the perpendicular distance from the origin to the plane (`p >= 0`).\n
+            - `\mathbf{n} = [n_x, n_y, n_z]` is the unit normal vector to the plane (pointing from the origin towards the plane if p > 0).
+            """)
+        st.markdown("""If you have the general form `Ax + By + Cz + D = 0`, you can convert it to HNF:""")
         st.latex("p = \frac{|D|}{\sqrt{A^2 + B^2 + C^2}}")
         st.latex("n_x = \frac{A}{\pm\sqrt{A^2 + B^2 + C^2}}, \quad n_y = \frac{B}{\pm\sqrt{A^2 + B^2 + C^2}}, \quad n_z = \frac{C}{\pm\sqrt{A^2 + B^2 + C^2}}")
-        st.markdown(
-            "The sign of the denominator `±√(A² + B² + C²)` is chosen to be opposite to the sign of `D` if `D ≠ 0`. "
-            "If `D = 0`, the sign can be chosen arbitrarily (e.g., to make `n_z` positive, or `n_y` if `n_z=0`, etc.), though consistency is good. This ensures `p >= 0`."
-        )
-        st.markdown("**Distance from a Point to the Plane (using HNF):**")
-        st.markdown(
-            "Given a point `P(x₀, y₀, z₀)`, the signed distance `d_signed` to the plane `n_x x + n_y y + n_z z - p = 0` is:"
-        )
+        st.markdown("""
+            The sign of the denominator `±√(A² + B² + C²)` is chosen to be opposite to the sign of `D` if `D ≠ 0`. 
+            If `D = 0`, the sign can be chosen arbitrarily (e.g., to make `n_z` positive, or `n_y` if `n_z=0`, etc.), though consistency is good. This ensures `p >= 0`.
+            """)
+        st.markdown("""**Distance from a Point to the Plane (using HNF):**""")
+        st.markdown("""
+            Given a point `P(x₀, y₀, z₀)`, the signed distance `d_signed` to the plane `n_x x + n_y y + n_z z - p = 0` is:
+            """)
         st.latex("d_{signed} = n_x x_0 + n_y y_0 + n_z z_0 - p")
-        st.markdown(
-            "- If `d_signed > 0`, the point is on the side of the plane pointed to by the normal vector `n` (opposite to the origin if `p > 0`).\n"
-            "- If `d_signed < 0`, the point is on the other side (same side as the origin if `p > 0`).\n"
-            "- If `d_signed = 0`, the point is on the plane.\n"
-            "The absolute distance is `|d_signed|`."
-        )
-        st.markdown("**Conceptual Example (Exercise NBI87W/BXCVJ7 adaptation):**")
-        st.markdown(
-            "Problem: Find the HNF for the plane `2x - y + 2z - 6 = 0`. "
-            "Then find the distance from point `P(3, 5, 1)` to this plane.\n"
-            "1. Identify `A=2, B=-1, C=2, D=-6`. Denominator: `√(2² + (-1)² + 2²) = √9 = 3`. Since `D=-6` is negative, we use `+3`.\n"
-            "   `n_x = 2/3`\n"
-            "   `n_y = -1/3`\n"
-            "   `n_z = 2/3`\n"
-            "   `p = |-6|/3 = 2`. (Or `p = -D/√(A²+B²+C²) = -(-6)/3 = 2` to fit `... - p = 0`)\n"
-            "   HNF: `(2/3)x - (1/3)y + (2/3)z - 2 = 0`. Distance from origin is `p=2`.\n"
-            "2. Distance from `P(3, 5, 1)`:\n"
-            "   `d_signed = (2/3)(3) + (-1/3)(5) + (2/3)(1) - 2 = 2 - 5/3 + 2/3 - 2 = -3/3 = -1`.\n"
-            "   The absolute distance is `|-1| = 1`."
-        )
-        st.markdown("**How to use the calculator for this:**")
-        st.markdown(
-            "1. If a **Point-Plane Distance** tool is available under **Lines and Planes** in the calculator, it will likely ask for the plane equation (e.g., `Ax+By+Cz+D=0` or coefficients) and the point's coordinates.\n"
-            "2. If you need to use HNF concepts directly or no direct tool exists:\n"
-            "   - Convert your plane to `Ax + By + Cz + D = 0` form.\n"
-            "   - Manually calculate `p` and the components of the unit normal vector `n` as shown above if you need the HNF parameters explicitly.\n"
-            "   - For distance calculation, once you have the formula `n_x x_0 + n_y y_0 + n_z z_0 - p`, you can compute the distance with simple arithmetic."
-        )
+        st.markdown("""
+            - If `d_signed > 0`, the point is on the side of the plane pointed to by the normal vector `n` (opposite to the origin if `p > 0`).\n
+            - If `d_signed < 0`, the point is on the other side (same side as the origin if `p > 0`).\n
+            - If `d_signed = 0`, the point is on the plane.\n
+
+            The absolute distance is `|d_signed|`.
+            """)
+        st.markdown("""**Conceptual Example (Exercise NBI87W/BXCVJ7 adaptation):**""")
+        st.markdown("""
+            Problem: Find the HNF for the plane `2x - y + 2z - 6 = 0`. 
+            Then find the distance from point `P(3, 5, 1)` to this plane.\n
+            1. Identify `A=2, B=-1, C=2, D=-6`. Denominator: `√(2² + (-1)² + 2²) = √9 = 3`. Since `D=-6` is negative, we use `+3`.\n
+               `n_x = 2/3`\n
+               `n_y = -1/3`\n
+               `n_z = 2/3`\n
+               `p = |-6|/3 = 2`. (Or `p = -D/√(A²+B²+C²) = -(-6)/3 = 2` to fit `... - p = 0`)\n
+               HNF: `(2/3)x - (1/3)y + (2/3)z - 2 = 0`. Distance from origin is `p=2`.\n
+            2. Distance from `P(3, 5, 1)`:\n
+               `d_signed = (2/3)(3) + (-1/3)(5) + (2/3)(1) - 2 = 2 - 5/3 + 2/3 - 2 = -3/3 = -1`.\n
+               The absolute distance is `|-1| = 1`.
+            """)
+        st.markdown("""**How to use the calculator for this:**""")
+        st.markdown("""
+            1. If a **Point-Plane Distance** tool is available under **Lines and Planes** in the calculator, it will likely ask for the plane equation (e.g., `Ax+By+Cz+D=0` or coefficients) and the point's coordinates.\n
+            2. If you need to use HNF concepts directly or no direct tool exists:\n
+               - Convert your plane to `Ax + By + Cz + D = 0` form.\n
+               - Manually calculate `p` and the components of the unit normal vector `n` as shown above if you need the HNF parameters explicitly.\n
+               - For distance calculation, once you have the formula `n_x x_0 + n_y y_0 + n_z z_0 - p`, you can compute the distance with simple arithmetic.
+            """)
 
         st.markdown("*(Placeholder for Point-Plane distance and other advanced Line/Plane topics)*")
         st.markdown("--- --- --- --- --- --- --- --- --- ---")
