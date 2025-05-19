@@ -13,6 +13,14 @@ A comprehensive framework for learning and solving linear algebra problems.
 - Example exercises with step-by-step solutions
 - Problem recognition quiz to improve problem-solving skills
 
+## File Structure
+
+- `linalg_cli.py` - Core linear algebra functionality with command-line interface
+- `linalg_ui.py` - Rich user interface for the linear algebra framework
+- `linalg_ui_runner.py` - Simple entry point to run the UI
+- `help_guides.py` - Help content and learning resources for the framework
+- `given_reference/` - Directory with reference code including core functionality
+
 ## Installation
 
 ```bash
@@ -30,10 +38,10 @@ pip install numpy sympy scipy rich questionary
 
 The framework offers multiple interfaces:
 
-### Enhanced UI (Recommended for Learning)
+### Interactive UI (Recommended for Learning)
 
 ```bash
-./enhanced_ui.py
+python linalg_ui_runner.py
 ```
 
 Features:
@@ -43,31 +51,20 @@ Features:
 - Problem recognition guidance
 - Quizzes to test understanding
 
-### Rich UI
-
-```bash
-./ui_rich.py
-```
-
-Features:
-- Interactive interface with color-coded outputs
-- Input format guides
-- Operation explanations
-
 ### Command Line Interface
 
 ```bash
-./linalg_cli.py <command> [options]
+python linalg_cli.py <command> [options]
 ```
 
 For help on available commands:
 ```bash
-./linalg_cli.py --help
+python linalg_cli.py --help
 ```
 
 ## Learning Resources
 
-The Enhanced UI includes a "Learning Resources" section with:
+The Interactive UI includes a "Learning Resources" section with:
 
 1. **Browse help topics** - Detailed explanations of linear algebra concepts
 2. **Example exercises** - Practice problems with step-by-step solutions
@@ -115,7 +112,7 @@ Enter second matrix: 4, 1, 9; 5, 4, 2; -3, 5, 2
 
 The framework is designed to help you learn linear algebra concepts while solving exercises:
 
-1. **If you're new to linear algebra**: Start with the "Learning Resources" section in the Enhanced UI to understand the fundamentals.
+1. **If you're new to linear algebra**: Start with the "Learning Resources" section in the Interactive UI to understand the fundamentals.
 
 2. **If you're struggling with homework**: Use the "Common homework patterns" guide to identify solution strategies for your specific problem type.
 
