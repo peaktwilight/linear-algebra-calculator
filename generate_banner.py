@@ -34,23 +34,43 @@ def generate_banner():
     return banner
 
 def generate_fancy_banner():
-    """Generate a one-line ASCII art for README with a more compact style"""
+    """Generate a cooler but more compact ASCII art for README"""
     try:
-        fig = pyfiglet.Figlet(font='slant')
-        line1 = fig.renderText("Doruk's")
-        line2 = fig.renderText("Linear Algebra Calculator")
+        # Try different fonts for a cooler look
+        available_fonts = pyfiglet.FigletFont.getFonts()
         
-        # Combine the ASCII art
-        banner = line1 + line2
+        # Smaller, cooler fonts that won't take too much space
+        cool_small_fonts = ['small', 'mini', 'bubble', 'digital', 'ivrit', 'script', 'shadow', 
+                           'slant', 'smslant']
+        
+        # Choose a font that exists
+        selected_font = next((font for font in cool_small_fonts if font in available_fonts), 'slant')
+        
+        # Create a figlet object with the selected font
+        fig = pyfiglet.Figlet(font=selected_font)
+        
+        # Generate ASCII art
+        title = fig.renderText("Doruk's Linear Algebra Calculator")
+        
+        # Add some decoration
+        width = max(len(line) for line in title.split('\n') if line)
+        border_top = "╭" + "─" * (width - 2) + "╮"
+        border_bottom = "╰" + "─" * (width - 2) + "╯"
+        
+        # Create the final banner with decorative borders
+        banner = f"{border_top}\n{title.rstrip()}\n{border_bottom}"
         
         # Print the banner
+        print(f"Using font: {selected_font}")
         print(banner)
         
         # Return the banner for saving to a file
         return banner
     except Exception as e:
         print(f"Error generating banner: {e}")
-        return None
+        # Fallback to a simpler banner if there's an error
+        fig = pyfiglet.Figlet(font='standard')
+        return fig.renderText("Doruk's Linear Algebra Calculator")
 
 def save_to_readme(banner):
     """Update the README.md file with the new banner"""
@@ -82,14 +102,37 @@ def save_to_readme(banner):
     except Exception as e:
         print(f"Error updating README: {e}")
 
-def update_readme_directly(banner):
-    """Update the README.md file with the new banner without user interaction"""
+def get_latest_version():
+    """Get the latest version tag from git"""
     try:
+        import subprocess
+        result = subprocess.run(['git', 'describe', '--tags', '--abbrev=0'], 
+                                capture_output=True, text=True)
+        if result.returncode == 0:
+            return result.stdout.strip()
+        else:
+            # Try getting the most recent tag
+            result = subprocess.run(['git', 'tag', '--sort=-committerdate'], 
+                                   capture_output=True, text=True)
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip().split('\n')[0]
+            return "v1.0.0"  # Default if no tag exists
+    except Exception as e:
+        print(f"Error getting version: {e}")
+        return "v1.0.0"
+
+def update_readme_directly(banner):
+    """Update the README.md file with the new banner and version tag without user interaction"""
+    try:
+        # Get the latest version
+        version = get_latest_version()
+        
         with open('README.md', 'r') as f:
             readme_content = f.read()
             
-        # Create the updated content
-        new_banner_block = f"# Doruk's Linear Algebra Calculator\n\n```\n{banner}```\n\n"
+        # Create the updated content with version badge
+        version_badge = f"[![Version](https://img.shields.io/badge/version-{version.replace('v', '')}-blue.svg)](https://github.com/peaktwilight/python_25fs/releases/tag/{version})"
+        new_banner_block = f"# Doruk's Linear Algebra Calculator {version_badge}\n\n```\n{banner}\n```\n\n"
         
         # Find the position after the title
         title_pos = readme_content.find("# Doruk's Linear Algebra Calculator")
@@ -114,7 +157,7 @@ def update_readme_directly(banner):
         with open('README.md', 'w') as f:
             f.write(new_content)
             
-        print("README.md updated successfully with new banner.")
+        print(f"README.md updated successfully with new banner and version {version}.")
         return True
     except Exception as e:
         print(f"Error updating README: {e}")
