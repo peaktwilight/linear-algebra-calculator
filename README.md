@@ -190,6 +190,26 @@ This calculator was created by Doruk as a personal project for the Linear Algebr
 
 MIT
 
+## Web Interface
+
+A Streamlit web interface is also available for a more interactive experience:
+
+```bash
+# Install Streamlit and other dependencies
+pip install streamlit numpy pandas matplotlib plotly sympy
+
+# Run the Streamlit app
+streamlit run streamlit_app.py
+```
+
+The web interface provides:
+- Interactive visualizations for vectors and matrices
+- Step-by-step solutions with detailed explanations
+- Intuitive input fields for all operations
+- Beautiful, modern UI with dedicated sections for different operation types
+
+![Streamlit Interface](https://github.com/peaktwilight/python_25fs/raw/main/screenshots/streamlit_ui.png)
+
 ---
 
 © 2025 Doruk | FHNW Linear Algebra Module
