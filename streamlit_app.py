@@ -19,11 +19,92 @@ st.set_page_config(
     menu_items={
         'Get Help': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
         'Report a bug': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
-        'About': "# Linear Algebra Calculator\nA comprehensive toolkit for learning and solving linear algebra problems. Made with ❤️ by Doruk for the LAG Fachmodul at FHNW.\n\nVersion 1.6.3 | Open source at https://github.com/peaktwilight/linear-algebra-calculator"
+        'About': "# Linear Algebra Calculator\\nA comprehensive toolkit for learning and solving linear algebra problems. Made with ❤️ by Doruk for the LAG Fachmodul at FHNW.\\n\\nVersion 1.6.3 | Open source at https://github.com/peaktwilight/linear-algebra-calculator"
     }
 )
 
-# No custom CSS - rely on Streamlit's default styling
+# Custom CSS for animations
+st.markdown("""
+<style>
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.shimmer-text {
+    display: inline-block;
+    background-image: linear-gradient(
+        90deg,
+        rgba(235, 235, 235, 0.98) 0%,    /* Default light text color */
+        rgba(235, 235, 235, 0.98) 40%,   /* Text is light before wave */
+        rgba(30, 30, 30, 0.7) 50%,     /* Narrow, defined dark wave */
+        rgba(235, 235, 235, 0.98) 60%,   /* Text is light after wave */
+        rgba(235, 235, 235, 0.98) 100%  /* Default light text color */
+    );
+    background-size: 220% 100%; /* Adjusted for new gradient stops */
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+    color: transparent; 
+    animation: shimmer 7s infinite linear; /* Using linear for more predictable travel */
+    font-weight: 500; 
+}
+
+.shimmer-text > a, 
+.animated-link, /* Keep .animated-link for targeting if needed, but simplify its role */
+.shimmer-text a /* General rule for links inside shimmer-text */ {
+    color: rgba(230, 230, 230, 0.95); /* A solid, light, visible color */
+    text-decoration: underline; 
+    position: relative; /* Keep for any future pseudo-elements if added back */
+    /* Remove background-clip for links if they are not transparent */
+    /* 
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text; 
+    */
+}
+
+/* Remove animated-link specific hover and after styles */
+/* 
+.shimmer-text a:hover,
+.animated-link:hover {
+    text-decoration: none; 
+}
+
+.animated-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1.5px; 
+    bottom: -3px; 
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(50, 50, 50, 0.75); 
+    transition: width 0.35s ease-in-out;
+}
+
+.animated-link:hover::after {
+    width: 100%;
+}
+*/
+
+.sidebar-footer-container {
+    margin-bottom: 10px; /* Overall margin for the group of three lines */
+}
+
+.sidebar-footer-text {
+    display: block;
+    text-align: left;
+    margin-bottom: 4px; /* Smaller margin between the three lines */
+    line-height: 1.4;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 
 def main():
@@ -760,8 +841,16 @@ def main():
         """)
 
     st.sidebar.markdown("--- ")
-    st.sidebar.markdown("<div title='Hoping we all get 6s in the LAG module 🤞'>Made with ❤️ by Doruk</div>", unsafe_allow_html=True)
-    st.sidebar.markdown("<div title='The person reading this will ace their next math test'><a href='https://github.com/peaktwilight/linear-algebra-calculator'>GitHub</a> v1.6.3 | FHNW Linear Algebra Module</div>", unsafe_allow_html=True)
+    st.sidebar.markdown("""
+    <div class='sidebar-footer-container'>
+        <div title='Crafted with care' class='sidebar-footer-text'>
+            <span class='shimmer-text'>Made with ❤️ by <a href='https://doruk.ch' target='_blank' class='animated-link'>Doruk</a></span>
+        </div>
+        <div title='The person reading this will ace their next math test' class='sidebar-footer-text'>
+            <span class='shimmer-text'><a href='https://github.com/peaktwilight/linear-algebra-calculator' target='_blank' class='animated-link'>GitHub</a> v1.6.3 | FHNW Linear Algebra Module</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
