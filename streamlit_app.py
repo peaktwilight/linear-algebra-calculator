@@ -5,18 +5,6 @@ Streamlit UI for Linear Algebra Calculator
 """
 
 import streamlit as st
-# import numpy as np # No longer directly used here
-# import sympy as sym # No longer directly used here
-# import random # No longer directly used here
-# import json # No longer directly used here
-
-# Import CLI functionality to reuse functions
-# from linalg_cli import LinearAlgebraExerciseFramework # No longer directly used here
-
-# Import Quiz generator
-# from linear_algebra_quiz import LinearAlgebraQuiz # No longer directly used here
-
-# Import Utilities and Components from st_components package
 from st_components.st_utils import StreamOutput # StreamOutput is not used directly in streamlit_app.py, but LinAlgCalculator needs it.
 from st_components.st_calculator_operations import LinAlgCalculator
 from st_components.st_quiz_ui import QuizComponent
