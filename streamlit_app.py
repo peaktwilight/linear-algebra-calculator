@@ -168,24 +168,28 @@ def main():
     # Apply minimal styling approach 
     apply_styling()
     
-    # Animated header with text shimmer effect
+    # Animated header with text shimmer effect and GitHub tag
     st.markdown('''
     <style>
     .title-container {
       position: relative;
-      margin-bottom: 20px;
+      margin-bottom: 40px; /* Increased to make room for GitHub tag */
       text-align: center;
       width: 100%;
+    }
+    
+    .github-tag-container {
+      position: relative;
+      text-align: center;
+      margin-top: -55px; /* Position it higher to overlap with title area */
+      margin-bottom: 35px;
+      z-index: 10;
     }
     </style>
     <div class="title-container">
         <h1 class="animate-title">Linear Algebra Calculator</h1>
     </div>
-    ''', unsafe_allow_html=True)
-    
-    # GitHub version tag using styles from custom.css
-    st.markdown('''
-    <div style="text-align: center; margin-bottom: 20px;">
+    <div class="github-tag-container">
         <a href="https://github.com/peaktwilight/linear-algebra-calculator" target="_blank" class="github-version-tag">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;" stroke="#f0f2f6" stroke-width="2">
                 <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
