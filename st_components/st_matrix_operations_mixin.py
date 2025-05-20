@@ -2943,23 +2943,24 @@ Where:
                 st.markdown("**Input Matrix:**")
                 st.text(str(matrix))
                 
-                st.markdown("**Determinant Value:**")
-                st.markdown(f"det(A) = {determinant:.6f}")
-                
-                # If close to an integer, show that as well
-                if np.isclose(determinant, round(determinant), atol=1e-10):
-                    st.markdown(f"det(A) ≈ {int(round(determinant))}")
-                
                 # LaTeX version of the calculation
                 matrix_latex = self._matrix_to_latex(matrix)
-                # Properly format the matrix for the determinant notation
-                # Extract the matrix content without slicing by position, which could be unreliable
+                
+                # Determinant value with cleaner formatting
+                st.markdown("**Determinant:**")
+                
+                # Format the determinant value
+                det_str = f"{determinant:.6f}"
+                # If close to an integer, also show the integer form
+                if np.isclose(determinant, round(determinant), atol=1e-10):
+                    det_str += f" (≈ {int(round(determinant))})"
+                
+                # Display the formatted determinant
+                st.markdown(f"det(A) = {det_str}")
+                
+                # Show the determinant in LaTeX
                 if "\\begin{pmatrix}" in matrix_latex and "\\end{pmatrix}" in matrix_latex:
-                    # Just use the entire matrix_latex directly
                     st.markdown(f"$$\\det{matrix_latex} = {determinant:.6f}$$")
-                else:
-                    # Fallback in case matrix_latex doesn't have the expected format
-                    st.markdown(f"$$\\det(A) = {determinant:.6f}$$")
                 
                 # Properties of the determinant
                 st.markdown("### Properties")
@@ -2978,56 +2979,34 @@ Where:
                 st.markdown("### Visualization")
                 display_matrix_heatmap(matrix, title="Matrix A")
                 
-                # Add a large display of the determinant value
-                det_box = f"""
-                <div style="padding: 20px; background-color: #f0f2f6; border-radius: 10px; text-align: center; margin-top: 20px;">
-                    <h2 style="margin-bottom: 10px;">Determinant</h2>
-                    <h1 style="font-size: 2.5em; color: {('#e74c3c' if determinant < 0 else '#2ecc71' if determinant > 0 else '#7f8c8d')};">
-                        {determinant:.6f}
-                    </h1>
-                    <p style="font-size: 1.2em; margin-top: 10px;">
-                        {('Negative (Orientation-Reversing)' if determinant < 0 else 'Positive (Orientation-Preserving)' if determinant > 0 else 'Zero (Singular Matrix)')}
-                    </p>
-                </div>
-                """
-                st.markdown(det_box, unsafe_allow_html=True)
-                
-                # For 2×2 matrices, show the formula
+                # For 2×2 matrices, show the formula in a more compact way
                 if rows == 2:
-                    st.markdown("### 2×2 Matrix Determinant Formula")
-                    st.markdown(r"""
-                    For a 2×2 matrix $\begin{pmatrix} a & b \\ c & d \end{pmatrix}$:
-                    
-                    $$\det(A) = ad - bc$$
-                    
-                    Calculation:
-                    """)
                     a, b = matrix[0, 0], matrix[0, 1]
                     c, d = matrix[1, 0], matrix[1, 1]
-                    st.markdown(f"$$\\det(A) = ({a})({d}) - ({b})({c}) = {a*d:.4f} - {b*c:.4f} = {determinant:.4f}$$")
-                
-                # For 3×3 matrices, show the formula
-                elif rows == 3:
-                    st.markdown("### 3×3 Matrix Determinant Formula")
+                    
+                    st.markdown("### Calculation Details")
                     st.markdown(r"""
-                    For a 3×3 matrix, one method is using cofactor expansion along the first row:
-                    
-                    $$\det(A) = a_{11}M_{11} - a_{12}M_{12} + a_{13}M_{13}$$
-                    
-                    Where $M_{ij}$ is the minor of element $a_{ij}$.
+                    **2×2 Matrix Determinant Formula:** For a 2×2 matrix $\begin{pmatrix} a & b \\ c & d \end{pmatrix}$: $\det(A) = ad - bc$
                     """)
                     
-                    # We could add the actual calculation steps here but it's quite involved
+                    # Show the actual calculation
+                    st.markdown(f"**Substituting values:** $\\det(A) = ({a})({d}) - ({b})({c}) = {a*d:.4f} - {b*c:.4f} = {determinant:.4f}$")
+                
+                # For 3×3 matrices, show the formula in a more compact way
+                elif rows == 3:
+                    st.markdown("### Calculation Method")
+                    st.markdown(r"""
+                    **3×3 Matrix Determinant:** Calculated using cofactor expansion:
+                    
+                    $\det(A) = a_{11}(a_{22}a_{33}-a_{23}a_{32}) - a_{12}(a_{21}a_{33}-a_{23}a_{31}) + a_{13}(a_{21}a_{32}-a_{22}a_{31})$
+                    
+                    The calculation is performed using optimized numerical methods.
+                    """)
                 
                 elif rows > 3:
-                    st.markdown("### Higher Dimension Determinant")
+                    st.markdown("### Calculation Method")
                     st.markdown("""
-                    For larger matrices, determinants are calculated using:
-                    - LU decomposition
-                    - Cofactor expansion
-                    - Other numerical methods
-                    
-                    The complexity grows factorially with dimension, making direct computation impractical for large matrices.
+                    **Higher Dimension Determinant:** For matrices larger than 3×3, efficient numerical methods like LU decomposition are used instead of direct cofactor expansion (which grows factorially in complexity).
                     """)
             
             return {"determinant": determinant}
