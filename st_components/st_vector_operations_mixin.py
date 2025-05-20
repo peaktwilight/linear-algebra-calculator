@@ -258,40 +258,6 @@ class VectorOperationsMixin:
                     [vector_a, vector_b],
                     names=["Vector a", "Vector b"]
                 )
-                
-                # Show the angle
-                if mag_a > 0 and mag_b > 0:
-                    # Create a mock gauge chart for angle visualization
-                    fig = go.Figure(go.Indicator(
-                        mode = "gauge+number",
-                        value = angle_deg,
-                        title = {'text': "Angle (degrees)"},
-                        gauge = {
-                            'axis': {'range': [0, 180], 'tickwidth': 1},
-                            'bar': {'color': "darkblue"},
-                            'steps': [
-                                {'range': [0, 90], 'color': "lightgreen"},
-                                {'range': [90, 180], 'color': "lightyellow"}
-                            ],
-                            'threshold': {
-                                'line': {'color': "red", 'width': 4},
-                                'thickness': 0.75,
-                                'value': angle_deg
-                            }
-                        }
-                    ))
-                    
-                    fig.update_layout(
-                        height=300,
-                        margin=dict(l=30, r=30, t=30, b=0),
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        font=dict(color="white")
-                    )
-                    
-                    st.plotly_chart(fig)
-            else:
-                st.info(f"Direct visualization is only available for 2D and 3D vectors. Your vectors are {len(vector_a)}D and {len(vector_b)}D.")
-        
         return result
 
     def cross_product(self, args):
@@ -638,7 +604,7 @@ class VectorOperationsMixin:
             line_p1 = self.framework.parse_vector(args.point_a)
             # Make line_p2 by extending along direction_vec. For viz, scale d if it's too small/large
             # Let's just use A and A+d for the segment.
-            line_p2 = line_p1 + direction_vec_line 
+            line_p2 = line_p1 + direction 
             
             line_style = dict(color='blue', width=2)
             construction_lines.append((line_p1, line_p2, "Line Segment", line_style))
@@ -648,12 +614,12 @@ class VectorOperationsMixin:
             
             # Calculate closest point on line (Q) to P
             # Q = A + proj_d(AP)
-            if np.dot(direction_vec_line, direction_vec_line) == 0:
+            if np.dot(direction, direction) == 0:
                 # Direction vector is zero, line is just a point A
-                q_closest_point = point_a_on_line
+                q_closest_point = point_a
             else:
-                proj_vec_ap_onto_d = (np.dot(vec_ap, direction_vec_line) / np.dot(direction_vec_line, direction_vec_line)) * direction_vec_line
-                q_closest_point = point_a_on_line + proj_vec_ap_onto_d
+                proj_vec_ap_onto_d = (np.dot(vec_ap, direction) / np.dot(direction, direction)) * direction
+                q_closest_point = point_a + proj_vec_ap_onto_d
             
             # Line from P to Q (shortest distance)
             distance_line_style = dict(color='red', dash='dash', width=2)
@@ -667,7 +633,7 @@ class VectorOperationsMixin:
             # primary_names.append("Closest Point Q")
             
             # Show key vectors: AP, d, perpendicular P-Q
-            primary_vectors = [vec_ap, direction_vec_line, (point_b - q_closest_point)]
+            primary_vectors = [vec_ap, direction, (point_b - q_closest_point)]
             primary_names = ["Vector AB", "Direction d", "Perpendicular Distance"]
             
             # Visualize if dimensions allow
