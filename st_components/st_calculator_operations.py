@@ -41,7 +41,7 @@ class LinAlgCalculator:
             return
 
         if not vectors: # If primary vectors list is empty, but we have lines
-             st.info("Visualizing construction lines only.")
+            st.info("Visualizing construction lines only.")
         else: # Validate primary vectors
             for vec in vectors:
                 if len(vec) != dim:
@@ -53,7 +53,7 @@ class LinAlgCalculator:
         
         fig = go.Figure()
         max_val = 1.0 # Start with a default to avoid issues with all-zero vectors/lines
-
+            
         if dim == 2:
             # Add primary vectors as arrows
             if vectors:
@@ -68,7 +68,7 @@ class LinAlgCalculator:
                         line=dict(width=3),
                         marker=dict(size=[0, 10])
                     ))
-
+            
             # Add construction lines if any
             if construction_lines:
                 for p1, p2, name, style_dict in construction_lines:
@@ -105,7 +105,7 @@ class LinAlgCalculator:
                         line=dict(width=6),
                         marker=dict(size=[0, 8])
                     ))
-
+            
             if construction_lines:
                 for p1, p2, name, style_dict in construction_lines:
                     p1_3d = p1[:3] if len(p1) >= 3 else np.array([0.0, 0.0, 0.0])
@@ -134,7 +134,7 @@ class LinAlgCalculator:
             st.info(f"Cannot visualize {dim}-dimensional vectors directly. Using tabular representation instead.")
             if vectors: # Only show table if there are primary vectors
                 vector_df = pd.DataFrame(vectors, index=names if names else [f"Vector {i+1}" for i in range(len(vectors))])
-                st.table(vector_df)
+            st.table(vector_df)
     
     def display_matrix_heatmap(self, matrix, title="Matrix Visualization"):
         """Create a heatmap visualization for matrices."""
@@ -208,7 +208,7 @@ class LinAlgCalculator:
             st.markdown(f"$|\\hat{{v}}| = {normalized_length:.4f} \\approx 1.0$ ✓")
         
         with col2:
-        # Display a visualization of the original and normalized vectors
+            # Display a visualization of the original and normalized vectors
             st.markdown("### Visualization")
             self.display_vector_visualization([vector, result], names=["Original Vector", "Normalized Vector"])
         
@@ -249,22 +249,27 @@ class LinAlgCalculator:
             
             # Create a more structured output
             st.markdown("**Input vectors:**")
-            st.markdown(f"$\\vec{{a}} = {a.tolist()}$") # Corrected LaTeX f-string
-            st.markdown(f"$\\vec{{b}} = {b.tolist()}$") # Corrected LaTeX f-string
+            st.markdown(f"$\\vec{{a}} = {a.tolist()}$") 
+            st.markdown(f"$\\vec{{b}} = {b.tolist()}$")
             
             st.markdown("**Dot product calculation:**")
             dot_formula = " + ".join([f"({a[i]} \\cdot {b[i]})" for i in range(len(a))])
-            st.markdown(f"$\\vec{{a}} \\cdot \\vec{{b}} = {dot_formula} = {dot_product:.4f}$") # Corrected LaTeX f-string
+            st.markdown(f"$\\vec{{a}} \\cdot \\vec{{b}} = {dot_formula} = {dot_product:.4f}$")
             
             st.markdown("**Magnitude calculations:**")
-            st.markdown(f"$|\\vec{{a}}|^2 = {' + '.join([f'({v})^2' for v in a])} = {norm_a_squared:.4f}$") # Corrected LaTeX f-string
-            st.markdown(f"$|\\vec{{a}}| = \\sqrt{{{norm_a_squared:.4f}}} = {norm_a:.4f}$") # Corrected LaTeX f-string
+            st.markdown(f"$|\\vec{{a}}|^2 = {' + '.join([f'({v})^2' for v in a])} = {norm_a_squared:.4f}$")
+            st.markdown(f"$\\|\\vec{{a}}\\| = \\sqrt{{{norm_a_squared:.4f}}} = {norm_a:.4f}$") # Changed to ||a||
             
             st.markdown("**Scalar projection calculation:**")
-            st.markdown(f"$\\text{{scalar_proj}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{|\\vec{{a}}|}} = \\frac{{{dot_product:.4f}}}{{{norm_a:.4f}}} = {scalar_proj:.4f}$") # Corrected LaTeX f-string
+            st.markdown(f"$\\text{{proj}}_{{\\text{{scalar}}}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{\\|\\vec{{a}}\\|}} = \\frac{{{dot_product:.4f}}}{{{norm_a:.4f}}} = {scalar_proj:.4f}$") # Changed to ||a|| in denominator
             
             st.markdown("**Vector projection calculation:**")
-            st.markdown(f"$\\text{{vector_proj}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{\\vec{{a}} \\cdot \\vec{{a}}}} \\vec{{a}} = \\frac{{{dot_product:.4f}}}{{{norm_a_squared:.4f}}} \\cdot {a.tolist()} = {vector_proj.tolist()}$") # Corrected LaTeX f-string
+            # Format list elements for direct LaTeX rendering
+            latex_formatted_a_list = f"[{', '.join(f'{x:.4g}' for x in a.tolist())}]"
+            latex_formatted_vector_proj_list = f"[{', '.join(f'{x:.4g}' for x in vector_proj.tolist())}]"
+            # Use st.latex() for robust rendering. Changed label from \text{vector_proj} to \mathbf{P}_{	ext{proj}}
+            vector_proj_latex_str = f"\\mathbf{{P}}_{{\\text{{proj}}}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{\\vec{{a}} \\cdot \\vec{{a}}}} \\vec{{a}} = \\frac{{{dot_product:.4f}}}{{{norm_a_squared:.4f}}} \\cdot {latex_formatted_a_list} = {latex_formatted_vector_proj_list}"
+            st.latex(vector_proj_latex_str)
             
             # Add explanation of what the projection means
             st.markdown("**Interpretation:**")
@@ -363,7 +368,7 @@ class LinAlgCalculator:
         with col2:
             st.markdown("### Visualization")
             self.display_vector_visualization([a, b], names=["Vector a", "Vector b"])
-            
+        
             # Add mathematical representation of the angle
             angle_box = f"""
             <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
@@ -490,7 +495,7 @@ class LinAlgCalculator:
                 # Add a semi-transparent plane to show perpendicularity
                 # Get corners of a square in the plane containing a and b
                 max_val = max([max(abs(v)) for v in vectors])
-                
+                    
                 # Create a mesh for the plane (if vectors aren't collinear)
                 if sin_angle > 0.01:  # Only create plane if angle is substantial
                     # Use a and b to define the plane
@@ -517,7 +522,7 @@ class LinAlgCalculator:
                         showscale=False,
                         name="Plane containing a and b"
                     ))
-                
+                    
                 # Configure the layout
                 fig.update_layout(
                     scene=dict(
@@ -1693,7 +1698,7 @@ class LinAlgCalculator:
                     self.display_matrix_heatmap(result, f"Result: {operation_name}")
             else:
                 tab1, tab2 = st.tabs(["Input", "Result"])
-                
+        
                 with tab1:
                     self.display_matrix_heatmap(A, "Matrix A")
                 with tab2:
@@ -1761,8 +1766,8 @@ class LinAlgCalculator:
                             equation.append(f"{sign} {abs(coef):.4g}x_{j+1}")
                 
                 st.markdown(f"${' '.join(equation)} = {b[i]:.4g}$")
-            
-            # Display the augmented matrix
+        
+        # Display the augmented matrix
             st.markdown("**Augmented Matrix [A|b]:**")
             matrix_str = "\\begin{bmatrix}\n"
             for i, row in enumerate(augmented):
@@ -1936,8 +1941,8 @@ class LinAlgCalculator:
                 )
                 
                 st.plotly_chart(fig)
-            
+                
             elif n_variables == 3 and isinstance(result, np.ndarray):
                 st.info("3D visualization available but not implemented yet.")
         
-        return result
+        return result 
