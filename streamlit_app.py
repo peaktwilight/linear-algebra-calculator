@@ -71,8 +71,8 @@ def apply_styling():
       border-radius: 4px !important;
       padding: 0.3rem 1rem !important;
       margin: 0.5rem 0 !important;
-      opacity: 1 !important;
       visibility: visible !important;
+      /* opacity controlled by animation */
     }
     
     /* Basic element animations */
@@ -87,8 +87,18 @@ def apply_styling():
       animation-delay: 0.1s;
     }
     
+    /* Staggered waterfall animations */
+    .animate-title { animation-delay: 0.1s; }
+    .animate-subheader { animation-delay: 0.35s; }
+    h1 { animation-delay: 0.1s; }
+    h2 { animation-delay: 0.35s; }
+    h3 { animation-delay: 0.45s; }
+    h4 { animation-delay: 0.55s; }
+    p { animation-delay: 0.65s; }
+    .stButton > button { animation: fadeIn 0.4s ease-out forwards; animation-delay: 0.75s; opacity: 0; }
+    
     /* Make animations complete */
-    h1, h2, h3, h4, p, .animate-title, .animate-subheader {
+    h1, h2, h3, h4, p, .animate-title, .animate-subheader, .stButton > button {
       animation-fill-mode: forwards;
     }
     </style>
