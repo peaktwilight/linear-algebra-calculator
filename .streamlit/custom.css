@@ -235,17 +235,6 @@ input, textarea, select {
   100% { background-position: 0% 50%; }
 }
 
-@keyframes popOutAndDown {
-  0% { 
-    opacity: 0; 
-    transform: translateY(-30px) scale(0.8);
-  }
-  100% { 
-    opacity: 1; 
-    transform: translateY(0px) scale(1);
-  }
-}
-
 /* Title container and GitHub tag container */
 .title-container {
   position: relative;
@@ -272,7 +261,7 @@ input, textarea, select {
   padding: 2px 8px;
   border-radius: 3px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  animation: popOutAndDown 1.0s ease-out 1s forwards; /* Start after title rainbow (3s + 1s) */
+  animation: scaleIn 0.7s ease-out 1s forwards; /* Using existing scaleIn animation */
   opacity: 0;
   transition: all 0.2s ease;
   text-decoration: none;
