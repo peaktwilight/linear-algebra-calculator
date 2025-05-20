@@ -758,72 +758,12 @@ def main():
     elif category == "Learning Resources":
         render_learning_resources_page()
     
-    # UI Settings
-    with st.sidebar.expander("⚙️ UI Settings", expanded=False):
-        # Dark mode toggle
-        theme_choice = st.radio(
-            "Theme",
-            ["Light", "Dark"],
-            horizontal=True
-        )
-        if theme_choice == "Dark":
-            # Apply dark theme CSS
-            st.markdown("""
-            <style>
-            .stApp {
-                background-color: #1e1e1e;
-                color: #f0f0f0;
-            }
-            .stMarkdown, .stText, .stSubheader, .stTitle, div[data-testid="stText"] p {
-                color: #f0f0f0 !important;
-            }
-            .stButton button, .stSelectbox div[data-baseweb="select"] {
-                background-color: #333333;
-                color: #f0f0f0;
-                border-color: #555555;
-            }
-            .stTextInput input, .stTextArea textarea {
-                background-color: #333333;
-                color: #f0f0f0;
-                border-color: #555555;
-            }
-            .stTabs [data-baseweb="tab-list"] {
-                background-color: #2a2a2a;
-            }
-            .stTabs [data-baseweb="tab"] {
-                color: #f0f0f0;
-            }
-            .stTabs [aria-selected="true"] {
-                background-color: #3a3a3a;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-            
-        # Text size setting
-        text_size = st.select_slider(
-            "Text Size",
-            options=["Small", "Medium", "Large"]
-        )
-        
-        text_size_css = {
-            "Small": "0.9rem",
-            "Medium": "1rem",
-            "Large": "1.2rem"
-        }
-        
-        st.markdown(f"""
-        <style>
-        .stMarkdown, .stText, div[data-testid="stText"] p {{
-            font-size: {text_size_css[text_size]} !important;
-        }}
-        </style>
-        """, unsafe_allow_html=True)
 
     # Quick Start & Tips Expander
     with st.sidebar.expander("💡 Quick Start & Tips", expanded=False):
         st.markdown("""
         #### How to use this calculator:
-        1.  **Search or Browse:** Use the search bar at the top or browse categories in the sidebar.
+        1.  **Search or Browse:** Use the search bar in the sidebar or browse categories.
         2.  **Select an Operation:** Choose the specific calculation you need.
         3.  **Enter Inputs:** Provide vectors/matrices in the specified format (e.g., `1,2,3` or `1,2;3,4`).
         4.  **Get Results:** Outputs and explanations will appear below the inputs.
