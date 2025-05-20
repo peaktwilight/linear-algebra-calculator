@@ -1288,6 +1288,979 @@ class MatrixOperationsMixin:
             st.error(traceback.format_exc())
         return None
     
+    def homogeneous_inhomogeneous_solutions(self, matrix_input):
+        """
+        Analyze homogeneous and inhomogeneous solutions for a linear system.
+        This method demonstrates the relationship between solutions of Ax=b and Ax=0.
+        """
+        st.subheader("Homogeneous & Inhomogeneous Solutions")
+        
+        try:
+            if not hasattr(self, 'framework'):
+                st.error("Framework not initialized in the calculator.")
+                return None
+            
+            # Parse the augmented matrix for the linear system Ax=b
+            augmented_matrix = self.framework.parse_matrix(matrix_input)
+            
+            # Split into coefficient matrix A and RHS vector b
+            A = augmented_matrix[:, :-1]
+            b = augmented_matrix[:, -1:]
+            
+            # Create the homogeneous system by setting b=0
+            homogeneous_matrix = np.copy(augmented_matrix)
+            homogeneous_matrix[:, -1] = 0
+            
+            # Calculate row echelon forms
+            rref_inhomogeneous = mrref(np.copy(augmented_matrix))
+            rref_homogeneous = mrref(np.copy(homogeneous_matrix))
+            
+            # Calculate ranks
+            rank_A = np.linalg.matrix_rank(A)
+            rank_augmented = np.linalg.matrix_rank(augmented_matrix)
+            m, n = A.shape
+            
+            # Display the original systems
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.markdown("### Original Systems")
+                
+                st.markdown("**Inhomogeneous System (Ax = b):**")
+                st.markdown(f"$${self._matrix_to_latex(augmented_matrix)}$$")
+                
+                st.markdown("**Homogeneous System (Ax = 0):**")
+                st.markdown(f"$${self._matrix_to_latex(homogeneous_matrix)}$$")
+                
+                st.markdown("### System Analysis")
+                
+                # Consistency check for inhomogeneous
+                st.markdown("**Inhomogeneous System (Ax = b) Analysis:**")
+                if rank_A == rank_augmented:
+                    if rank_A == n:
+                        st.success("The inhomogeneous system has a unique solution.")
+                        inhomo_solution_type = "unique"
+                    else:
+                        free_vars = n - rank_A
+                        st.info(f"The inhomogeneous system has infinitely many solutions with {free_vars} free parameter(s).")
+                        inhomo_solution_type = "parametric"
+                else:
+                    st.error("The inhomogeneous system is inconsistent (no solution).")
+                    inhomo_solution_type = "inconsistent"
+                
+                # Analysis for homogeneous
+                st.markdown("**Homogeneous System (Ax = 0) Analysis:**")
+                if rank_A == n:
+                    st.info("The homogeneous system has only the trivial solution (zero vector).")
+                    homo_solution_type = "trivial"
+                else:
+                    null_dim = n - rank_A
+                    st.success(f"The homogeneous system has a {null_dim}-dimensional null space (infinitely many solutions).")
+                    homo_solution_type = "parametric"
+                
+                # Relationship
+                st.markdown("### Solution Relationship")
+                
+                if inhomo_solution_type == "inconsistent":
+                    st.error("Since the inhomogeneous system is inconsistent, there is no relationship to establish with the homogeneous solutions.")
+                elif inhomo_solution_type == "unique" and homo_solution_type == "trivial":
+                    st.success("The inhomogeneous system has a unique solution, and the homogeneous system has only the zero solution.")
+                    st.markdown("There is a single solution for Ax = b and only the trivial solution (0) for Ax = 0.")
+                elif inhomo_solution_type == "parametric" and homo_solution_type == "parametric":
+                    st.success("Both systems have infinitely many solutions!")
+                    st.markdown("""
+                    **Key Relationship:**
+                    - If x₁ and x₂ are both solutions to Ax = b, then x₁ - x₂ is a solution to Ax = 0
+                    - If x₀ is a solution to Ax = b and v is a solution to Ax = 0, then x₀ + v is also a solution to Ax = b
+                    
+                    In other words, the general solution to Ax = b can be written as:
+                    - x = x₀ + v, where:
+                      - x₀ is any particular solution to Ax = b
+                      - v is the general solution to Ax = 0 (the null space of A)
+                    """)
+            
+            with col2:
+                st.markdown("### Row Echelon Forms")
+                
+                st.markdown("**RREF of Inhomogeneous System (Ax = b):**")
+                st.markdown(f"$${self._matrix_to_latex(rref_inhomogeneous)}$$")
+                
+                st.markdown("**RREF of Homogeneous System (Ax = 0):**")
+                st.markdown(f"$${self._matrix_to_latex(rref_homogeneous)}$$")
+                
+                # Compute solutions if possible
+                if inhomo_solution_type != "inconsistent":
+                    st.markdown("### Solution Computation")
+                    
+                    # Find particular solution for inhomogeneous system
+                    x_particular = np.zeros((n, 1))
+                    pivot_columns = []
+                    
+                    # Identify pivot columns
+                    for i in range(min(m, n)):
+                        for j in range(n):
+                            if abs(rref_inhomogeneous[i, j]) > 1e-10:
+                                pivot_columns.append(j)
+                                x_particular[j] = rref_inhomogeneous[i, -1]
+                                break
+                    
+                    # Free columns
+                    free_columns = [j for j in range(n) if j not in pivot_columns]
+                    
+                    # Display the particular solution
+                    st.markdown("**Particular Solution to Ax = b:**")
+                    st.markdown(f"$$\\mathbf{{x}}_p = {self._vector_to_latex(x_particular)}$$")
+                    
+                    # Compute null space basis
+                    if homo_solution_type == "parametric":
+                        import scipy.linalg as la
+                        null_space = la.null_space(A)
+                        
+                        # If the null space has a non-zero dimension
+                        if null_space.shape[1] > 0:
+                            st.markdown("**Null Space Basis (Solutions to Ax = 0):**")
+                            
+                            # Display each basis vector
+                            for i in range(null_space.shape[1]):
+                                basis_vector = null_space[:, i].reshape(-1, 1)
+                                st.markdown(f"$$\\mathbf{{v}}_{i+1} = {self._vector_to_latex(basis_vector)}$$")
+                            
+                            # Display the general solution
+                            st.markdown("**General Solution to Ax = b:**")
+                            
+                            # Create a parametric form for display
+                            param_terms = [f"\\mathbf{{x}}_p"]
+                            for i in range(null_space.shape[1]):
+                                param_terms.append(f"c_{i+1} \\mathbf{{v}}_{i+1}")
+                            
+                            general_form = " + ".join(param_terms)
+                            st.markdown(f"$$\\mathbf{{x}} = {general_form}$$")
+                            
+                            st.markdown("Where c₁, c₂, ... are arbitrary scalar parameters.")
+                
+                # Visualize the solution space (for 2D and 3D cases)
+                if n <= 3:
+                    st.markdown("### Solution Space Visualization")
+                    
+                    if n == 2:
+                        # 2D visualization
+                        import plotly.graph_objects as go
+                        
+                        # Create a figure
+                        fig = go.Figure()
+                        
+                        # Grid range
+                        x_range = np.linspace(-5, 5, 100)
+                        y_range = np.linspace(-5, 5, 100)
+                        
+                        # For homogeneous system (Ax = 0)
+                        if rank_A < n:
+                            # This is a line through the origin in 2D
+                            # Get the null space vector
+                            null_vector = null_space[:, 0]
+                            
+                            # Generate points along the line
+                            t_vals = np.linspace(-5, 5, 100)
+                            x_vals = null_vector[0] * t_vals
+                            y_vals = null_vector[1] * t_vals
+                            
+                            fig.add_trace(go.Scatter(
+                                x=x_vals, y=y_vals,
+                                mode='lines',
+                                name='Homogeneous Solutions (Ax = 0)',
+                                line=dict(color='blue', width=2)
+                            ))
+                            
+                            # Add the origin point
+                            fig.add_trace(go.Scatter(
+                                x=[0], y=[0],
+                                mode='markers',
+                                name='Origin (0,0)',
+                                marker=dict(color='black', size=8)
+                            ))
+                        
+                        # For inhomogeneous system (Ax = b)
+                        if inhomo_solution_type != "inconsistent":
+                            if inhomo_solution_type == "unique":
+                                # Single point
+                                fig.add_trace(go.Scatter(
+                                    x=[x_particular[0, 0]], y=[x_particular[1, 0]],
+                                    mode='markers',
+                                    name='Unique Solution to Ax = b',
+                                    marker=dict(color='red', size=8)
+                                ))
+                            else:
+                                # Parallel line to homogeneous solution
+                                # Generate points along the line
+                                t_vals = np.linspace(-5, 5, 100)
+                                x_vals = x_particular[0, 0] + null_vector[0] * t_vals
+                                y_vals = x_particular[1, 0] + null_vector[1] * t_vals
+                                
+                                fig.add_trace(go.Scatter(
+                                    x=x_vals, y=y_vals,
+                                    mode='lines',
+                                    name='Inhomogeneous Solutions (Ax = b)',
+                                    line=dict(color='red', width=2)
+                                ))
+                                
+                                # Add the particular solution point
+                                fig.add_trace(go.Scatter(
+                                    x=[x_particular[0, 0]], y=[x_particular[1, 0]],
+                                    mode='markers',
+                                    name='Particular Solution',
+                                    marker=dict(color='red', size=8)
+                                ))
+                        
+                        # Add the equation lines
+                        for i in range(m):
+                            if abs(A[i, 1]) > 1e-10:  # Non-vertical line
+                                # Line equation: a*x + b*y = c
+                                # y = (c - a*x) / b
+                                line_x = x_range
+                                line_y = [(b[i, 0] - A[i, 0] * x) / A[i, 1] for x in line_x]
+                                
+                                fig.add_trace(go.Scatter(
+                                    x=line_x, y=line_y,
+                                    mode='lines',
+                                    name=f'Equation {i+1}',
+                                    line=dict(color='green', width=1, dash='dash')
+                                ))
+                            else:  # Vertical line
+                                if abs(A[i, 0]) > 1e-10:
+                                    # x = c/a
+                                    x_val = b[i, 0] / A[i, 0]
+                                    fig.add_trace(go.Scatter(
+                                        x=[x_val, x_val], y=[-5, 5],
+                                        mode='lines',
+                                        name=f'Equation {i+1}',
+                                        line=dict(color='green', width=1, dash='dash')
+                                    ))
+                        
+                        # Set layout
+                        fig.update_layout(
+                            title="2D Visualization of Solution Spaces",
+                            xaxis=dict(title="x₁", range=[-5, 5]),
+                            yaxis=dict(title="x₂", range=[-5, 5]),
+                            legend=dict(x=0, y=1),
+                            width=600, height=500
+                        )
+                        
+                        # Add grid and center
+                        fig.update_xaxes(zeroline=True, zerolinewidth=1, zerolinecolor='gray')
+                        fig.update_yaxes(zeroline=True, zerolinewidth=1, zerolinecolor='gray')
+                        
+                        # Display the plot
+                        st.plotly_chart(fig)
+                        
+                    elif n == 3:
+                        # 3D visualization (simplified for complexity)
+                        import plotly.graph_objects as go
+                        
+                        # Create a figure
+                        fig = go.Figure()
+                        
+                        # For homogeneous system (Ax = 0)
+                        if homo_solution_type == "parametric":
+                            # Get the null space vectors
+                            null_dim = null_space.shape[1]
+                            
+                            if null_dim == 1:
+                                # Line through origin
+                                t_vals = np.linspace(-3, 3, 50)
+                                null_vec = null_space[:, 0]
+                                
+                                fig.add_trace(go.Scatter3d(
+                                    x=null_vec[0] * t_vals,
+                                    y=null_vec[1] * t_vals,
+                                    z=null_vec[2] * t_vals,
+                                    mode='lines',
+                                    name='Homogeneous Solutions (Ax = 0)',
+                                    line=dict(color='blue', width=4)
+                                ))
+                            
+                            elif null_dim == 2:
+                                # Plane through origin
+                                # Create a grid for parameters
+                                u = np.linspace(-2, 2, 10)
+                                v = np.linspace(-2, 2, 10)
+                                U, V = np.meshgrid(u, v)
+                                
+                                # Compute points
+                                X = null_space[0, 0] * U + null_space[0, 1] * V
+                                Y = null_space[1, 0] * U + null_space[1, 1] * V
+                                Z = null_space[2, 0] * U + null_space[2, 1] * V
+                                
+                                fig.add_trace(go.Surface(
+                                    x=X, y=Y, z=Z,
+                                    colorscale='Blues',
+                                    opacity=0.8,
+                                    name='Homogeneous Solutions (Ax = 0)'
+                                ))
+                        
+                        # Add the origin point
+                        fig.add_trace(go.Scatter3d(
+                            x=[0], y=[0], z=[0],
+                            mode='markers',
+                            name='Origin',
+                            marker=dict(color='black', size=6)
+                        ))
+                        
+                        # For inhomogeneous system (Ax = b)
+                        if inhomo_solution_type != "inconsistent":
+                            # Add the particular solution
+                            fig.add_trace(go.Scatter3d(
+                                x=[x_particular[0, 0]],
+                                y=[x_particular[1, 0]],
+                                z=[x_particular[2, 0]],
+                                mode='markers',
+                                name='Particular Solution',
+                                marker=dict(color='red', size=6)
+                            ))
+                            
+                            if inhomo_solution_type == "parametric" and null_dim == 1:
+                                # Line parallel to homogeneous solution
+                                t_vals = np.linspace(-3, 3, 50)
+                                null_vec = null_space[:, 0]
+                                
+                                fig.add_trace(go.Scatter3d(
+                                    x=x_particular[0, 0] + null_vec[0] * t_vals,
+                                    y=x_particular[1, 0] + null_vec[1] * t_vals,
+                                    z=x_particular[2, 0] + null_vec[2] * t_vals,
+                                    mode='lines',
+                                    name='Inhomogeneous Solutions (Ax = b)',
+                                    line=dict(color='red', width=4)
+                                ))
+                            
+                            elif inhomo_solution_type == "parametric" and null_dim == 2:
+                                # Plane parallel to homogeneous solution
+                                u = np.linspace(-2, 2, 10)
+                                v = np.linspace(-2, 2, 10)
+                                U, V = np.meshgrid(u, v)
+                                
+                                # Compute points
+                                X = x_particular[0, 0] + null_space[0, 0] * U + null_space[0, 1] * V
+                                Y = x_particular[1, 0] + null_space[1, 0] * U + null_space[1, 1] * V
+                                Z = x_particular[2, 0] + null_space[2, 0] * U + null_space[2, 1] * V
+                                
+                                fig.add_trace(go.Surface(
+                                    x=X, y=Y, z=Z,
+                                    colorscale='Reds',
+                                    opacity=0.8,
+                                    name='Inhomogeneous Solutions (Ax = b)'
+                                ))
+                        
+                        # Set layout
+                        fig.update_layout(
+                            title="3D Visualization of Solution Spaces",
+                            scene=dict(
+                                xaxis_title="x₁",
+                                yaxis_title="x₂",
+                                zaxis_title="x₃",
+                                aspectmode='cube'
+                            ),
+                            width=600, height=600
+                        )
+                        
+                        # Display the plot
+                        st.plotly_chart(fig)
+                
+                # Educational explanation
+                st.markdown("### Key Concepts")
+                st.markdown("""
+                **Null Space (Ker A):**
+                - The set of all solutions to Ax = 0
+                - Also called the kernel of A
+                - Always contains the zero vector
+                - Forms a vector subspace of ℝⁿ
+                
+                **Solution Set for Ax = b:**
+                - If Ax = b has a solution, its solution set is an affine space
+                - It's a translation of the null space by any particular solution
+                
+                **Fundamental Theorem:**
+                - If Ax = b has a solution x₀, then all solutions are of the form x = x₀ + v, where v is in Null(A)
+                - The solution space has dimension n - rank(A)
+                """)
+            
+            return {
+                "A": A, 
+                "b": b,
+                "rank_A": rank_A,
+                "rank_augmented": rank_augmented,
+                "homogeneous_rref": rref_homogeneous,
+                "inhomogeneous_rref": rref_inhomogeneous,
+                "homogeneous_solution_type": homo_solution_type,
+                "inhomogeneous_solution_type": inhomo_solution_type
+            }
+            
+        except ValueError as e:
+            st.error(f"Input error: {e}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            import traceback
+            st.error(traceback.format_exc())
+        return None
+    
+    def geometric_interpretation(self, matrix_input):
+        """
+        Provide geometric interpretation of a linear system, visualizing the solution
+        as the intersection of lines, planes, or higher-dimensional objects.
+        """
+        st.subheader("Geometric Interpretation of Linear Systems")
+        
+        try:
+            if not hasattr(self, 'framework'):
+                st.error("Framework not initialized in the calculator.")
+                return None
+            
+            # Parse the augmented matrix
+            augmented_matrix = self.framework.parse_matrix(matrix_input)
+            
+            # Split into coefficient matrix A and constant vector b
+            A = augmented_matrix[:, :-1]
+            b = augmented_matrix[:, -1:]
+            
+            # Dimensions
+            m, n = A.shape
+            
+            # Display the linear system
+            st.markdown("### Original Linear System")
+            st.markdown(f"**Augmented Matrix [A|b]:**")
+            st.markdown(f"$${self._matrix_to_latex(augmented_matrix)}$$")
+            
+            # Display in equation form
+            st.markdown("**Equation Form:**")
+            equations = []
+            for i in range(m):
+                eq_terms = []
+                for j in range(n):
+                    coef = A[i, j]
+                    if np.isclose(coef, 0, atol=1e-10):
+                        continue
+                        
+                    if j > 0 and coef > 0:
+                        eq_terms.append("+")
+                        
+                    if np.isclose(abs(coef), 1, atol=1e-10):
+                        if coef < 0:
+                            eq_terms.append("-")
+                    else:
+                        if coef < 0:
+                            eq_terms.append(f"{coef:.2f}")
+                        else:
+                            eq_terms.append(f"{coef:.2f}")
+                            
+                    eq_terms.append(f"x_{j+1}")
+                
+                if not eq_terms:
+                    eq_terms.append("0")
+                    
+                # Add the equals sign and right-hand side
+                eq_terms.append("=")
+                eq_terms.append(f"{b[i, 0]:.2f}")
+                
+                equations.append("$" + " ".join(eq_terms) + "$")
+            
+            for eq in equations:
+                st.markdown(eq)
+            
+            # Analyze the system
+            rank_A = np.linalg.matrix_rank(A)
+            rank_augmented = np.linalg.matrix_rank(augmented_matrix)
+            
+            # Check dimensions for visualization support
+            if n <= 3:
+                # Determine the solution type
+                if rank_A != rank_augmented:
+                    solution_type = "inconsistent"
+                    solution_message = "The system is inconsistent (no solution)"
+                elif rank_A == n:
+                    solution_type = "unique"
+                    solution_message = "The system has a unique solution"
+                else:
+                    solution_type = "infinite"
+                    nullity = n - rank_A
+                    solution_message = f"The system has infinitely many solutions ({nullity} parameter(s))"
+                
+                # Compute the solution if possible
+                solution = None
+                if solution_type == "unique":
+                    # Use the framework to solve the system
+                    # Create args for solve_gauss
+                    class Args:
+                        def __init__(self, matrix):
+                            self.matrix = matrix
+                            
+                    args = Args(matrix_input)
+                    solution = self.framework.solve_gauss(args)
+                    
+                    if isinstance(solution, np.ndarray):
+                        solution_vector = solution.reshape(-1, 1)
+                    else:
+                        solution_vector = None
+                
+                # Create visualizations based on dimensions
+                if n == 2:
+                    st.markdown("### 2D Geometric Interpretation")
+                    st.markdown("Each equation represents a line in the x₁-x₂ plane:")
+                    
+                    import plotly.graph_objects as go
+                    
+                    fig = go.Figure()
+                    
+                    # Create a grid of points
+                    x_range = np.linspace(-10, 10, 100)
+                    y_range = np.linspace(-10, 10, 100)
+                    
+                    # Plot each line (equation)
+                    for i in range(m):
+                        if abs(A[i, 1]) > 1e-10:
+                            # Line: a*x + b*y = c
+                            # y = (c - a*x) / b
+                            line_x = x_range
+                            line_y = [(b[i, 0] - A[i, 0] * x) / A[i, 1] for x in line_x]
+                            
+                            fig.add_trace(go.Scatter(
+                                x=line_x, y=line_y,
+                                mode='lines',
+                                name=f'Equation {i+1}',
+                                line=dict(width=2)
+                            ))
+                        elif abs(A[i, 0]) > 1e-10:
+                            # Vertical line: x = c/a
+                            x_val = b[i, 0] / A[i, 0]
+                            fig.add_trace(go.Scatter(
+                                x=[x_val, x_val], y=[-10, 10],
+                                mode='lines',
+                                name=f'Equation {i+1}',
+                                line=dict(width=2)
+                            ))
+                    
+                    # Add the solution point if it exists
+                    if solution_type == "unique" and solution_vector is not None:
+                        fig.add_trace(go.Scatter(
+                            x=[solution_vector[0, 0]],
+                            y=[solution_vector[1, 0]],
+                            mode='markers',
+                            name='Solution',
+                            marker=dict(color='red', size=10)
+                        ))
+                    
+                    # Set layout
+                    fig.update_layout(
+                        title="Geometric Interpretation: Lines in 2D Plane",
+                        xaxis=dict(title="x₁", range=[-10, 10], zeroline=True),
+                        yaxis=dict(title="x₂", range=[-10, 10], zeroline=True, scaleanchor="x", scaleratio=1),
+                        legend=dict(x=0, y=1),
+                        width=700, height=500
+                    )
+                    
+                    st.plotly_chart(fig)
+                    
+                    # Interpretation
+                    st.markdown("### Interpretation")
+                    st.markdown(f"**Solution Status:** {solution_message}")
+                    
+                    if solution_type == "unique":
+                        st.success("The unique solution is the point where all lines intersect.")
+                        if solution_vector is not None:
+                            st.markdown(f"**Solution Coordinates:** ({solution_vector[0, 0]:.4f}, {solution_vector[1, 0]:.4f})")
+                    elif solution_type == "infinite":
+                        st.info("The system has infinitely many solutions, represented by a line (or multiple overlapping lines).")
+                        st.markdown("This happens when two or more lines coincide, or when there are fewer independent equations than variables.")
+                    else:  # inconsistent
+                        st.error("The system is inconsistent - the lines do not intersect at a common point.")
+                        st.markdown("This means there is no point that satisfies all equations simultaneously.")
+                
+                elif n == 3:
+                    st.markdown("### 3D Geometric Interpretation")
+                    st.markdown("Each equation represents a plane in 3D space:")
+                    
+                    import plotly.graph_objects as go
+                    
+                    fig = go.Figure()
+                    
+                    # Define a grid for plotting planes
+                    grid_size = 10
+                    xx, yy = np.meshgrid(np.linspace(-5, 5, grid_size), np.linspace(-5, 5, grid_size))
+                    
+                    # Plot each plane
+                    for i in range(m):
+                        if abs(A[i, 2]) > 1e-10:
+                            # Plane: a*x + b*y + c*z = d
+                            # z = (d - a*x - b*y) / c
+                            zz = (b[i, 0] - A[i, 0] * xx - A[i, 1] * yy) / A[i, 2]
+                            
+                            # Add a surface for this plane
+                            fig.add_trace(go.Surface(
+                                x=xx, y=yy, z=zz,
+                                opacity=0.7,
+                                colorscale=[[0, f'rgba({30+40*i}, {100+30*i}, {200-20*i}, 0.7)'], 
+                                           [1, f'rgba({60+40*i}, {120+30*i}, {220-20*i}, 0.7)']],
+                                showscale=False,
+                                name=f'Plane {i+1}'
+                            ))
+                        elif abs(A[i, 1]) > 1e-10:
+                            # y = (d - a*x - c*z) / b
+                            zz, xx = np.meshgrid(np.linspace(-5, 5, grid_size), np.linspace(-5, 5, grid_size))
+                            yy = (b[i, 0] - A[i, 0] * xx - A[i, 2] * zz) / A[i, 1]
+                            
+                            fig.add_trace(go.Surface(
+                                x=xx, y=yy, z=zz,
+                                opacity=0.7,
+                                colorscale=[[0, f'rgba({30+40*i}, {100+30*i}, {200-20*i}, 0.7)'], 
+                                           [1, f'rgba({60+40*i}, {120+30*i}, {220-20*i}, 0.7)']],
+                                showscale=False,
+                                name=f'Plane {i+1}'
+                            ))
+                        elif abs(A[i, 0]) > 1e-10:
+                            # x = (d - b*y - c*z) / a
+                            zz, yy = np.meshgrid(np.linspace(-5, 5, grid_size), np.linspace(-5, 5, grid_size))
+                            xx = (b[i, 0] - A[i, 1] * yy - A[i, 2] * zz) / A[i, 0]
+                            
+                            fig.add_trace(go.Surface(
+                                x=xx, y=yy, z=zz,
+                                opacity=0.7,
+                                colorscale=[[0, f'rgba({30+40*i}, {100+30*i}, {200-20*i}, 0.7)'], 
+                                           [1, f'rgba({60+40*i}, {120+30*i}, {220-20*i}, 0.7)']],
+                                showscale=False,
+                                name=f'Plane {i+1}'
+                            ))
+                    
+                    # Add the solution point if unique
+                    if solution_type == "unique" and solution_vector is not None:
+                        fig.add_trace(go.Scatter3d(
+                            x=[solution_vector[0, 0]],
+                            y=[solution_vector[1, 0]],
+                            z=[solution_vector[2, 0]],
+                            mode='markers',
+                            name='Solution',
+                            marker=dict(color='red', size=8)
+                        ))
+                    
+                    # Set layout
+                    fig.update_layout(
+                        title=f"Geometric Interpretation: Planes in 3D Space ({solution_message})",
+                        scene=dict(
+                            xaxis_title="x₁",
+                            yaxis_title="x₂",
+                            zaxis_title="x₃",
+                            aspectmode='cube',
+                            camera=dict(eye=dict(x=1.5, y=1.5, z=1.2))
+                        ),
+                        width=700, height=600
+                    )
+                    
+                    st.plotly_chart(fig)
+                    
+                    # Interpretation
+                    st.markdown("### Interpretation")
+                    st.markdown(f"**Solution Status:** {solution_message}")
+                    
+                    if solution_type == "unique":
+                        st.success("The unique solution is the point where all planes intersect.")
+                        if solution_vector is not None:
+                            st.markdown(f"**Solution Coordinates:** ({solution_vector[0, 0]:.4f}, {solution_vector[1, 0]:.4f}, {solution_vector[2, 0]:.4f})")
+                    elif solution_type == "infinite":
+                        if n - rank_A == 1:
+                            st.info("The system has infinitely many solutions, represented by a line in 3D space.")
+                            st.markdown("This happens when the planes intersect along a common line.")
+                        else:  # n - rank_A == 2
+                            st.info("The system has infinitely many solutions, represented by a plane in 3D space.")
+                            st.markdown("This happens when multiple planes coincide.")
+                    else:  # inconsistent
+                        st.error("The system is inconsistent - the planes do not have a common point of intersection.")
+                        st.markdown("This can happen when planes are parallel or when their lines of intersection don't meet.")
+            
+            else:
+                st.warning(f"Geometric visualization is only available for systems with 2 or 3 variables. Your system has {n} variables.")
+                
+                # Provide general information for higher dimensions
+                st.markdown("### Higher-Dimensional Interpretation")
+                st.markdown(f"**Number of Equations:** {m}")
+                st.markdown(f"**Number of Variables:** {n}")
+                st.markdown(f"**Rank of Coefficient Matrix:** {rank_A}")
+                
+                if rank_A != rank_augmented:
+                    st.error("The system is inconsistent (no solution exists).")
+                    st.markdown("Each equation represents a hyperplane in n-dimensional space. These hyperplanes don't have a common intersection point.")
+                elif rank_A == n:
+                    st.success("The system has a unique solution.")
+                    st.markdown("The unique solution is the single point where all hyperplanes intersect in n-dimensional space.")
+                else:
+                    st.info(f"The system has infinitely many solutions with {n - rank_A} free parameters.")
+                    
+                    if n - rank_A == 1:
+                        st.markdown("The solution forms a line in n-dimensional space.")
+                    elif n - rank_A == 2:
+                        st.markdown("The solution forms a plane in n-dimensional space.")
+                    else:
+                        st.markdown(f"The solution forms a {n - rank_A}-dimensional affine subspace in {n}-dimensional space.")
+            
+            # Add educational content about geometric interpretation
+            with st.expander("Learn More About Geometric Interpretation"):
+                st.markdown("""
+                ### Geometric Intuition in Different Dimensions
+                
+                **In 2D (n=2):**
+                - Each equation represents a line in the plane
+                - Two lines can:
+                  - Intersect at a single point (unique solution)
+                  - Be parallel (no solution)
+                  - Coincide (infinitely many solutions)
+                
+                **In 3D (n=3):**
+                - Each equation represents a plane in 3D space
+                - The intersection of planes can be:
+                  - A single point (unique solution)
+                  - A line (infinitely many solutions with 1 parameter)
+                  - A plane (infinitely many solutions with 2 parameters)
+                  - Empty (no solution)
+                
+                **In Higher Dimensions:**
+                - Each equation represents a hyperplane
+                - Intersections become more complex, but the same principles apply
+                - A system with n variables can have a solution space of dimension n - rank(A)
+                
+                **Relationship to Linear Independence:**
+                - If the rows of the coefficient matrix A are linearly independent, then the corresponding hyperplanes are in "general position"
+                - Linear dependence among equations means the corresponding hyperplanes have a special geometric relationship (like being parallel or coincident)
+                """)
+            
+            return {
+                "A": A,
+                "b": b,
+                "rank_A": rank_A,
+                "rank_augmented": rank_augmented,
+                "solution_type": solution_type
+            }
+            
+        except ValueError as e:
+            st.error(f"Input error: {e}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            import traceback
+            st.error(traceback.format_exc())
+        return None
+        
+    def matrix_multiply(self, matrix_a_input, matrix_b_input):
+        """
+        Multiply two matrices and display the result with explanation.
+        """
+        st.subheader("Matrix Multiplication")
+        
+        try:
+            if not hasattr(self, 'framework'):
+                st.error("Framework not initialized in the calculator.")
+                return None
+            
+            # Parse the matrices
+            matrix_a = self.framework.parse_matrix(matrix_a_input)
+            matrix_b = self.framework.parse_matrix(matrix_b_input)
+            
+            # Check compatibility for multiplication
+            if matrix_a.shape[1] != matrix_b.shape[0]:
+                st.error(f"Matrices are not compatible for multiplication. Matrix A has {matrix_a.shape[1]} columns but Matrix B has {matrix_b.shape[0]} rows.")
+                return None
+                
+            # Perform the multiplication
+            product = matrix_a @ matrix_b
+            
+            # Display the result
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.markdown("### Input Matrices")
+                st.markdown("**Matrix A:**")
+                st.markdown(f"$${self._matrix_to_latex(matrix_a)}$$")
+                st.markdown(f"Shape: {matrix_a.shape[0]}×{matrix_a.shape[1]}")
+                
+                st.markdown("**Matrix B:**")
+                st.markdown(f"$${self._matrix_to_latex(matrix_b)}$$")
+                st.markdown(f"Shape: {matrix_b.shape[0]}×{matrix_b.shape[1]}")
+                
+                st.markdown("### Result")
+                st.markdown("**Product A×B:**")
+                st.markdown(f"$${self._matrix_to_latex(product)}$$")
+                st.markdown(f"Shape: {product.shape[0]}×{product.shape[1]}")
+                
+                # Explanation of the calculation for a small example
+                if product.size <= 9:  # Only show detailed calculation for small matrices
+                    st.markdown("### Calculation Details")
+                    for i in range(product.shape[0]):
+                        for j in range(product.shape[1]):
+                            # Calculate the dot product for element (i,j)
+                            dot_product_parts = []
+                            for k in range(matrix_a.shape[1]):
+                                a_ik = matrix_a[i, k]
+                                b_kj = matrix_b[k, j]
+                                dot_product_parts.append(f"{a_ik:.2f} \\cdot {b_kj:.2f}")
+                            
+                            dot_product_str = " + ".join(dot_product_parts)
+                            st.markdown(f"$C_{{{i+1}{j+1}}} = {dot_product_str} = {product[i, j]:.2f}$")
+            
+            with col2:
+                st.markdown("### Visualizations")
+                
+                # Heatmap visualization of the matrices
+                tab1, tab2, tab3 = st.tabs(["Matrix A", "Matrix B", "Product A×B"])
+                
+                with tab1:
+                    display_matrix_heatmap(matrix_a, title="Matrix A")
+                
+                with tab2:
+                    display_matrix_heatmap(matrix_b, title="Matrix B")
+                
+                with tab3:
+                    display_matrix_heatmap(product, title="Product A×B")
+                
+                # Educational content about matrix multiplication
+                st.markdown("### Matrix Multiplication Properties")
+                
+                # Check if multiplication is commutative for this example
+                if matrix_b.shape[1] == matrix_a.shape[0]:
+                    try:
+                        product_ba = matrix_b @ matrix_a
+                        if np.allclose(product, product_ba):
+                            st.success("For this specific example, A×B = B×A (commutative)")
+                        else:
+                            st.warning("For this example, A×B ≠ B×A (not commutative)")
+                    except:
+                        st.warning("Matrix multiplication is generally not commutative: A×B ≠ B×A")
+                else:
+                    st.warning("Matrix multiplication is generally not commutative: A×B ≠ B×A")
+                
+                st.markdown("""
+                **Key Properties:**
+                - (AB)C = A(BC) (associative)
+                - A(B+C) = AB+AC (distributive)
+                - In general, AB ≠ BA (not commutative)
+                - If AB = 0, it doesn't mean A = 0 or B = 0
+                """)
+                
+            return product
+            
+        except ValueError as e:
+            st.error(f"Input error: {e}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            import traceback
+            st.error(traceback.format_exc())
+        return None
+        
+    def matrix_inverse(self, matrix_input):
+        """
+        Calculate the inverse of a square matrix and visualize the result.
+        """
+        st.subheader("Matrix Inverse")
+        
+        try:
+            if not hasattr(self, 'framework'):
+                st.error("Framework not initialized in the calculator.")
+                return None
+            
+            # Parse the matrix
+            matrix = self.framework.parse_matrix(matrix_input)
+            
+            # Check if the matrix is square
+            if matrix.shape[0] != matrix.shape[1]:
+                st.error(f"Cannot compute inverse: matrix must be square. Got shape {matrix.shape}")
+                return None
+            
+            # Calculate determinant to check invertibility
+            det = np.linalg.det(matrix)
+            if abs(det) < 1e-10:
+                st.error(f"Matrix is not invertible (determinant ≈ 0: {det:.10f})")
+                return None
+            
+            # Calculate the inverse matrix
+            inverse = np.linalg.inv(matrix)
+            
+            # Calculate the verification product (should be identity)
+            verification = matrix @ inverse
+            
+            # Display the results
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.markdown("### Input Matrix A:")
+                st.markdown(f"$${self._matrix_to_latex(matrix)}$$")
+                
+                st.markdown("### Inverse Matrix A⁻¹:")
+                st.markdown(f"$${self._matrix_to_latex(inverse)}$$")
+                
+                st.markdown("### Verification")
+                st.markdown("Checking that A × A⁻¹ = I (identity matrix):")
+                st.markdown(f"$${self._matrix_to_latex(verification)}$$")
+                
+                # For 2x2 matrices, show the formula explicitly
+                if matrix.shape == (2, 2):
+                    st.markdown("### Matrix Inverse Formula")
+                    st.markdown(r"""For a 2×2 matrix $A=\begin{pmatrix} a & b \\ c & d \end{pmatrix}$:
+
+$A^{-1}=\frac{1}{\det(A)}\begin{pmatrix} d & -b \\ -c & a \end{pmatrix}=\frac{1}{ad-bc}\begin{pmatrix} d & -b \\ -c & a \end{pmatrix}$
+
+Where:
+- $\det(A) = ad - bc$
+""")
+                    # Calculate the actual values
+                    a, b = matrix[0, 0], matrix[0, 1]
+                    c, d = matrix[1, 0], matrix[1, 1]
+                    determinant = a*d - b*c
+                    
+                    # Format the calculation
+                    st.markdown("**Calculation:**")
+                    st.markdown(f"$\\det(A) = ({a})({d}) - ({b})({c}) = {determinant}$")
+                    st.markdown(f"$A^{{-1}} = \\frac{{1}}{{{determinant}}}\\begin{{pmatrix}} {d} & {-b} \\\\ {-c} & {a} \\end{{pmatrix}}$")
+            
+            with col2:
+                st.markdown("### Visualization")
+                
+                # Visualize the matrices
+                st.markdown("**Original Matrix A**")
+                display_matrix_heatmap(matrix, title="Matrix A")
+                
+                st.markdown("**Inverse Matrix A⁻¹**")
+                display_matrix_heatmap(inverse, title="Inverse Matrix", center_scale=True)
+                
+                st.markdown("**Verification: A·A⁻¹**")
+                display_matrix_heatmap(verification, title="A·A⁻¹ (should be identity)", center_scale=True)
+                
+                # Additional information about matrix inverses
+                st.markdown("### Properties of Matrix Inverses")
+                st.markdown("""
+                **Key Properties:**
+                - Only square matrices can have inverses
+                - A matrix has an inverse if and only if its determinant is non-zero
+                - If A is invertible, then (A⁻¹)⁻¹ = A
+                - If A and B are invertible, then (AB)⁻¹ = B⁻¹A⁻¹
+                - The inverse of a product reverses the order
+                """)
+                
+                # For larger matrices, mention numerical methods
+                if matrix.shape[0] > 3:
+                    st.info("""
+                    For matrices larger than 3×3, inverses are typically computed using numerical methods:
+                    - Gaussian elimination (with pivoting)
+                    - LU decomposition
+                    - QR decomposition
+                    - Singular Value Decomposition (SVD)
+                    
+                    These methods are more stable and efficient than the explicit formula approach.
+                    """)
+            
+            return inverse
+            
+        except ValueError as e:
+            st.error(f"Input error: {e}")
+        except np.linalg.LinAlgError as e:
+            st.error(f"Linear algebra error: {e}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            import traceback
+            st.error(traceback.format_exc())
+        return None
+    
     def matrix_determinant(self, matrix_input):
         """Calculate the determinant of a matrix."""
         
@@ -1403,258 +2376,6 @@ class MatrixOperationsMixin:
             st.error(f"Input error: {e}")
         except np.linalg.LinAlgError as e:
             st.error(f"Linear algebra error: {e}")
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-        return None
-        
-    def matrix_inverse(self, matrix_input):
-        """Calculate the inverse of a matrix."""
-        
-        st.subheader("Matrix Inverse")
-        
-        try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
-            
-            # Parse the matrix
-            matrix = self.framework.parse_matrix(matrix_input)
-            
-            # Check if the matrix is square
-            rows, cols = matrix.shape
-            if rows != cols:
-                st.error(f"Cannot calculate inverse of a non-square matrix. Matrix shape: {matrix.shape}")
-                return None
-            
-            # Calculate the determinant to check invertibility
-            determinant = np.linalg.det(matrix)
-            
-            if np.isclose(determinant, 0, atol=1e-10):
-                st.error("Matrix is singular (determinant is approximately zero). No inverse exists.")
-                
-                # Show the matrix and its determinant anyway
-                st.markdown("### Input Matrix (Singular)")
-                st.text(str(matrix))
-                st.markdown(f"**Determinant:** {determinant}")
-                
-                # Show visualization even for a singular matrix
-                display_matrix_heatmap(matrix, title="Matrix A (Singular)")
-                return None
-            
-            # Calculate the inverse
-            inverse = np.linalg.inv(matrix)
-            
-            col1, col2 = st.columns([1, 1])
-            
-            with col1:
-                st.markdown("### Matrix and Result")
-                st.markdown("**Input Matrix A:**")
-                st.text(str(matrix))
-                
-                st.markdown("**Inverse Matrix A⁻¹:**")
-                st.text(str(inverse))
-                
-                # Check the computation numerically
-                product = matrix @ inverse
-                
-                # Show the verification: A × A⁻¹ = I
-                st.markdown("### Verification")
-                st.markdown("Checking that **A × A⁻¹ = I** (identity matrix):")
-                st.text(str(product))
-                
-                # LaTeX versions
-                matrix_latex = self._matrix_to_latex(matrix)
-                inverse_latex = self._matrix_to_latex(inverse)
-                
-                # If matrix is small enough, show full formula in LaTeX
-                if rows <= 3:
-                    st.markdown("### Matrix Inverse Formula")
-                    if rows == 2:
-                        st.markdown(r"""
-                        For a 2×2 matrix $A = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$:
-                        
-                        $$A^{-1} = \frac{1}{\det(A)} \begin{pmatrix} d & -b \\ -c & a \end{pmatrix} = \frac{1}{ad-bc} \begin{pmatrix} d & -b \\ -c & a \end{pmatrix}$$
-                        """)
-                    else:
-                        st.markdown(r"""
-                        For a general matrix A, the inverse is calculated as:
-                        
-                        $$A^{-1} = \frac{1}{\det(A)} \cdot \text{adj}(A)$$
-                        
-                        Where adj(A) is the adjugate matrix (transpose of the cofactor matrix).
-                        """)
-            
-            with col2:
-                st.markdown("### Visualization")
-                
-                # Create tabs for the matrices
-                tab1, tab2, tab3 = st.tabs(["Original Matrix A", "Inverse Matrix A⁻¹", "Verification: A·A⁻¹"])
-                
-                with tab1:
-                    display_matrix_heatmap(matrix, title="Matrix A")
-                
-                with tab2:
-                    display_matrix_heatmap(inverse, title="Inverse Matrix A⁻¹")
-                
-                with tab3:
-                    display_matrix_heatmap(product, title="A·A⁻¹ ≈ I (Identity Matrix)", 
-                                         center_scale=True)
-                
-                # Add key properties about the inverse
-                st.markdown("### Properties of Matrix Inverse")
-                st.markdown("""
-                - The inverse of a matrix A is the unique matrix A⁻¹ such that A·A⁻¹ = A⁻¹·A = I
-                - Only square matrices with non-zero determinants have inverses
-                - If A is invertible, then the system Ax = b has the unique solution x = A⁻¹b
-                - (AB)⁻¹ = B⁻¹A⁻¹
-                - (A⁻¹)⁻¹ = A
-                """)
-                
-                # Add information about condition number if matrix is not too large
-                if rows <= 10:
-                    cond_num = np.linalg.cond(matrix)
-                    st.markdown("### Numerical Stability")
-                    st.markdown(f"**Condition Number:** {cond_num:.4e}")
-                    
-                    # Interpret the condition number
-                    if cond_num < 10:
-                        stability = "Excellent"
-                        description = "The matrix is well-conditioned. Calculations with this matrix are numerically stable."
-                    elif cond_num < 100:
-                        stability = "Good"
-                        description = "The matrix is reasonably well-conditioned. Numerical calculations should be reliable."
-                    elif cond_num < 1000:
-                        stability = "Fair"
-                        description = "The matrix is somewhat ill-conditioned. Some precision may be lost in calculations."
-                    elif cond_num < 1e6:
-                        stability = "Poor"
-                        description = "The matrix is ill-conditioned. Significant precision may be lost in calculations."
-                    else:
-                        stability = "Very Poor"
-                        description = "The matrix is severely ill-conditioned. Numerical results may be unreliable."
-                    
-                    st.markdown(f"**Stability Assessment:** {stability}")
-                    st.markdown(description)
-            
-            return {"inverse": inverse}
-            
-        except ValueError as e:
-            st.error(f"Input error: {e}")
-        except np.linalg.LinAlgError as e:
-            st.error(f"Linear algebra error: {e}")
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-        return None
-        
-    def matrix_multiply(self, matrix_a_input, matrix_b_input):
-        """Calculate the product of two matrices."""
-        
-        st.subheader("Matrix Multiplication")
-        
-        try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
-            
-            # Parse the matrices
-            matrix_a = self.framework.parse_matrix(matrix_a_input)
-            matrix_b = self.framework.parse_matrix(matrix_b_input)
-            
-            # Check dimensions for compatibility
-            a_rows, a_cols = matrix_a.shape
-            b_rows, b_cols = matrix_b.shape
-            
-            if a_cols != b_rows:
-                st.error(f"Matrix dimensions are incompatible for multiplication. Matrix A ({a_rows}×{a_cols}) and Matrix B ({b_rows}×{b_cols}) cannot be multiplied because the number of columns in A ({a_cols}) must equal the number of rows in B ({b_rows}).")
-                
-                # Show the matrices anyway
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.markdown("### Matrix A")
-                    st.text(str(matrix_a))
-                
-                with col2:
-                    st.markdown("### Matrix B")
-                    st.text(str(matrix_b))
-                
-                return None
-            
-            # Calculate the product
-            product = matrix_a @ matrix_b
-            
-            col1, col2 = st.columns([1, 1])
-            
-            with col1:
-                st.markdown("### Matrix and Result")
-                st.markdown(f"**Matrix A ({a_rows}×{a_cols}):**")
-                st.text(str(matrix_a))
-                
-                st.markdown(f"**Matrix B ({b_rows}×{b_cols}):**")
-                st.text(str(matrix_b))
-                
-                st.markdown(f"**Product A×B ({a_rows}×{b_cols}):**")
-                st.text(str(product))
-                
-                # LaTeX versions
-                matrix_a_latex = self._matrix_to_latex(matrix_a)
-                matrix_b_latex = self._matrix_to_latex(matrix_b)
-                product_latex = self._matrix_to_latex(product)
-                
-                # If matrices are small enough, show full formula in LaTeX
-                if a_rows <= 3 and a_cols <= 3 and b_cols <= 3:
-                    st.markdown("### Calculation in LaTeX")
-                    st.markdown(f"${matrix_a_latex} \\times {matrix_b_latex} = {product_latex}$")
-                
-                # Show step-by-step calculation for small matrices
-                if a_rows <= 3 and a_cols <= 3 and b_cols <= 3:
-                    st.markdown("### Step-by-step Calculation")
-                    for i in range(a_rows):
-                        for j in range(b_cols):
-                            # Calculate one element of the product matrix
-                            element_calc = " + ".join([f"({matrix_a[i,k]:.2f})({matrix_b[k,j]:.2f})" for k in range(a_cols)])
-                            element_result = product[i,j]
-                            st.markdown(f"**Element ({i+1},{j+1}):** {element_calc} = {element_result:.4f}")
-                
-            with col2:
-                st.markdown("### Visualization")
-                
-                # Create tabs for the matrices
-                tab1, tab2, tab3 = st.tabs(["Matrix A", "Matrix B", "Product A×B"])
-                
-                with tab1:
-                    display_matrix_heatmap(matrix_a, title=f"Matrix A ({a_rows}×{a_cols})")
-                
-                with tab2:
-                    display_matrix_heatmap(matrix_b, title=f"Matrix B ({b_rows}×{b_cols})")
-                
-                with tab3:
-                    display_matrix_heatmap(product, title=f"Product A×B ({a_rows}×{b_cols})")
-                
-                # Add information about matrix multiplication
-                st.markdown("### Properties of Matrix Multiplication")
-                st.markdown("""
-                - Matrix multiplication is **not commutative**: Generally, A×B ≠ B×A
-                - It is **associative**: (A×B)×C = A×(B×C)
-                - It is **distributive** over addition: A×(B+C) = (A×B) + (A×C)
-                - For identity matrix I, A×I = I×A = A
-                - If A and B are invertible, then (A×B)⁻¹ = B⁻¹×A⁻¹
-                """)
-                
-                # Add explanation of dimensions
-                st.markdown("### Matrix Dimensions")
-                st.markdown(f"""
-                - Matrix A: {a_rows}×{a_cols} (rows × columns)
-                - Matrix B: {b_rows}×{b_cols} (rows × columns)
-                - Product A×B: {a_rows}×{b_cols} (rows × columns)
-                
-                The number of columns in A ({a_cols}) must equal the number of rows in B ({b_rows})
-                for the product to be defined.
-                """)
-            
-            return {"product": product}
-            
-        except ValueError as e:
-            st.error(f"Input error: {e}")
         except Exception as e:
             st.error(f"An error occurred: {e}")
         return None

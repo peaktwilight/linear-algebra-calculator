@@ -380,7 +380,7 @@ def main():
             
             if st.button("Calculate Product"):
                 if matrix_a:
-                    calculator.matrix_operations("multiply_scalar", matrix_a, scalar=str(scalar))
+                    calculator.matrix_operations("multiply_scalar", matrix_a, None, str(scalar))
                 else:
                     st.error("Please enter a matrix.")
         
@@ -528,55 +528,114 @@ def main():
     elif category == "Systems of Linear Equations":
         operation = st.sidebar.selectbox(
             "Select Operation",
-            ["Solve System (Gaussian Elimination)"]
+            ["Solve System (Gaussian Elimination)", "Standard Form Analysis", "Row Operations Analysis", 
+             "Free Parameter Analysis", "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation"]
         )
         
         st.subheader(operation)
         
+        # Common input for all operations
+        matrix_input = st.text_area(
+            "Enter Augmented Matrix [A|b] (format: a,b,c,d; e,f,g,h or separate rows with newlines):",
+            value="1, -4, -2, -25\n0, -3, 6, -18\n7, -13, -4, -85"
+        )
+        
+        # Add helpful explanation
+        with st.expander("Help: Format Explanation"):
+            st.write("""
+            For a system of linear equations:
+            ```
+            a₁x + b₁y + c₁z = d₁
+            a₂x + b₂y + c₂z = d₂
+            a₃x + b₃y + c₃z = d₃
+            ```
+            
+            The augmented matrix would be:
+            ```
+            a₁, b₁, c₁, d₁
+            a₂, b₂, c₂, d₂
+            a₃, b₃, c₃, d₃
+            ```
+            
+            Example: For the system
+            ```
+            x - 4y - 2z = -25
+            -3y + 6z = -18
+            7x - 13y - 4z = -85
+            ```
+            
+            Enter:
+            ```
+            1, -4, -2, -25
+            0, -3, 6, -18
+            7, -13, -4, -85
+            ```
+            """)
+        
         if operation == "Solve System (Gaussian Elimination)":
             st.write("This operation solves a system of linear equations using Gaussian elimination.")
-            st.write("Enter the augmented matrix [A|b] where each row represents one equation.")
-            
-            matrix_input = st.text_area(
-                "Enter Augmented Matrix [A|b] (format: a,b,c,d; e,f,g,h or separate rows with newlines):",
-                value="1, -4, -2, -25\n0, -3, 6, -18\n7, -13, -4, -85"
-            )
-            
-            # Add helpful explanation
-            with st.expander("Help: Format Explanation"):
-                st.write("""
-                For a system of linear equations:
-                ```
-                a₁x + b₁y + c₁z = d₁
-                a₂x + b₂y + c₂z = d₂
-                a₃x + b₃y + c₃z = d₃
-                ```
-                
-                The augmented matrix would be:
-                ```
-                a₁, b₁, c₁, d₁
-                a₂, b₂, c₂, d₂
-                a₃, b₃, c₃, d₃
-                ```
-                
-                Example: For the system
-                ```
-                x - 4y - 2z = -25
-                -3y + 6z = -18
-                7x - 13y - 4z = -85
-                ```
-                
-                Enter:
-                ```
-                1, -4, -2, -25
-                0, -3, 6, -18
-                7, -13, -4, -85
-                ```
-                """)
             
             if st.button("Solve System"):
                 if matrix_input:
                     calculator.solve_gauss(matrix_input)
+                else:
+                    st.error("Please enter the augmented matrix.")
+                    
+        elif operation == "Standard Form Analysis":
+            st.write("This operation analyzes a system and presents it in the standard form (Ax = b).")
+            
+            # Option to enter system as equations instead of matrix
+            use_equations = st.checkbox("Enter as equations instead of matrix")
+            equations_input = None
+            
+            if use_equations:
+                equations_input = st.text_area(
+                    "Enter system of equations (one per line, format: 2x1 - 3x2 + 5x3 = 7):",
+                    value="x1 - 4x2 - 2x3 = -25\n-3x2 + 6x3 = -18\n7x1 - 13x2 - 4x3 = -85"
+                )
+                
+                # When using equations, matrix input is ignored
+                matrix_input = None
+            
+            if st.button("Analyze Standard Form"):
+                if matrix_input or equations_input:
+                    calculator.standard_form(matrix_input, equations_input)
+                else:
+                    st.error("Please enter either the augmented matrix or equations.")
+                    
+        elif operation == "Row Operations Analysis":
+            st.write("This operation shows step-by-step row operations to solve the system.")
+            
+            if st.button("Analyze Row Operations"):
+                if matrix_input:
+                    calculator.row_operations_analysis(matrix_input)
+                else:
+                    st.error("Please enter the augmented matrix.")
+                    
+        elif operation == "Free Parameter Analysis":
+            st.write("This operation identifies free parameters and expresses the solution in parametric form.")
+            
+            if st.button("Analyze Free Parameters"):
+                if matrix_input:
+                    calculator.free_parameter_analysis(matrix_input)
+                else:
+                    st.error("Please enter the augmented matrix.")
+                    
+        elif operation == "Homogeneous/Inhomogeneous Solutions":
+            st.write("This operation compares the solutions of Ax = b and Ax = 0 for the same coefficient matrix.")
+            
+            if st.button("Analyze Solution Relationship"):
+                if matrix_input:
+                    calculator.homogeneous_inhomogeneous_solutions(matrix_input)
+                else:
+                    st.error("Please enter the augmented matrix.")
+                    
+        elif operation == "Geometric Interpretation":
+            st.write("This operation visualizes the geometric meaning of the system as intersecting lines/planes.")
+            
+            if st.button("Show Geometric Interpretation"):
+                if matrix_input:
+                    calculator.geometric_interpretation(matrix_input)
                 else:
                     st.error("Please enter the augmented matrix.")
     

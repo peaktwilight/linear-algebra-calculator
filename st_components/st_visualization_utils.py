@@ -117,20 +117,43 @@ def display_vector_visualization(vectors, names=None, origin=None, construction_
             vector_df = pd.DataFrame(vectors, index=names if names else [f"Vector {i+1}" for i in range(len(vectors))])
             st.table(vector_df)
 
-def display_matrix_heatmap(matrix, title="Matrix Visualization"):
-    """Create a heatmap visualization for matrices."""
+def display_matrix_heatmap(matrix, title="Matrix Visualization", center_scale=False, color_scale='Viridis'):
+    """
+    Create a heatmap visualization for matrices.
+    
+    Parameters:
+    -----------
+    matrix : array-like
+        The matrix to visualize
+    title : str
+        The title for the visualization
+    center_scale : bool
+        Whether to center the color scale at zero. Useful for matrices with both positive and negative values.
+    color_scale : str
+        The colorscale to use. Options include 'Viridis', 'RdBu', 'Greys', etc.
+    """
     matrix = np.array(matrix)
     
+    # Set up color scale options
+    imshow_args = {
+        'labels': dict(x="Column", y="Row", color="Value"),
+        'x': [f"Col {i+1}" for i in range(matrix.shape[1])],
+        'y': [f"Row {i+1}" for i in range(matrix.shape[0])],
+        'text_auto': True,
+        'color_continuous_scale': color_scale,
+        'title': title
+    }
+    
+    # Center the color scale at zero if requested
+    if center_scale:
+        max_abs = np.max(np.abs(matrix))
+        imshow_args['zmin'] = -max_abs
+        imshow_args['zmax'] = max_abs
+        if color_scale == 'Viridis':  # Use a diverging color scale for centered data
+            imshow_args['color_continuous_scale'] = 'RdBu_r'
+    
     # Create a heatmap using plotly
-    fig = px.imshow(
-        matrix,
-        labels=dict(x="Column", y="Row", color="Value"),
-        x=[f"Col {i+1}" for i in range(matrix.shape[1])],
-        y=[f"Row {i+1}" for i in range(matrix.shape[0])],
-        text_auto=True,
-        color_continuous_scale='Viridis',
-        title=title
-    )
+    fig = px.imshow(matrix, **imshow_args)
     
     # Update layout for dark theme compatibility
     fig.update_layout(
