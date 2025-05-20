@@ -113,13 +113,46 @@ def apply_styling():
     try:
         with open('.streamlit/custom.css', 'r') as f:
             custom_css = f.read()
-            # Add scripts to ensure animations work correctly
+                    # Add scripts to ensure animations work correctly
             enhanced_css = custom_css + """
             <script>
             // Script to ensure animations have fully loaded
             document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(function() {
                     document.body.classList.add('animations-ready');
+                    
+                    // Enhance title shimmer effect
+                    const enhanceTitleShimmer = function() {
+                        const title = document.querySelector('.animate-title');
+                        if (title) {
+                            // Apply sleek shimmer effect
+                            const style = document.createElement('style');
+                            style.textContent = `
+                                @keyframes shimmerOverlayJs {
+                                    0% { left: -200%; }
+                                    100% { left: 100%; }
+                                }
+                                
+                                .animate-title::after {
+                                    content: '';
+                                    position: absolute;
+                                    top: 0;
+                                    left: -200%;
+                                    width: 200%;
+                                    height: 100%;
+                                    background: linear-gradient(
+                                        90deg,
+                                        transparent 0%,
+                                        rgba(255, 255, 255, 0.6) 50%,
+                                        transparent 100%
+                                    );
+                                    animation: shimmerOverlayJs 1.5s 0.9s ease-out forwards;
+                                    pointer-events: none;
+                                }
+                            `;
+                            document.head.appendChild(style);
+                        }
+                    };
                     
                     // Make sure alerts are visible
                     const fixAlerts = function() {
@@ -131,6 +164,7 @@ def apply_styling():
                     };
                     
                     // Run initially
+                    enhanceTitleShimmer();
                     fixAlerts();
                     
                     // Keep checking for new alerts
@@ -152,8 +186,12 @@ def main():
     # Apply minimal styling approach 
     apply_styling()
     
-    # Animated header with enhanced styling
-    st.markdown('<h1 class="animate-title">Linear Algebra Calculator</h1>', unsafe_allow_html=True)
+    # Animated header with text shimmer effect
+    st.markdown('''
+    <div class="title-container" style="position: relative; overflow: hidden; margin-bottom: 20px;">
+        <h1 class="animate-title">Linear Algebra Calculator</h1>
+    </div>
+    ''', unsafe_allow_html=True)
     
     # Example of animated tooltip usage
     st.markdown('''

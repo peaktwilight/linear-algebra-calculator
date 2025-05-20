@@ -51,15 +51,47 @@
 }
 
 /* Animation for title and headers */
+@keyframes shimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 .animate-title {
-  animation: slideInUp 0.8s ease-out forwards;
-  color: #ffffff;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  text-align: center;
   position: relative;
+  animation: slideInUp 0.8s ease-out forwards;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 1.8rem;
+  text-align: center;
   opacity: 0;
+  overflow: hidden;
+}
+
+/* Shimmer overlay that passes over the text */
+.animate-title::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -200%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  animation: shimmerOverlay 1.5s 0.9s ease-out forwards;
+}
+
+@keyframes shimmerOverlay {
+  to { left: 100%; }
 }
 
 /* Removed underline effect */
