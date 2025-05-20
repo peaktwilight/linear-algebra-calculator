@@ -6,322 +6,410 @@ Streamlit Component for Vector Operations Mixin
 
 import streamlit as st
 import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
+import pandas as pd # Keep for potential future use with vector display
+import plotly.express as px # Keep for potential future use
+import plotly.graph_objects as go # Keep for potential future use
 from .st_visualization_utils import display_vector_visualization
 from .st_utils import StreamOutput
 
 class VectorOperationsMixin:
+    """
+    Mixin class that provides vector operation methods for the Streamlit interface.
+    This class contains methods that display and process vector operations with visualization.
+    """
     def normalize_vector(self, vector_input):
-        """Normalize a vector to unit length."""
-        # Create an Args object with the necessary attributes
-        class Args:
-            def __init__(self, vector):
-                self.vector = vector
-        
-        args = Args(vector_input)
-        
-        # Capture print output from the CLI function
+        """Normalize a vector to have unit length."""
+        # Capture print output from CLI function
         with StreamOutput() as output:
+            # Define Args for CLI compatibility
+            class Args:
+                def __init__(self, vector):
+                    self.vector = vector
+            
+            args = Args(vector_input)
             result = self.framework.normalize_vector(args)
         
-        # Display the result and steps
-        st.subheader("Result")
+        # Print the output from CLI to for debugging
+        # st.text(output.get_output())
         
-        # Parse the vector from the input
+        # Display the results
+        st.subheader("Vector Normalization")
+        
+        # Parse original vector for display/visualization
         vector = self.framework.parse_vector(vector_input)
         
-        # Calculate vector length
-        length = np.linalg.norm(vector)
-        
-        # Create a formatted display of the calculations
         col1, col2 = st.columns([1, 1])
         
         with col1:
             st.markdown("### Step-by-step Calculation")
             
-            # Create a more structured output
-            st.markdown("**Original vector:**")
-            st.markdown(f"$v = {vector.tolist()}$")
+            # Display the original vector
+            st.markdown("**Original Vector:**")
+            st.markdown(f"$\\vec{{v}} = {vector.tolist()}$")
             
-            st.markdown("**Length calculation:**")
-            length_formula = " + ".join([f"({v})^2" for v in vector])
-            st.markdown(f"$|v| = \\sqrt{{{length_formula}}} = {length:.4f}$")
+            # Calculate and display magnitude
+            magnitude = np.linalg.norm(vector)
+            st.markdown(f"**Magnitude (Length):**")
+            st.markdown(f"$|\\vec{{v}}| = \\sqrt{{{'+'.join([f'{x}^2' for x in vector.tolist()])}}} = {magnitude:.4f}$")
             
-            st.markdown("**Normalized vector:**")
-            st.markdown(f"$\\hat{{v}} = \\frac{{v}}{{|v|}} = \\frac{{{vector.tolist()}}}{{{length:.4f}}} = {result.tolist()}$")
-            
-            st.markdown("**Verification:**")
-            normalized_length = np.linalg.norm(result)
-            st.markdown(f"$|\\hat{{v}}| = {normalized_length:.4f} \\approx 1.0$ ✓")
+            # Calculate and display normalized vector
+            if magnitude > 0:
+                normalized = vector / magnitude
+                st.markdown(f"**Normalized Vector:**")
+                st.markdown(f"$\\hat{{v}} = \\frac{{\\vec{{v}}}}{{|\\vec{{v}}|}} = \\frac{{{vector.tolist()}}}{{{magnitude:.4f}}} = {normalized.tolist()}$")
+                
+                # Verify unit length
+                new_magnitude = np.linalg.norm(normalized)
+                st.markdown(f"**Verification (magnitude of normalized vector):**")
+                st.markdown(f"$|\\hat{{v}}| = {new_magnitude:.4f} \\approx 1.0$")
+            else:
+                st.warning("Cannot normalize the zero vector (magnitude = 0)")
+                normalized = vector
         
         with col2:
-            # Display a visualization of the original and normalized vectors
             st.markdown("### Visualization")
-            display_vector_visualization([vector, result], names=["Original Vector", "Normalized Vector"])
+            
+            # Use display_vector_visualization function to show both original and normalized vectors
+            if len(vector) <= 3:  # Only visualize for 2D and 3D vectors
+                display_vector_visualization(
+                    [vector, normalized] if magnitude > 0 else [vector],
+                    names=["Original Vector", "Normalized Vector"] if magnitude > 0 else ["Zero Vector"]
+                )
+            else:
+                st.markdown(f"**Original Vector:** {vector.tolist()}")
+                if magnitude > 0:
+                    st.markdown(f"**Normalized Vector:** {normalized.tolist()}")
+                else:
+                    st.warning("Cannot normalize the zero vector (magnitude = 0)")
         
         return result
-    
-    def vector_shadow(self, vector_a, vector_b):
-        """Calculate the shadow (projection) of one vector onto another."""
-        # Create an Args object with the necessary attributes
-        class Args:
-            def __init__(self, vector_a, vector_b):
-                self.vector_a = vector_a
-                self.vector_b = vector_b
         
-        args = Args(vector_a, vector_b) # Reverted: framework should now calculate proj of b onto a
+    def vector_shadow(self, vector_a_input, vector_b_input):
+        """Calculate the shadow (projection) of vector b onto vector a."""
+        # Capture print output from the CLI function
+        with StreamOutput() as output:
+            # Define Args for CLI compatibility
+            class Args:
+                def __init__(self, vector_a, vector_b):
+                    self.vector_a = vector_a
+                    self.vector_b = vector_b
+            
+            args = Args(vector_a_input, vector_b_input)
+            result = self.framework.vector_shadow(args)
         
-        # Get the result from the framework
-        result = self.framework.vector_shadow(args)
+        cli_output = output.get_output()
         
-        # Display the result and steps
-        st.subheader("Result")
+        # Display the results
+        st.subheader("Vector Projection (Shadow)")
         
-        # Parse the vectors from input
-        a = self.framework.parse_vector(vector_a)
-        b = self.framework.parse_vector(vector_b)
-        vector_proj = result["vector_proj"]
-        scalar_proj = result["scalar_proj"]
+        # Parse vectors for display/visualization
+        vector_a = self.framework.parse_vector(vector_a_input)
+        vector_b = self.framework.parse_vector(vector_b_input)
         
-        # Calculate dot products and normalization for the formulas
-        dot_product = np.dot(a, b)
-        norm_a_squared = np.dot(a, a)
-        norm_a = np.linalg.norm(a)
-        
-        # Create a formatted display of the calculations
         col1, col2 = st.columns([1, 1])
         
         with col1:
             st.markdown("### Step-by-step Calculation")
             
-            # Create a more structured output
-            st.markdown("**Input vectors:**")
-            st.markdown(f"$\\vec{{a}} = {a.tolist()}$") 
-            st.markdown(f"$\\vec{{b}} = {b.tolist()}$")
+            # Display the original vectors
+            st.markdown("**Original Vectors:**")
+            st.markdown(f"$\\vec{{a}} = {vector_a.tolist()}$")
+            st.markdown(f"$\\vec{{b}} = {vector_b.tolist()}$")
             
-            st.markdown("**Dot product calculation:**")
-            dot_formula = " + ".join([f"({a[i]} \\cdot {b[i]})" for i in range(len(a))])
-            st.markdown(f"$\\vec{{a}} \\cdot \\vec{{b}} = {dot_formula} = {dot_product:.4f}$")
+            # Calculate dot product
+            dot_product = np.dot(vector_a, vector_b)
             
-            st.markdown("**Magnitude calculations:**")
-            st.markdown(f"$|\\vec{{a}}|^2 = {' + '.join([f'({v})^2' for v in a])} = {norm_a_squared:.4f}$")
-            st.markdown(f"$\\|\\vec{{a}}\\| = \\sqrt{{{norm_a_squared:.4f}}} = {norm_a:.4f}$") # Changed to ||a||
+            # Calculate magnitudes
+            magnitude_a = np.linalg.norm(vector_a)
             
-            st.markdown("**Scalar projection calculation:**")
-            st.markdown(f"$\\text{{proj}}_{{\\text{{scalar}}}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{\\|\\vec{{a}}\\|}} = \\frac{{{dot_product:.4f}}}{{{norm_a:.4f}}} = {scalar_proj:.4f}$") # Changed to ||a|| in denominator
+            # Calculate scalar projection
+            scalar_proj = dot_product / magnitude_a
             
-            st.markdown("**Vector projection calculation:**")
-            # Format list elements for direct LaTeX rendering
-            latex_formatted_a_list = f"[{', '.join(f'{x:.4g}' for x in a.tolist())}]"
-            latex_formatted_vector_proj_list = f"[{', '.join(f'{x:.4g}' for x in vector_proj.tolist())}]"
-            # Use st.latex() for robust rendering. Changed label from \text{vector_proj} to \mathbf{P}_{	ext{proj}}
-            vector_proj_latex_str = f"\\mathbf{{P}}_{{\\text{{proj}}}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{\\vec{{a}} \\cdot \\vec{{a}}}} \\vec{{a}} = \\frac{{{dot_product:.4f}}}{{{norm_a_squared:.4f}}} \\cdot {latex_formatted_a_list} = {latex_formatted_vector_proj_list}"
-            st.latex(vector_proj_latex_str)
+            st.markdown("**Scalar Projection (Length of Shadow):**")
+            st.markdown(f"$\\text{{proj}}_{{\\vec{{a}}}}\\vec{{b}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{|\\vec{{a}}|}} = \\frac{{{dot_product}}}{{{magnitude_a:.4f}}} = {scalar_proj:.4f}$")
             
-            # Add explanation of what the projection means
-            st.markdown("**Interpretation:**")
-            st.markdown( # Corrected multi-line string
-            """
-            The projection of vector b onto vector a represents how much of vector b points in the direction of a.
-            - **Scalar projection**: Length of the shadow of vector b when cast onto the line along vector a
-            - **Vector projection**: The resulting vector along the direction of a
-            """)
+            # Calculate vector projection
+            if magnitude_a > 0:
+                vector_proj = (scalar_proj / magnitude_a) * vector_a
+                st.markdown("**Vector Projection (Shadow Vector):**")
+                st.markdown(f"$\\text{{proj}}_{{\\vec{{a}}}}\\vec{{b}} = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{|\\vec{{a}}|^2}} \\vec{{a}} = {vector_proj.tolist()}$")
+                
+                # Determine angle type
+                if dot_product > 0:
+                    st.markdown("**Angle between vectors is acute (0° < φ < 90°)**")
+                elif dot_product < 0:
+                    st.markdown("**Angle between vectors is obtuse (90° < φ < 180°)**")
+                else:
+                    st.markdown("**Vectors are perpendicular (φ = 90°)**")
+            else:
+                st.warning("Cannot project onto zero vector (|a| = 0)")
+                vector_proj = np.zeros_like(vector_a)
         
         with col2:
             st.markdown("### Visualization")
             
-            # Define the construction line for the shadow
-            # It goes from the tip of b to the tip of vector_proj
-            # The points are b (tip of vector b) and vector_proj (tip of projection vector, which is itself a vector from origin)
-            # So the line segment is from point b to point vector_proj.
-            shadow_line_style = dict(dash='dash', color='rgba(220, 220, 220, 0.6)', width=2) # Lighter color for dash
-            construction_lines = [
-                (b, vector_proj, "Projection Line", shadow_line_style)
-            ]
-            
-            display_vector_visualization(
-                [a, b, vector_proj], 
-                names=["Vector a", "Vector b", "Projection of b onto a"],
-                construction_lines=construction_lines
-            )
-            
-            # Add projection magnitude display
-            projection_box = f"""
-            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
-                <p style="font-size: 16px; text-align: center;">
-                    <strong>Scalar Projection:</strong> {scalar_proj:.4f}<br>
-                    <strong>Vector Projection:</strong> {vector_proj.tolist()}
-                </p>
-            </div>
-            """
-            st.markdown(projection_box, unsafe_allow_html=True)
+            # Use display_vector_visualization function to show both original and projection
+            if len(vector_a) <= 3 and len(vector_b) <= 3:  # Only visualize for 2D and 3D vectors
+                # Define construction lines for showing perpendicular component and projection line
+                construction_lines = []
+                
+                # Add line from tip of projection to tip of b (perpendicular component)
+                if magnitude_a > 0:
+                    perp_component = vector_b - vector_proj
+                    tip_of_proj = vector_proj
+                    tip_of_b = vector_b
+                    construction_lines.append((tip_of_proj, tip_of_b, "Perpendicular Component", {"color": "red", "dash": "dash"}))
+                
+                # Display the vectors and construction
+                display_vector_visualization(
+                    [vector_a, vector_b, vector_proj] if magnitude_a > 0 else [vector_a, vector_b],
+                    names=["Vector a", "Vector b", "Projection of b onto a"] if magnitude_a > 0 else ["Vector a", "Vector b"],
+                    construction_lines=construction_lines
+                )
+            else:
+                st.info(f"Direct visualization is only available for 2D and 3D vectors. Your vectors are {len(vector_a)}D and {len(vector_b)}D.")
+                st.markdown(f"**Vector a:** {vector_a.tolist()}")
+                st.markdown(f"**Vector b:** {vector_b.tolist()}")
+                if magnitude_a > 0:
+                    st.markdown(f"**Projection of b onto a:** {vector_proj.tolist()}")
         
         return result
-    
-    def vector_angle(self, vector_a, vector_b):
+        
+    def vector_angle(self, vector_a_input, vector_b_input):
         """Calculate the angle between two vectors."""
-        # Create an Args object with the necessary attributes
-        class Args:
-            def __init__(self, vector_a, vector_b):
-                self.vector_a = vector_a
-                self.vector_b = vector_b
+        # Capture print output from the CLI function
+        with StreamOutput() as output:
+            # Define Args for CLI compatibility
+            class Args:
+                def __init__(self, vector_a, vector_b):
+                    self.vector_a = vector_a
+                    self.vector_b = vector_b
+            
+            args = Args(vector_a_input, vector_b_input)
+            result = self.framework.vector_angle(args)
         
-        args = Args(vector_a, vector_b)
+        # Get CLI output
+        cli_output = output.get_output()
         
-        # Get the result from the framework
-        result = self.framework.vector_angle(args)
+        # Extract angle values from the result
+        angle_rad = result.get("angle_rad", 0)
+        angle_deg = result.get("angle_deg", 0)
         
-        # Display the result and steps
-        st.subheader("Result")
+        # Display the results
+        st.subheader("Angle Between Vectors")
         
-        # Parse the vectors from input
-        a = self.framework.parse_vector(vector_a)
-        b = self.framework.parse_vector(vector_b)
+        # Parse vectors for display and visualization
+        vector_a = self.framework.parse_vector(vector_a_input)
+        vector_b = self.framework.parse_vector(vector_b_input)
         
-        # Calculate values for displaying in the formula
-        dot_product = np.dot(a, b)
-        norm_a = np.linalg.norm(a)
-        norm_b = np.linalg.norm(b)
-        cos_angle = dot_product / (norm_a * norm_b)
-        angle_rad = result["radians"]
-        angle_deg = result["degrees"]
-        
-        # Create a formatted display of the calculations
         col1, col2 = st.columns([1, 1])
         
         with col1:
             st.markdown("### Step-by-step Calculation")
             
-            # Create a more structured output
-            st.markdown("**Input vectors:**")
-            st.markdown(f"$\\vec{{a}} = {a.tolist()}$")
-            st.markdown(f"$\\vec{{b}} = {b.tolist()}$")
+            # Display the original vectors
+            st.markdown("**Original Vectors:**")
+            st.markdown(f"$\\vec{{a}} = {vector_a.tolist()}$")
+            st.markdown(f"$\\vec{{b}} = {vector_b.tolist()}$")
             
-            st.markdown("**Dot product calculation:**")
-            dot_formula = " + ".join([f"({a[i]} \\cdot {b[i]})" for i in range(len(a))])
-            st.markdown(f"$\\vec{{a}} \\cdot \\vec{{b}} = {dot_formula} = {dot_product:.4f}$")
+            # Calculate magnitudes
+            mag_a = np.linalg.norm(vector_a)
+            mag_b = np.linalg.norm(vector_b)
             
-            st.markdown("**Vector magnitudes:**")
-            st.markdown(f"$|\\vec{{a}}| = \\sqrt{{{' + '.join([f'({v})^2' for v in a])}}} = {norm_a:.4f}$")
-            st.markdown(f"$|\\vec{{b}}| = \\sqrt{{{' + '.join([f'({v})^2' for v in b])}}} = {norm_b:.4f}$")
+            # Calculate dot product
+            dot_product = np.dot(vector_a, vector_b)
             
-            st.markdown("**Angle calculation:**")
-            st.markdown(f"$\\cos(\\theta) = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{|\\vec{{a}}| \\cdot |\\vec{{b}}|}} = \\frac{{{dot_product:.4f}}}{{{norm_a:.4f} \\cdot {norm_b:.4f}}} = {cos_angle:.4f}$")
-            
-            st.markdown("**Final angle:**")
-            st.markdown(f"$\\theta = \\arccos({cos_angle:.4f}) = {angle_rad:.4f}$ radians")
-            st.markdown(f"$\\theta = {angle_rad:.4f} \\cdot \\frac{{180^\\circ}}{{\\pi}} = {angle_deg:.4f}^\\circ$")
+            # Formula and explanation
+            st.markdown("**Angle Calculation:**")
+            if mag_a > 0 and mag_b > 0:  # Avoid division by zero
+                # Formula: cos(θ) = (a·b)/(|a|·|b|)
+                cosine = dot_product / (mag_a * mag_b)
+                # Handle potential numerical issues
+                if cosine > 1.0: cosine = 1.0
+                if cosine < -1.0: cosine = -1.0
+                
+                # Display the calculation steps
+                st.markdown(f"$\\cos(\\theta) = \\frac{{\\vec{{a}} \\cdot \\vec{{b}}}}{{|\\vec{{a}}| \\cdot |\\vec{{b}}|}} = \\frac{{{dot_product}}}{{{mag_a:.4f} \\cdot {mag_b:.4f}}} = \\frac{{{dot_product}}}{{{mag_a * mag_b:.4f}}} = {cosine:.4f}$")
+                
+                # Calculate angle
+                angle = np.arccos(cosine)
+                st.markdown(f"$\\theta = \\arccos({cosine:.4f}) = {angle:.4f}$ radians = ${angle * 180/np.pi:.4f}°$")
+                
+                # Classify the angle
+                if np.isclose(angle, 0, atol=1e-10):
+                    st.markdown("**The vectors are parallel (pointing in the same direction)**")
+                elif np.isclose(angle, np.pi, atol=1e-10):
+                    st.markdown("**The vectors are antiparallel (pointing in opposite directions)**")
+                elif np.isclose(angle, np.pi/2, atol=1e-10):
+                    st.markdown("**The vectors are perpendicular (orthogonal)**")
+                elif angle < np.pi/2:
+                    st.markdown("**The vectors form an acute angle (less than 90°)**")
+                else:
+                    st.markdown("**The vectors form an obtuse angle (greater than 90°)**")
+            else:
+                st.warning("Cannot calculate angle involving zero vector(s)")
         
         with col2:
             st.markdown("### Visualization")
-            display_vector_visualization([a, b], names=["Vector a", "Vector b"])
-        
-            # Add mathematical representation of the angle
-            angle_box = f"""
-            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
-                <p style="font-size: 18px; text-align: center;">
-                    Angle between vectors: {angle_deg:.2f}° ({angle_rad:.4f} radians)
-                </p>
-            </div>
-            """
-            st.markdown(angle_box, unsafe_allow_html=True)
+            
+            # Use visualization function to display vectors 
+            if len(vector_a) <= 3 and len(vector_b) <= 3:  # Only visualize 2D and 3D vectors
+                display_vector_visualization(
+                    [vector_a, vector_b],
+                    names=["Vector a", "Vector b"]
+                )
+                
+                # Show the angle
+                if mag_a > 0 and mag_b > 0:
+                    # Create a mock gauge chart for angle visualization
+                    fig = go.Figure(go.Indicator(
+                        mode = "gauge+number",
+                        value = angle_deg,
+                        title = {'text': "Angle (degrees)"},
+                        gauge = {
+                            'axis': {'range': [0, 180], 'tickwidth': 1},
+                            'bar': {'color': "darkblue"},
+                            'steps': [
+                                {'range': [0, 90], 'color': "lightgreen"},
+                                {'range': [90, 180], 'color': "lightyellow"}
+                            ],
+                            'threshold': {
+                                'line': {'color': "red", 'width': 4},
+                                'thickness': 0.75,
+                                'value': angle_deg
+                            }
+                        }
+                    ))
+                    
+                    fig.update_layout(
+                        height=300,
+                        margin=dict(l=30, r=30, t=30, b=0),
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        font=dict(color="white")
+                    )
+                    
+                    st.plotly_chart(fig)
+            else:
+                st.info(f"Direct visualization is only available for 2D and 3D vectors. Your vectors are {len(vector_a)}D and {len(vector_b)}D.")
         
         return result
-        
+
     def cross_product(self, args):
         """Calculate the cross product of two vectors."""
         # Capture print output from the CLI function
         with StreamOutput() as output:
             result = self.framework.cross_product(args)
         
-        # Display the result and steps
-        st.subheader("Result")
+        # Extract values from the result
+        cross_prod = result.get("cross_product", np.array([0, 0, 0]))
         
-        # Parse vectors from args (assuming args.vector_a and args.vector_b are string inputs)
-        a = self.framework.parse_vector(args.vector_a)
-        b = self.framework.parse_vector(args.vector_b)
+        # Display the results
+        st.subheader("Cross Product")
         
-        # The result from framework.cross_product is a numpy array
-        # Create a dictionary with the cross product and its magnitude (for area calculations)
-        cross = result  # The actual cross product
-        area = np.linalg.norm(cross) / 2  # Half the magnitude is the triangle area
+        # Parse vectors for display/visualization
+        vector_a = self.framework.parse_vector(args.vector_a)
+        vector_b = self.framework.parse_vector(args.vector_b)
         
-        # Validate vector dimensions
-        if len(a) != 3 or len(b) != 3:
-            st.error("Cross product is defined for 3D vectors only.")
-            return result
-        
-        # Create a formatted display of the calculations
         col1, col2 = st.columns([1, 1])
         
         with col1:
             st.markdown("### Step-by-step Calculation")
             
-            st.markdown("**Input vectors:**")
-            st.markdown(f"$\\vec{{a}} = {a.tolist()}$")
-            st.markdown(f"$\\vec{{b}} = {b.tolist()}$")
+            # Display the original vectors
+            st.markdown("**Original Vectors:**")
+            st.markdown(f"$\\vec{{a}} = {vector_a.tolist()}$")
+            st.markdown(f"$\\vec{{b}} = {vector_b.tolist()}$")
             
-            st.markdown("**Cross product formula (determinant method):**")
-            st.latex(r"""
-            \vec{a} \times \vec{b} = 
-            \begin{vmatrix}
-            \mathbf{i} & \mathbf{j} & \mathbf{k} \\
-            a_1 & a_2 & a_3 \\
-            b_1 & b_2 & b_3 
-            \end{vmatrix}
-            = (a_2 b_3 - a_3 b_2)\mathbf{i} - (a_1 b_3 - a_3 b_1)\mathbf{j} + (a_1 b_2 - a_2 b_1)\mathbf{k}
-            """)
-            
-            st.markdown("**Calculation:**")
-            st.markdown(f"$x = ({a[1]} \\cdot {b[2]}) - ({a[2]} \\cdot {b[1]}) = {cross[0]}$")
-            st.markdown(f"$y = - (({a[0]} \\cdot {b[2]}) - ({a[2]} \\cdot {b[0]})) = {cross[1]}$")
-            st.markdown(f"$z = ({a[0]} \\cdot {b[1]}) - ({a[1]} \\cdot {b[0]}) = {cross[2]}$")
-            
-            st.markdown("**Resulting vector:**")
-            st.markdown(f"$\\vec{{a}} \\times \\vec{{b}} = {cross.tolist()}$")
-            
-            st.markdown("**Area of parallelogram:**")
-            st.markdown(f"Area = $|\\vec{{a}} \\times \\vec{{b}}| = {area:.4f}$")
+            # Handle 2D and 3D cases
+            if len(vector_a) == 2 and len(vector_b) == 2:
+                # For 2D, compute the 3D cross product with z=0
+                a_3d = np.append(vector_a, 0)
+                b_3d = np.append(vector_b, 0)
+                cross_prod_3d = np.cross(a_3d, b_3d)
+                
+                # Show formula for 2D vectors
+                st.markdown("**Converting 2D vectors to 3D (z=0) for cross product:**")
+                st.markdown(f"$\\vec{{a}}_{{3D}} = [{vector_a[0]}, {vector_a[1]}, 0]$")
+                st.markdown(f"$\\vec{{b}}_{{3D}} = [{vector_b[0]}, {vector_b[1]}, 0]$")
+                
+                st.markdown("**Cross Product Calculation:**")
+                det_val = vector_a[0]*vector_b[1] - vector_a[1]*vector_b[0]
+                st.markdown(f"$\\vec{{a}} \\times \\vec{{b}} = \\begin{{vmatrix}} \\vec{{i}} & \\vec{{j}} & \\vec{{k}} \\\\ {vector_a[0]} & {vector_a[1]} & 0 \\\\ {vector_b[0]} & {vector_b[1]} & 0 \\end{{vmatrix}} = [0, 0, {det_val}]$")
+                
+                st.markdown("**For 2D vectors, the cross product points along the z-axis:**")
+                st.markdown(f"$\\vec{{a}} \\times \\vec{{b}} = [0, 0, {det_val}]$")
+                
+                # Compute magnitude (area of parallelogram)
+                area = abs(det_val)
+                st.markdown(f"**Magnitude |a×b| = {area:.4f}** (Area of parallelogram formed by a and b)")
+                st.markdown(f"**Area of triangle = |a×b|/2 = {area/2:.4f}**")
+                
+            elif len(vector_a) == 3 and len(vector_b) == 3:
+                # Compute the cross product for 3D vectors using the determinant formula
+                st.markdown("**Cross Product Calculation:**")
+                
+                # Compute determinants for each component
+                det_i = vector_a[1]*vector_b[2] - vector_a[2]*vector_b[1]
+                det_j = vector_a[2]*vector_b[0] - vector_a[0]*vector_b[2]
+                det_k = vector_a[0]*vector_b[1] - vector_a[1]*vector_b[0]
+                
+                st.markdown("$\\vec{a} \\times \\vec{b} = \\begin{vmatrix} \\vec{i} & \\vec{j} & \\vec{k} \\\\ " +
+                           f"{vector_a[0]} & {vector_a[1]} & {vector_a[2]} \\\\ " +
+                           f"{vector_b[0]} & {vector_b[1]} & {vector_b[2]} \\end{{vmatrix}}$")
+                
+                st.markdown(f"$\\vec{{a}} \\times \\vec{{b}} = [{det_i}, {det_j}, {det_k}]$")
+                
+                # Compute magnitude (area of parallelogram)
+                area = np.linalg.norm(cross_prod)
+                st.markdown(f"**Magnitude |a×b| = {area:.4f}** (Area of parallelogram formed by a and b)")
+                st.markdown(f"**Area of triangle = |a×b|/2 = {area/2:.4f}**")
+            else:
+                st.warning(f"Cross product visualization is primarily designed for 3D vectors. Your vectors are {len(vector_a)}D and {len(vector_b)}D.")
         
         with col2:
             st.markdown("### Visualization")
             
-            # Define construction lines for the parallelogram
-            # Origin O, vector a from O, vector b from O, vector a+b from O
-            # Parallelogram vertices: O, a, b, a+b
-            # Line 1: from a to a+b (parallel to b)
-            # Line 2: from b to a+b (parallel to a)
-            origin = np.array([0,0,0])
-            a_plus_b = a + b
-            
-            line_style = dict(dash='dash', color='rgba(200, 200, 200, 0.7)', width=2)
-            construction_lines = [
-                (a, a_plus_b, "Side (a to a+b)", line_style),
-                (b, a_plus_b, "Side (b to a+b)", line_style)
-            ]
-
-            if len(cross) == 3 and (np.any(cross) or np.any(a) or np.any(b)): # Only visualize if cross product is 3D and non-zero, or a/b non-zero
-                display_vector_visualization(
-                    [a, b, cross],
-                    names=["Vector a", "Vector b", "Cross Product (a × b)"],
-                    construction_lines=construction_lines
-                )
-            else:
-                # For 2D vectors (z=0), create a simpler visualization
-                display_vector_visualization([a, b, cross], names=["Vector a", "Vector b", "Cross Product (a × b)"])
-            
-            # Add result info box
-            result_box = f"""
-            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
-                <p style="font-size: 16px; text-align: center;">
-                    <strong>Cross Product:</strong> {cross.tolist()}<br>
-                    <strong>Area of Parallelogram:</strong> {area:.4f}
-                </p>
-            </div>
-            """
-            st.markdown(result_box, unsafe_allow_html=True)
+            # Create vectors for visualization
+            if (len(vector_a) == 2 and len(vector_b) == 2) or (len(vector_a) == 3 and len(vector_b) == 3):
+                # For 2D vectors, use the 3D representation with z=0
+                a = vector_a if len(vector_a) == 3 else np.append(vector_a, 0)
+                b = vector_b if len(vector_b) == 3 else np.append(vector_b, 0)
+                
+                # Create a 3D visualization
+                vectors_to_plot = [a, b, cross_prod]
+                vector_names = ["Vector a", "Vector b", "a × b"]
+                
+                # Add construction lines to form a parallelogram
+                a_plus_b = a + b
+                construction_lines = []
+                line_style = {"color": "rgba(200, 200, 200, 0.7)", "width": 2}
+                
+                # Draw the parallelogram
+                construction_lines = [
+                    (a, a_plus_b, "Side (a to a+b)", line_style),
+                    (b, a_plus_b, "Side (b to a+b)", line_style)
+                ]
+                
+                if len(cross_prod) == 3 and (np.any(cross_prod) or np.any(a) or np.any(b)): # Only visualize if cross product is 3D and non-zero, or a/b non-zero
+                    display_vector_visualization(
+                        [a, b, cross_prod],
+                        names=["Vector a", "Vector b", "Cross Product (a × b)"],
+                        construction_lines=construction_lines
+                    )
+                else:
+                    # For 2D vectors (z=0), create a simpler visualization
+                    display_vector_visualization([a, b, cross_prod], names=["Vector a", "Vector b", "Cross Product (a × b)"])
+                
+                # Add result info box
+                result_box = f"""
+                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                    <p style="font-size: 16px; text-align: center;">
+                        <strong>Cross Product:</strong> {cross_prod.tolist()}<br>
+                        <strong>Area of Parallelogram:</strong> {area:.4f}
+                    </p>
+                </div>
+                """
+                st.markdown(result_box, unsafe_allow_html=True)
         
         return result
 
@@ -515,59 +603,40 @@ class VectorOperationsMixin:
             line_style = dict(color='blue', width=2)
             construction_lines.append((line_p1, line_p2, "Line Segment", line_style))
 
-            # Point B: can be visualized as a vector from origin, or just a marker if viz supports it
-            # For now, let display_vector_visualization handle it if B is added to primary_vectors.
-            # However, it's a point, not a vector. Let's find the closest point on the line to B.
+            # Point P: can be visualized as a vector from origin, or just a marker if viz supports it
+            point_p_as_vec = point_b # For viz, treat P as vector from origin
             
-            # Calculate closest point on line (Q) to B
-            # Q = A + proj_d(AB)  where d is direction_vec_line, A is point_a_on_line
-            if point_a_on_line is not None and direction_vec_line is not None and vec_ap is not None:
-                if np.dot(direction_vec_line, direction_vec_line) == 0:
-                    # Direction vector is zero, line is just a point A.
-                    # Distance is ||P-A||
-                    q_closest_point = point_a_on_line
-                else:
-                    proj_vec_ap_onto_d = (np.dot(vec_ap, direction_vec_line) / np.dot(direction_vec_line, direction_vec_line)) * direction_vec_line
-                    q_closest_point = point_a_on_line + proj_vec_ap_onto_d
+            # Calculate closest point on line (Q) to P
+            # Q = A + proj_d(AP)
+            if np.dot(direction_vec_line, direction_vec_line) == 0:
+                # Direction vector is zero, line is just a point A
+                q_closest_point = point_a_on_line
+            else:
+                proj_vec_ap_onto_d = (np.dot(vec_ap, direction_vec_line) / np.dot(direction_vec_line, direction_vec_line)) * direction_vec_line
+                q_closest_point = point_a_on_line + proj_vec_ap_onto_d
             
-                # Line segment from P to Q (the distance itself)
-                distance_line_style = dict(color='red', dash='dash', width=2)
-                construction_lines.append((point_b, q_closest_point, "Distance", distance_line_style))
-                
-                # Show point B and Q as markers / small vectors if possible
-                # Adding Q as a vector from origin for visualization
-                # primary_vectors.append(point_b) # Visualizing B as vector from origin
-                # primary_names.append("Point B")
-                # primary_vectors.append(q_closest_point) # Visualizing Q as vector from origin
-                # primary_names.append("Closest Point Q")
-                # For better viz, use B, Q, and A as points in construction if possible, or as vectors from origin
-                # Let's try plotting key vectors: AB, d, and the perpendicular segment BQ
-                primary_vectors = [vec_ap, direction_vec_line, (point_b - q_closest_point)]
-                primary_names = ["Vector AB", "Line Direction d", "Perpendicular BQ"]
-                
-                # To make the visualization clearer, we can also add the points A, B, Q explicitly.
-                # The current display_vector_visualization is primarily for vectors from origin.
-                # For points, it's better to have specific markers.
-                # Let's adjust origin for the display if it helps center the view around relevant points.
-                # Centroid = (point_b + point_a_on_line + q_closest_point) / 3
-                # display_origin = centroid
-                display_origin = np.zeros(dim) # Keep origin for now
-
+            # Line from P to Q (shortest distance)
+            distance_line_style = dict(color='red', dash='dash', width=2)
+            construction_lines.append((point_b, q_closest_point, "Distance", distance_line_style))
+            
+            # Show P and Q as points
+            origin = np.zeros(dim)
+            # primary_vectors.append(point_p_as_vec) # P as vector from origin
+            # primary_names.append("Point P")
+            # primary_vectors.append(q_closest_point) # Q as vector from origin
+            # primary_names.append("Closest Point Q")
+            
+            # Show key vectors: AP, d, perpendicular P-Q
+            primary_vectors = [vec_ap, direction_vec_line, (point_b - q_closest_point)]
+            primary_names = ["Vector AB", "Direction d", "Perpendicular Distance"]
+            
+            # Visualize if dimensions allow
             if dim == 2 or dim == 3:
-                # Use a dummy non-empty primary_vectors if only construction_lines are present for now to trigger plot
-                # if not primary_vectors and construction_lines:
-                #    primary_vectors = [np.zeros(dim)] # Add a dummy zero vector if no primary vectors
-                #    primary_names = ["Origin"] # This is a workaround for current display_vector_visualization
-                if not primary_vectors and construction_lines:
-                     # If no primary vectors, pass an empty list and let visualization handle it or focus on lines
-                     display_vector_visualization([], names=[], origin=display_origin, construction_lines=construction_lines)
-                else:
-                    display_vector_visualization(primary_vectors, names=primary_names, origin=display_origin, construction_lines=construction_lines)
-
+                display_vector_visualization(primary_vectors, names=primary_names, construction_lines=construction_lines)
             else:
                 st.info(f"Direct visualization is for 2D/3D. Current dimension is {dim}.")
-
-            # Add result info box
+                
+            # Show result
             result_box = f"""
             <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
                 <p style="font-size: 18px; text-align: center;">
@@ -580,131 +649,85 @@ class VectorOperationsMixin:
         return result
 
     def check_collinear(self, args):
-        """Check if three points are collinear."""
-        # Capture print output from the CLI function
-        with StreamOutput() as output:
-            result = self.framework.check_collinearity(args) # Note: CLI function is check_collinearity
+        """Check if vectors are collinear."""
+        # Get the vectors from the arguments
+        vectors = args.vectors
+        
+        # Parse each vector
+        parsed_vectors = [self.framework.parse_vector(v) for v in vectors if v]
+        
+        # Implement the collinearity check directly since framework doesn't have it
+        is_collinear = False
+        
+        # Use matrix rank method to determine collinearity
+        if len(parsed_vectors) >= 2:
+            # Create a matrix where each row is a vector
+            matrix = np.vstack(parsed_vectors)
+            # Calculate the rank - if 1, the vectors are collinear
+            rank = np.linalg.matrix_rank(matrix)
+            is_collinear = (rank == 1)
+            
+            # Store the results
+            result = {"collinear": is_collinear, "method": "rank"}
+        else:
+            st.warning("Need at least 2 vectors to check collinearity.")
+            result = {"collinear": None, "method": None}
         
         # Display the result and steps
         st.subheader("Result")
-        
-        p1 = self.framework.parse_vector(args.point1)
-        p2 = self.framework.parse_vector(args.point2)
-        p3 = self.framework.parse_vector(args.point3)
-        
-        result_is_collinear = result["collinear"]
-        method_used = result.get("method", "area") # Default to area if method not specified
         
         col1, col2 = st.columns([1, 1])
         
         with col1:
             st.markdown("### Step-by-step Calculation")
             
-            st.markdown("**Input points:**")
-            st.markdown(f"$P_1 = {p1.tolist()}$")
-            st.markdown(f"$P_2 = {p2.tolist()}$")
-            st.markdown(f"$P_3 = {p3.tolist()}$")
+            st.markdown("**Input vectors:**")
+            for i, vector in enumerate(parsed_vectors):
+                st.markdown(f"$\\mathbf{{v}}_{i+1} = {vector.tolist()}$")
             
-            # Form vectors P1P2 and P1P3
-            vec_p1p2 = p2 - p1
-            vec_p1p3 = p3 - p1
+            st.markdown("**Method: Matrix Rank**")
+            st.markdown("Vectors are collinear if they are scalar multiples of each other. This can be checked by creating a matrix where each row is a vector and checking if its rank is 1.")
             
-            st.markdown("**Forming vectors:**")
-            st.markdown(f"$\\vec{{P_1P_2}} = P_2 - P_1 = {vec_p1p2.tolist()}$")
-            st.markdown(f"$\\vec{{P_1P_3}} = P_3 - P_1 = {vec_p1p3.tolist()}$")
-            
-            if method_used == "area" or (len(p1) != 3 and method_used == "cross_product"):
-                st.markdown("**Method: Area of Triangle**")
-                st.markdown("Points are collinear if the area of the triangle formed by them is zero.")
-                if len(p1) == 2:
-                    # Area = 0.5 * |x1(y2 − y3) + x2(y3 − y1) + x3(y1 − y2)|
-                    # Or using vectors: 0.5 * |(P2x-P1x)(P3y-P1y) - (P2y-P1y)(P3x-P1x)|
-                    area_val = 0.5 * abs(vec_p1p2[0]*vec_p1p3[1] - vec_p1p2[1]*vec_p1p3[0])
-                    st.markdown(f"Area = $0.5 \\cdot |(x_2-x_1)(y_3-y_1) - (y_2-y_1)(x_3-x_1)| = {area_val:.4f}$")
-                elif len(p1) == 3:
-                    # Use cross product magnitude for area in 3D
-                    cross_prod = np.cross(vec_p1p2, vec_p1p3)
-                    area_val = 0.5 * np.linalg.norm(cross_prod)
-                    st.markdown(f"Area = $0.5 \\cdot ||\\vec{{P_1P_2}} \\times \\vec{{P_1P_3}}|| = 0.5 \\cdot ||{cross_prod.tolist()}|| = {area_val:.4f}$")
-                else:
-                    area_val = result.get("area", 0) # Get area from CLI if not 2D/3D for formula display
-                    st.markdown(f"Area of triangle formed by points: {area_val:.4f}")
-                
-                st.markdown(f"Since the area is {('approximately zero' if result_is_collinear else 'not zero')}, the points are {('collinear' if result_is_collinear else 'not collinear')}.")
-
-            elif method_used == "cross_product" and len(p1) == 3:
-                st.markdown("**Method: Cross Product (for 3D points)**")
-                st.markdown("Points are collinear if the cross product of $\\vec{{P_1P_2}}$ and $\\vec{{P_1P_3}}$ is the zero vector.")
-                cross_prod = np.cross(vec_p1p2, vec_p1p3)
-                st.markdown(f"$\\vec{{P_1P_2}} \\times \\vec{{P_1P_3}} = {cross_prod.tolist()}$")
-                st.markdown(f"Since the cross product is {('the zero vector (approximately)' if result_is_collinear else 'not the zero vector')}, the points are {('collinear' if result_is_collinear else 'not collinear')}.")
-            
-            elif method_used == "slope":
-                st.markdown("**Method: Slopes (for 2D points)**")
-                st.markdown("Points are collinear if the slope of P1P2 is equal to the slope of P1P3 (or P2P3). Handle vertical lines.")
-                # This part would need slope calculation logic, which can be complex with vertical lines/division by zero.
-                # The CLI handles this, so we rely on its result. For display, we can just state the method.
-                st.markdown(f"Comparing slopes. Based on calculations, the points are {('collinear' if result_is_collinear else 'not collinear')}.")
-            
-            else: # Fallback or other methods from CLI
-                 st.markdown(f"**Method: {method_used.replace('_',' ').title()}**")
-                 st.markdown(f"Based on the calculation, the points are {('collinear' if result_is_collinear else 'not collinear')}.")
+            st.markdown(f"Matrix of vectors:")
+            if len(parsed_vectors) >= 2:
+                # Handling the matrix display without f-string issues
+                row1 = ' & '.join(map(str, parsed_vectors[0]))
+                row2 = ' & '.join(map(str, parsed_vectors[1]))
+                additional_rows = ""
+                if len(parsed_vectors) > 2:
+                    additional_rows = " \\\\ " + " \\\\ ".join([' & '.join(map(str, v)) for v in parsed_vectors[2:]])
+                st.markdown(f"$\\begin{{pmatrix}} {row1} \\\\ {row2}{additional_rows} \\end{{pmatrix}}$")
+                st.markdown(f"Rank of matrix: {rank}")
+                st.markdown(f"Since the rank is {('1' if is_collinear else 'greater than 1')}, the vectors are {('collinear' if is_collinear else 'not collinear')}.")
+            else:
+                st.warning("Not enough vectors to determine collinearity.")
 
         with col2:
             st.markdown("### Visualization")
             
-            dim = len(p1)
-            # Vectors from p1 to p2, and p1 to p3. If collinear, they point in same/opposite direction.
-            # Or, more simply, plot the three points and a line connecting them if collinear.
-            
-            construction_lines = []
-            line_style = dict(color='cyan', width=2)
-            
-            # Always draw line segments P1-P2 and P2-P3
-            construction_lines.append((p1, p2, "Segment P1-P2", line_style))
-            construction_lines.append((p2, p3, "Segment P2-P3", line_style))
-            
-            # If collinear, we can also draw the full line P1-P3 for emphasis
-            if result_is_collinear:
-                construction_lines.append((p1, p3, "Line P1-P3 (collinear)", dict(color='lime', width=2, dash='dot')))
-
-            # For display_vector_visualization, it expects vectors from origin or segments. 
-            # We can pass the points as vectors from origin to mark their positions.
-            # Or, rely on construction_lines to draw the shape formed by points.
-
-            # For clarity, let's pass p1, p2, p3 as vectors from origin if they are not all zero
-            origin = np.zeros(dim)
-            points_as_vectors = []
-            points_names = []
-            if not np.allclose(p1, origin):
-                points_as_vectors.append(p1)
-                points_names.append("P1")
-            if not np.allclose(p2, origin):
-                 points_as_vectors.append(p2)
-                 points_names.append("P2")
-            if not np.allclose(p3, origin):
-                 points_as_vectors.append(p3)
-                 points_names.append("P3")
-            
-            # If all points are at origin, add a dummy origin vector to enable plot if only construction lines present
-            if not points_as_vectors and construction_lines and np.allclose(p1, origin) and np.allclose(p2, origin) and np.allclose(p3, origin):
-                points_as_vectors.append(origin)
-                points_names.append("Origin (all points here)")
-
-            if dim == 2 or dim == 3:
-                display_vector_visualization(points_as_vectors, names=points_names, construction_lines=construction_lines)
+            if len(parsed_vectors) >= 2:
+                dim = len(parsed_vectors[0])  # Dimension of vectors
+                
+                # Visualize vectors from origin
+                vector_names = [f"Vector {i+1}" for i in range(len(parsed_vectors))]
+                
+                # For visualization, show vectors from origin
+                if dim == 2 or dim == 3:
+                    display_vector_visualization(parsed_vectors, names=vector_names)
+                else:
+                    st.info(f"Direct visualization is for 2D/3D. Vectors are in {dim}D space.")
             else:
-                st.info(f"Direct visualization is for 2D/3D. Points are in {dim}D space.")
+                st.info("Not enough vectors to visualize collinearity.")
 
             # Add result info box
-            collinearity_status = "Collinear" if result_is_collinear else "Not Collinear"
-            result_box = f"""
-            <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
-                <p style="font-size: 18px; text-align: center;">
-                    The points are: <strong>{collinearity_status}</strong>
-                </p>
-            </div>
-            """
-            st.markdown(result_box, unsafe_allow_html=True)
-        
-        return result_is_collinear 
+            if len(parsed_vectors) >= 2:
+                result_box = f"""
+                <div style="padding: 10px; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px;">
+                    <p style="font-size: 18px; text-align: center;">
+                        Vectors are {('collinear!' if is_collinear else 'not collinear.')}
+                    </p>
+                </div>
+                """
+                st.markdown(result_box, unsafe_allow_html=True)
+            
+        return result
