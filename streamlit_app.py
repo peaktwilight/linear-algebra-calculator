@@ -87,6 +87,11 @@ def apply_styling():
       animation-delay: 0.1s;
     }
     
+    /* Alert styling to ensure they're visible */
+    .stAlert, div[data-testid="stAlert"], [data-testid="stAlertContainer"] {
+      opacity: 1 !important;
+    }
+    
     /* Staggered waterfall animations */
     .animate-title { animation-delay: 0.1s; }
     .animate-subheader { animation-delay: 0.35s; }
@@ -104,11 +109,37 @@ def apply_styling():
     </style>
     """, unsafe_allow_html=True)
     
-    # Then try to load the full CSS file for enhanced styling
+    # Then load the full CSS file - make sure this runs last to override any other styles
     try:
         with open('.streamlit/custom.css', 'r') as f:
             custom_css = f.read()
-            st.markdown(f'<style>{custom_css}</style>', unsafe_allow_html=True)
+            # Add scripts to ensure animations work correctly
+            enhanced_css = custom_css + """
+            <script>
+            // Script to ensure animations have fully loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    document.body.classList.add('animations-ready');
+                    
+                    // Make sure alerts are visible
+                    const fixAlerts = function() {
+                        document.querySelectorAll('.stAlert, [data-testid="stAlert"], [data-testid="stAlertContainer"]')
+                            .forEach(function(el) {
+                                el.style.opacity = '1';
+                                el.style.visibility = 'visible';
+                            });
+                    };
+                    
+                    // Run initially
+                    fixAlerts();
+                    
+                    // Keep checking for new alerts
+                    setInterval(fixAlerts, 200);
+                }, 100);
+            });
+            </script>
+            """
+            st.markdown(f'<style>{enhanced_css}</style>', unsafe_allow_html=True)
     except Exception:
         # Silently continue with the basic animations defined above
         pass
@@ -868,7 +899,7 @@ def main():
         </div>
         <div class="footer-text">
             <a href="https://github.com/peaktwilight/linear-algebra-calculator" target="_blank">GitHub</a> 
-            <span class="version-tag floating">v1.6.3</span>
+            <span class="version-tag floating">v1.6.4</span>
         </div>
         <div class="footer-text">FHNW Linear Algebra Module</div>
     </div>

@@ -38,6 +38,18 @@
   50% { transform: translateY(-3px); }
 }
 
+/* Special reveal animation for results */
+@keyframes reveal {
+  0% { 
+    opacity: 0; 
+    clip-path: inset(0 100% 0 0);
+  }
+  100% { 
+    opacity: 1; 
+    clip-path: inset(0 0 0 0);
+  }
+}
+
 /* Animation for title and headers */
 .animate-title {
   animation: slideInUp 0.8s ease-out forwards;
@@ -124,6 +136,26 @@ p {
   animation: slideInLeft 0.5s ease-out forwards;
   opacity: 0;
   animation-delay: 0.75s;
+}
+
+/* Animation for plots and visualizations */
+.js-plotly-plot, [data-testid="stArrowVegaLiteChart"], 
+[data-testid="stVegaLiteChart"], .stPlotlyChart {
+  animation: scaleIn 0.7s ease-out forwards;
+  opacity: 0;
+  animation-delay: 0.85s; /* Show after inputs are visible */
+  transform-origin: center center;
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95);
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1);
+  }
 }
 
 /* Ensure text inputs are visible during animation */
@@ -243,24 +275,69 @@ input, textarea, select {
   max-width: 1200px;
 }
 
-/* Staggered waterfall animation delays */
+/* Staggered waterfall animation delays - carefully timed sequence */
 .animate-title { animation-delay: 0.1s; }
-.animate-subheader { animation-delay: 0.35s; }
+.animate-subheader { animation-delay: 0.3s; }
 h1 { animation-delay: 0.1s; }
-h2 { animation-delay: 0.35s; }
-h3 { animation-delay: 0.45s; }
-h4 { animation-delay: 0.55s; }
-p { animation-delay: 0.65s; }
-.stButton > button { animation: fadeIn 0.4s ease-out forwards; animation-delay: 0.75s; opacity: 0; }
+h2 { animation-delay: 0.3s; }
+h3 { animation-delay: 0.4s; }
+h4 { animation-delay: 0.5s; }
+p { animation-delay: 0.6s; }
+
+/* Form controls in sequence */
+.stTextInput > div { animation-delay: 0.7s; }
+.stTextArea > div { animation-delay: 0.75s; }
+.stNumberInput > div { animation-delay: 0.8s; }
+.stSelectbox > div { animation-delay: 0.85s; }
+
+/* Interactive elements */
+.stButton > button { animation: fadeIn 0.4s ease-out forwards; animation-delay: 0.9s; opacity: 0; }
 .stText { animation-delay: 0.65s; }
 div.row-widget.stRadio { animation: fadeIn 0.4s ease-out forwards; animation-delay: 0.85s; opacity: 0; }
 div.row-widget.stCheckbox { animation: fadeIn 0.4s ease-out forwards; animation-delay: 0.85s; opacity: 0; }
 div.stSlider { animation: fadeIn 0.4s ease-out forwards; animation-delay: 0.85s; opacity: 0; }
-.footer-container { animation-delay: 0.95s; }
+
+/* Results appear last */
+.katex-display, .MathJax { animation-delay: 0.95s; }
+.stAlert { animation-delay: 1.0s; }
+.js-plotly-plot { animation-delay: 1.05s; }
+.footer-container { animation-delay: 1.1s; }
+
+/* Math expressions and LaTeX animations - important for Linear Algebra Calculator */
+.katex-display, .katex, .MathJax, mjx-container {
+  animation: fadeIn 0.6s ease-out forwards;
+  opacity: 0;
+  animation-delay: 0.8s; /* Appear after inputs but before plots */
+}
+
+/* Alert styling - fixed to ensure proper display */
+.stAlert, 
+.stElementContainer .stAlert, 
+div[data-testid="stAlert"], 
+[data-testid="stAlertContainer"],
+.stAlertContainer {
+  animation: fadeIn 0.7s ease-out forwards !important;
+  opacity: 1 !important; /* Start visible to prevent rendering issues */
+}
+
+/* Animation for math output */
+.katex-display, .katex {
+  animation: fadeIn 0.8s ease-out forwards;
+  opacity: 0.8; /* Start partially visible */
+  animation-delay: 0.5s;
+}
+
+/* 3D/vector visualizations */
+.plotly-graph-div, .svg-container, canvas {
+  animation-fill-mode: forwards !important;
+}
 
 /* Make all animations complete properly */
 h1, h2, h3, h4, p, .animate-title, .animate-subheader, .footer-container,
 .stButton > button, .stText, div.row-widget.stRadio, div.row-widget.stCheckbox, div.stSlider,
-.stTextInput, .stTextArea, .stNumberInput, .stSelectbox, .stMultiselect, .stDateInput {
+.stTextInput, .stTextArea, .stNumberInput, .stSelectbox, .stMultiselect, .stDateInput,
+.js-plotly-plot, [data-testid="stArrowVegaLiteChart"], [data-testid="stVegaLiteChart"], 
+.stPlotlyChart, .katex-display, .katex, .MathJax, mjx-container, [data-testid="stAlert"],
+.plotly-graph-div, .svg-container, canvas {
   animation-fill-mode: forwards;
 }
