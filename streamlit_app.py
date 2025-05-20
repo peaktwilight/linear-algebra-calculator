@@ -899,7 +899,7 @@ def main():
         </div>
         <div class="footer-text">
             <a href="https://github.com/peaktwilight/linear-algebra-calculator" target="_blank">GitHub</a> 
-            <span class="version-tag floating">v1.6.4</span>
+            <span class="version-tag floating">v1.6.5</span>
         </div>
         <div class="footer-text">FHNW Linear Algebra Module</div>
     </div>
