@@ -246,6 +246,22 @@ input, textarea, select {
   }
 }
 
+/* Title container and GitHub tag container */
+.title-container {
+  position: relative;
+  margin-bottom: 40px; /* Increased to make room for GitHub tag */
+  text-align: center;
+  width: 100%;
+}
+
+.github-tag-container {
+  position: relative;
+  text-align: center;
+  margin-top: -55px; /* Position it higher to overlap with title area */
+  margin-bottom: 35px;
+  z-index: 10;
+}
+
 .github-version-tag {
   display: inline-flex;
   align-items: center;

@@ -168,24 +168,8 @@ def main():
     # Apply minimal styling approach 
     apply_styling()
     
-    # Animated header with text shimmer effect and GitHub tag
+    # Animated header with GitHub tag 
     st.markdown('''
-    <style>
-    .title-container {
-      position: relative;
-      margin-bottom: 40px; /* Increased to make room for GitHub tag */
-      text-align: center;
-      width: 100%;
-    }
-    
-    .github-tag-container {
-      position: relative;
-      text-align: center;
-      margin-top: -55px; /* Position it higher to overlap with title area */
-      margin-bottom: 35px;
-      z-index: 10;
-    }
-    </style>
     <div class="title-container">
         <h1 class="animate-title">Linear Algebra Calculator</h1>
     </div>
