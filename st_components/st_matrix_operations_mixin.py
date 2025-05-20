@@ -409,8 +409,18 @@ class MatrixOperationsMixin:
         return latex
     
     def _vector_to_latex(self, vector):
-        """Convert a numpy vector to LaTeX format."""
+        """Convert a numpy vector to LaTeX format.
+        Works with both 1D arrays and 2D column matrices."""
         elements = []
+        # Handle both 1D and 2D arrays (column vectors)
+        if vector.ndim > 1:
+            # For 2D arrays, flatten if it's a column vector
+            if vector.shape[1] == 1:
+                vector = vector.flatten()
+            else:
+                # For matrices, convert each row to a LaTeX row
+                return self._matrix_to_latex(vector)
+                
         for x in vector:
             if np.isclose(x, 0, atol=1e-10):
                 elements.append("0")
