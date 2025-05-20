@@ -603,14 +603,15 @@ class VectorOperationsMixin:
             if len(point_b) == 3 and len(direction) == 3:
                 cross_prod = np.cross(vec_ap, direction)
                 norm_d = np.linalg.norm(direction)
-                st.markdown(f"$\\text{{Distance}} = \\frac{{|\\vec{{AP}} \\times \\vec{{d}}|}}{{|\\vec{{d}}|}} = \\frac{{|{cross_prod.tolist()}|}}{{{norm_d:.4f}}} = \\frac{{{np.linalg.norm(cross_prod):.4f}}}{{{norm_d:.4f}}} = {distance:.4f}$")
+                cross_norm = np.linalg.norm(cross_prod)
+                st.markdown(f"$\\text{{Distance}} = \\frac{{|\\vec{{AB}} \\times \\vec{{d}}|}}{{|\\vec{{d}}|}} = \\frac{{|{cross_prod.tolist()}|}}{{{norm_d:.4f}}} = \\frac{{{cross_norm:.4f}}}{{{norm_d:.4f}}} = {distance:.4f}$")
             elif len(point_b) == 2 and len(direction) == 2:
                 # Using 2D specific formula: |(x_p-x_a)d_y - (y_p-y_a)d_x| / sqrt(d_x^2 + d_y^2)
                 # This is equivalent to | vec_ap_x * d_y - vec_ap_y * d_x | / ||d||
                 # Which is the magnitude of the 2D cross product (scalar) / magnitude of d
                 numerator = abs(vec_ap[0]*direction[1] - vec_ap[1]*direction[0])
                 denominator = np.linalg.norm(direction)
-                st.markdown(f"$\\text{{Distance}} = \\frac{{|(P_x-A_x)d_y - (P_y-A_y)d_x|}}{{\\sqrt{{d_x^2 + d_y^2}}}} = \\frac{{|({vec_ap[0]})({direction[1]}) - ({vec_ap[1]})({direction[0]})|}}{{{denominator:.4f}}} = \\frac{{{numerator:.4f}}}{{{denominator:.4f}}} = {distance:.4f}$")
+                st.markdown(f"$\\text{{Distance}} = \\frac{{|(B_x-A_x)d_y - (B_y-A_y)d_x|}}{{\\sqrt{{d_x^2 + d_y^2}}}} = \\frac{{|({vec_ap[0]})({direction[1]}) - ({vec_ap[1]})({direction[0]})|}}{{{denominator:.4f}}} = \\frac{{{numerator:.4f}}}{{{denominator:.4f}}} = {distance:.4f}$")
             else:
                 # General case using projection, works for any dimension
                 # Distance = || vec_ap - proj_d(vec_ap) ||
@@ -618,9 +619,9 @@ class VectorOperationsMixin:
                     proj_d_ap = np.dot(vec_ap, direction) / np.dot(direction, direction) * direction
                     vec_perp = vec_ap - proj_d_ap # Vector from line to point P, perpendicular to line
                     # The distance is the magnitude of this perpendicular vector.
-                    st.markdown(f"Projection of AP onto d: $proj_d(AP) = \\frac{{AP \cdot d}}{{d \cdot d}} d = {proj_d_ap.tolist()}$")
-                    st.markdown(f"Perpendicular vector (from line to P): $AP - proj_d(AP) = {vec_perp.tolist()}$")
-                    st.markdown(f"Distance = $||AP - proj_d(AP)|| = {np.linalg.norm(vec_perp):.4f}$")
+                    st.markdown(f"Projection of AB onto d: $proj_d(AB) = \\frac{{AB \cdot d}}{{d \cdot d}} d = {proj_d_ap.tolist()}$")
+                    st.markdown(f"Perpendicular vector (from line to B): $AB - proj_d(AB) = {vec_perp.tolist()}$")
+                    st.markdown(f"Distance = $||AB - proj_d(AB)|| = {np.linalg.norm(vec_perp):.4f} = {distance:.4f}$")
                 else:
                     st.warning("Cannot calculate projection since direction vector has zero magnitude")
 
