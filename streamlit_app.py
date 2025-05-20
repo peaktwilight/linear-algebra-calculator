@@ -319,7 +319,7 @@ def main():
         operation = st.sidebar.selectbox(
             "Select Matrix Operation",
             ["Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
-             "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Eigenvalues and Eigenvectors"]
+             "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", "Eigenvalues and Eigenvectors"]
         )
         
         st.subheader(operation)
@@ -491,6 +491,31 @@ def main():
                     calculator.matrix_inverse(matrix)
                 else:
                     st.error("Please enter a matrix.")
+                    
+        elif operation == "Special Matrices":
+            st.write("This operation generates and explains special matrices with specific properties.")
+            
+            if not hasattr(calculator, 'special_matrices_generator'):
+                st.error("Special matrices generator not implemented yet. We'll add it soon!")
+            else:
+                calculator.special_matrices_generator()
+                
+            with st.expander("Help: Special Matrices"):
+                st.write("""
+                Special matrices have particular forms or properties that make them useful in various applications:
+                
+                - **Identity Matrix**: Has 1s on the diagonal and 0s elsewhere. Acts as the multiplicative identity.
+                - **Zero Matrix**: All elements are zero. Acts as the additive identity.
+                - **Diagonal Matrix**: Only has non-zero entries on the main diagonal.
+                - **Triangular Matrix**: Either upper (zeros below diagonal) or lower (zeros above diagonal).
+                - **Symmetric Matrix**: Equal to its transpose (A = A^T).
+                - **Orthogonal Matrix**: Its transpose equals its inverse (Q^T = Q^(-1)).
+                - **Rotation Matrix**: Represents a rotation in space, preserves distances and angles.
+                - **Scaling Matrix**: Stretches or shrinks vectors along coordinate axes.
+                - **Reflection Matrix**: Reflects vectors across a line, plane, or point.
+                
+                Special matrices simplify calculations and have applications in graphics, physics, statistics, and more.
+                """)
         
         elif operation == "Eigenvalues and Eigenvectors":
             st.write("This operation calculates the eigenvalues and eigenvectors of a square matrix.")

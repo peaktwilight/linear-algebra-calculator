@@ -8,7 +8,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd # Keep for potential future use with matrix display
 import plotly.express as px # Keep for potential future use
-import plotly.graph_objects as go # Keep for potential future use
+import plotly.graph_objects as go # Used for visualizations
 import scipy.linalg as sp
 from given_reference.core import mrref # For displaying RREF steps
 from .st_visualization_utils import display_matrix_heatmap
@@ -2056,6 +2056,7 @@ class MatrixOperationsMixin:
     def matrix_multiply(self, matrix_a_input, matrix_b_input):
         """
         Multiply two matrices and display the result with explanation.
+        Enhanced with Falk Schema visualization and additional interpretations.
         """
         st.subheader("Matrix Multiplication")
         
@@ -2076,6 +2077,14 @@ class MatrixOperationsMixin:
             # Perform the multiplication
             product = matrix_a @ matrix_b
             
+            # Also calculate element-wise multiplication (Hadamard product) if same dimensions
+            hadamard_product = None
+            if matrix_a.shape == matrix_b.shape:
+                hadamard_product = matrix_a * matrix_b  # Element-wise multiplication
+            
+            # Check if it's a matrix-vector multiplication case
+            is_matrix_vector = matrix_b.shape[1] == 1
+            
             # Display the result
             col1, col2 = st.columns([1, 1])
             
@@ -2087,42 +2096,117 @@ class MatrixOperationsMixin:
                 
                 st.markdown("**Matrix B:**")
                 st.markdown(f"$${self._matrix_to_latex(matrix_b)}$$")
-                st.markdown(f"Shape: {matrix_b.shape[0]}×{matrix_b.shape[1]}")
+                if is_matrix_vector:
+                    st.markdown(f"Shape: {matrix_b.shape[0]}×{matrix_b.shape[1]} (column vector)")
+                else:
+                    st.markdown(f"Shape: {matrix_b.shape[0]}×{matrix_b.shape[1]}")
                 
                 st.markdown("### Result")
                 st.markdown("**Product A×B:**")
                 st.markdown(f"$${self._matrix_to_latex(product)}$$")
                 st.markdown(f"Shape: {product.shape[0]}×{product.shape[1]}")
                 
-                # Explanation of the calculation for a small example
-                if product.size <= 9:  # Only show detailed calculation for small matrices
-                    st.markdown("### Calculation Details")
-                    for i in range(product.shape[0]):
-                        for j in range(product.shape[1]):
-                            # Calculate the dot product for element (i,j)
-                            dot_product_parts = []
-                            for k in range(matrix_a.shape[1]):
-                                a_ik = matrix_a[i, k]
-                                b_kj = matrix_b[k, j]
-                                dot_product_parts.append(f"{a_ik:.2f} \\cdot {b_kj:.2f}")
-                            
-                            dot_product_str = " + ".join(dot_product_parts)
-                            st.markdown(f"$C_{{{i+1}{j+1}}} = {dot_product_str} = {product[i, j]:.2f}$")
+                # Display element-wise multiplication if available
+                if hadamard_product is not None:
+                    with st.expander("Element-wise Multiplication (A⊙B) - Hadamard Product"):
+                        st.markdown("The element-wise product multiplies corresponding elements:")
+                        st.markdown(f"$${self._matrix_to_latex(hadamard_product)}$$")
+                        st.markdown("Note: This is different from the matrix product. Each element (i,j) is just A(i,j)×B(i,j).")
+                
+                # Explanation of the calculation using summation notation
+                st.markdown("### Calculation Using Summation Notation")
+                st.markdown(r"""
+                For matrix multiplication A×B = C, each element $c_{ij}$ is calculated as:
+                
+                $$c_{ij} = \sum_{k=1}^{n} a_{ik} \cdot b_{kj}$$
+                
+                Where:
+                - $i$ is the row index of matrix C and matrix A
+                - $j$ is the column index of matrix C and matrix B
+                - $k$ runs from 1 to n (the number of columns in A, which equals the number of rows in B)
+                - $a_{ik}$ is the element at row $i$, column $k$ of matrix A
+                - $b_{kj}$ is the element at row $k$, column $j$ of matrix B
+                """)
+                
+                # Detailed calculation with Falk Schema for a small example
+                if product.size <= 16:  # Only show detailed calculation for reasonably sized matrices
+                    with st.expander("Calculation Details (Falk Schema)", expanded=True):
+                        st.markdown("### Falk Schema Calculation")
+                        st.markdown("The Falk Schema is a visual method for matrix multiplication that helps track the row and column multiplications:")
+                        
+                        # Loop through each element in the product matrix
+                        for i in range(product.shape[0]):
+                            for j in range(product.shape[1]):
+                                st.markdown(f"**Computing element C<sub>{i+1},{j+1}</sub>:**")
+                                
+                                # Create a Falk Schema visualization
+                                # Row from matrix A
+                                row_a = matrix_a[i, :]
+                                # Column from matrix B
+                                col_b = matrix_b[:, j]
+                                
+                                # Create a visual representation
+                                st.markdown(f"Row {i+1} from Matrix A: ${self._vector_to_latex(row_a)}$")
+                                st.markdown(f"Column {j+1} from Matrix B: ${self._vector_to_latex(col_b)}$")
+                                
+                                # Create the calculation with individual terms
+                                terms = []
+                                for k in range(len(row_a)):
+                                    # Format based on if the numbers are close to integers
+                                    if np.isclose(row_a[k], round(row_a[k]), atol=1e-10):
+                                        row_term = str(int(round(row_a[k])))
+                                    else:
+                                        row_term = f"{row_a[k]:.2f}"
+                                        
+                                    if np.isclose(col_b[k], round(col_b[k]), atol=1e-10):
+                                        col_term = str(int(round(col_b[k])))
+                                    else:
+                                        col_term = f"{col_b[k]:.2f}"
+                                    
+                                    term = f"{row_term} \\cdot {col_term}"
+                                    product_term = row_a[k] * col_b[k]
+                                    
+                                    if np.isclose(product_term, round(product_term), atol=1e-10):
+                                        product_str = str(int(round(product_term)))
+                                    else:
+                                        product_str = f"{product_term:.2f}"
+                                    
+                                    terms.append(f"{term} = {product_str}")
+                                
+                                # Show the dot product and the final result
+                                st.markdown("Dot product calculation:")
+                                st.latex(" + ".join([f"({term})" for term in terms]))
+                                
+                                # Show the final result
+                                if np.isclose(product[i, j], round(product[i, j]), atol=1e-10):
+                                    result_str = str(int(round(product[i, j])))
+                                else:
+                                    result_str = f"{product[i, j]:.2f}"
+                                
+                                st.markdown(f"**Result for C<sub>{i+1},{j+1}</sub> = {result_str}**")
+                                st.markdown("---")
             
             with col2:
                 st.markdown("### Visualizations")
                 
-                # Heatmap visualization of the matrices
-                tab1, tab2, tab3 = st.tabs(["Matrix A", "Matrix B", "Product A×B"])
+                multiplication_tabs = ["Matrix A", "Matrix B", "Product A×B"]
+                if hadamard_product is not None:
+                    multiplication_tabs.append("Element-wise (A⊙B)")
                 
-                with tab1:
+                tabs = st.tabs(multiplication_tabs)
+                
+                with tabs[0]:
                     display_matrix_heatmap(matrix_a, title="Matrix A")
                 
-                with tab2:
+                with tabs[1]:
                     display_matrix_heatmap(matrix_b, title="Matrix B")
                 
-                with tab3:
+                with tabs[2]:
                     display_matrix_heatmap(product, title="Product A×B")
+                
+                if hadamard_product is not None:
+                    with tabs[3]:
+                        display_matrix_heatmap(hadamard_product, title="Element-wise Product A⊙B")
                 
                 # Educational content about matrix multiplication
                 st.markdown("### Matrix Multiplication Properties")
@@ -2143,10 +2227,94 @@ class MatrixOperationsMixin:
                 st.markdown("""
                 **Key Properties:**
                 - (AB)C = A(BC) (associative)
-                - A(B+C) = AB+AC (distributive)
+                - A(B+C) = AB+AC (distributive over addition)
+                - (A+B)C = AC+BC (distributive over addition)
                 - In general, AB ≠ BA (not commutative)
-                - If AB = 0, it doesn't mean A = 0 or B = 0
+                - If AB = 0, it doesn't mean A = 0 or B = 0 (unlike scalar multiplication)
                 """)
+                
+                # Matrix-vector product interpretation (if applicable)
+                if is_matrix_vector:
+                    with st.expander("Matrix-Vector Product Interpretations", expanded=True):
+                        st.markdown("### Matrix-Vector Product Interpretations")
+                        
+                        # Interpretation 1: Linear combination of columns
+                        st.markdown("#### 1. Linear Combination of Columns")
+                        st.markdown("""
+                        When a matrix multiplies a vector, the result can be viewed as a **linear combination of the 
+                        columns of the matrix**, where the weights are the elements of the vector:
+                        """)
+                        
+                        # Create the equation for linear combination
+                        equation_parts = []
+                        for j in range(matrix_b.shape[0]):
+                            # Extract column j from matrix A
+                            col_j = matrix_a[:, j]
+                            # Get the corresponding weight from vector B
+                            weight = matrix_b[j, 0]
+                            
+                            # Format the weight
+                            if np.isclose(weight, round(weight), atol=1e-10):
+                                weight_str = str(int(round(weight)))
+                            else:
+                                weight_str = f"{weight:.2f}"
+                                
+                            equation_parts.append(f"{weight_str} \\cdot {self._vector_to_latex(col_j)}")
+                        
+                        linear_combination = " + ".join(equation_parts)
+                        st.latex(f"A \\cdot b = {linear_combination} = {self._vector_to_latex(product)}")
+                        
+                        # Interpretation 2: System of equations solution
+                        st.markdown("#### 2. Coefficient Matrix with Solution Vector")
+                        st.markdown("""
+                        In the context of linear systems, if A is a coefficient matrix and x is a vector of variables,
+                        then A·x = b represents a system of linear equations, with b as the result vector.
+                        """)
+                        
+                        # Create a system of equations representation
+                        st.markdown("**System of equations representation:**")
+                        
+                        equations = []
+                        for i in range(matrix_a.shape[0]):
+                            eq_parts = []
+                            for j in range(matrix_a.shape[1]):
+                                coef = matrix_a[i, j]
+                                
+                                # Skip zero coefficients
+                                if np.isclose(coef, 0, atol=1e-10):
+                                    continue
+                                
+                                # Format coefficient
+                                if np.isclose(coef, 1, atol=1e-10):
+                                    term = f"x_{{{j+1}}}"
+                                elif np.isclose(coef, -1, atol=1e-10):
+                                    term = f"-x_{{{j+1}}}"
+                                else:
+                                    if np.isclose(coef, round(coef), atol=1e-10):
+                                        coef_str = str(int(round(coef)))
+                                    else:
+                                        coef_str = f"{coef:.2f}"
+                                    term = f"{coef_str} \\cdot x_{{{j+1}}}"
+                                
+                                if eq_parts and coef > 0:
+                                    eq_parts.append(f"+ {term}")
+                                else:
+                                    eq_parts.append(term)
+                            
+                            # Add equals sign and result
+                            result = product[i, 0]
+                            if np.isclose(result, round(result), atol=1e-10):
+                                result_str = str(int(round(result)))
+                            else:
+                                result_str = f"{result:.2f}"
+                                
+                            equations.append("".join(eq_parts) + f" = {result_str}")
+                        
+                        for i, eq in enumerate(equations):
+                            st.latex(f"\\text{{Equation {i+1}:}} \\quad {eq}")
+                        
+                        # Verification
+                        st.markdown("This shows that the vector multiplication Ax = b gives the result vector b, which represents the right side of the system of equations.")
                 
             return product
             
@@ -2271,6 +2439,481 @@ Where:
             st.error(traceback.format_exc())
         return None
     
+    def special_matrices_generator(self):
+        """
+        Generate and visualize special matrices with educational content about their properties
+        and applications.
+        """
+        st.subheader("Special Matrices Generator")
+        
+        # Create a selection for the type of special matrix
+        matrix_type = st.selectbox(
+            "Select Type of Special Matrix",
+            [
+                "Identity Matrix",
+                "Zero Matrix",
+                "Diagonal Matrix",
+                "Upper Triangular Matrix",
+                "Lower Triangular Matrix",
+                "Symmetric Matrix",
+                "2D Rotation Matrix",
+                "2D Scaling Matrix",
+                "2D Reflection Matrix",
+                "Orthogonal Matrix",
+            ]
+        )
+        
+        # Specific parameters based on the matrix type
+        if matrix_type in ["Identity Matrix", "Zero Matrix"]:
+            size = st.number_input("Matrix Size (n×n)", min_value=1, max_value=10, value=3)
+        elif matrix_type in ["Diagonal Matrix", "Upper Triangular Matrix", "Lower Triangular Matrix"]:
+            size = st.number_input("Matrix Size (n×n)", min_value=1, max_value=10, value=3)
+            # Generate random values for diagonal/triangular matrix elements
+            if st.checkbox("Use custom diagonal values", value=False):
+                diagonal_input = st.text_input("Enter diagonal values (comma-separated, e.g., '1,2,3')", value="1,2,3")
+                try:
+                    diagonal_values = [float(val.strip()) for val in diagonal_input.split(',')]
+                    diagonal_values = diagonal_values[:size]  # Trim if more values than needed
+                    diagonal_values = diagonal_values + [0] * (size - len(diagonal_values))  # Pad if fewer values
+                except ValueError:
+                    st.error("Invalid diagonal values. Please enter comma-separated numbers.")
+                    diagonal_values = np.ones(size)
+            else:
+                diagonal_values = np.ones(size)
+                
+            # Additional values for triangular matrices
+            if matrix_type in ["Upper Triangular Matrix", "Lower Triangular Matrix"]:
+                use_random = st.checkbox("Use random values for off-diagonal elements", value=True)
+                if not use_random:
+                    off_diagonal_value = st.number_input("Off-diagonal value", value=2.0)
+        elif matrix_type == "Symmetric Matrix":
+            size = st.number_input("Matrix Size (n×n)", min_value=2, max_value=10, value=3)
+            use_random = st.checkbox("Use random symmetric values", value=True)
+        elif matrix_type == "2D Rotation Matrix":
+            angle_degrees = st.slider("Rotation Angle (degrees)", min_value=0, max_value=360, value=45)
+            angle_radians = np.radians(angle_degrees)
+        elif matrix_type == "2D Scaling Matrix":
+            scale_x = st.slider("X-axis Scaling Factor", min_value=0.1, max_value=5.0, value=2.0, step=0.1)
+            scale_y = st.slider("Y-axis Scaling Factor", min_value=0.1, max_value=5.0, value=1.5, step=0.1)
+        elif matrix_type == "2D Reflection Matrix":
+            reflection_type = st.selectbox(
+                "Reflection Type",
+                ["X-axis", "Y-axis", "Origin", "y = x Line", "y = -x Line"]
+            )
+        elif matrix_type == "Orthogonal Matrix":
+            size = st.number_input("Matrix Size (n×n)", min_value=2, max_value=6, value=3)
+        
+        # Generate the special matrix based on the selection
+        matrix = None
+        if matrix_type == "Identity Matrix":
+            matrix = np.eye(size)
+        elif matrix_type == "Zero Matrix":
+            matrix = np.zeros((size, size))
+        elif matrix_type == "Diagonal Matrix":
+            matrix = np.zeros((size, size))
+            np.fill_diagonal(matrix, diagonal_values)
+        elif matrix_type == "Upper Triangular Matrix":
+            matrix = np.zeros((size, size))
+            # Fill diagonal
+            np.fill_diagonal(matrix, diagonal_values)
+            # Fill upper triangle
+            for i in range(size):
+                for j in range(i + 1, size):
+                    if use_random:
+                        matrix[i, j] = np.random.randint(1, 10)
+                    else:
+                        matrix[i, j] = off_diagonal_value
+        elif matrix_type == "Lower Triangular Matrix":
+            matrix = np.zeros((size, size))
+            # Fill diagonal
+            np.fill_diagonal(matrix, diagonal_values)
+            # Fill lower triangle
+            for i in range(size):
+                for j in range(i):
+                    if use_random:
+                        matrix[i, j] = np.random.randint(1, 10)
+                    else:
+                        matrix[i, j] = off_diagonal_value
+        elif matrix_type == "Symmetric Matrix":
+            if use_random:
+                # Generate random symmetric matrix using a temporary matrix
+                temp = np.random.randint(1, 10, (size, size))
+                matrix = (temp + temp.T) / 2  # Make symmetric
+            else:
+                # Create a simple symmetric matrix
+                matrix = np.eye(size)
+                for i in range(size):
+                    for j in range(i + 1, size):
+                        matrix[i, j] = matrix[j, i] = 1  # Use 1 for off-diagonal elements
+        elif matrix_type == "2D Rotation Matrix":
+            matrix = np.array([
+                [np.cos(angle_radians), -np.sin(angle_radians)],
+                [np.sin(angle_radians), np.cos(angle_radians)]
+            ])
+        elif matrix_type == "2D Scaling Matrix":
+            matrix = np.array([
+                [scale_x, 0],
+                [0, scale_y]
+            ])
+        elif matrix_type == "2D Reflection Matrix":
+            if reflection_type == "X-axis":
+                matrix = np.array([[1, 0], [0, -1]])
+            elif reflection_type == "Y-axis":
+                matrix = np.array([[-1, 0], [0, 1]])
+            elif reflection_type == "Origin":
+                matrix = np.array([[-1, 0], [0, -1]])
+            elif reflection_type == "y = x Line":
+                matrix = np.array([[0, 1], [1, 0]])
+            elif reflection_type == "y = -x Line":
+                matrix = np.array([[0, -1], [-1, 0]])
+        elif matrix_type == "Orthogonal Matrix":
+            # Generate a random matrix and orthogonalize it using QR decomposition
+            random_matrix = np.random.rand(size, size)
+            q, r = np.linalg.qr(random_matrix)
+            matrix = q  # Q from QR is orthogonal
+        
+        if matrix is not None:
+            # Display the matrix
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.markdown("### Generated Matrix")
+                st.markdown(f"$${self._matrix_to_latex(matrix)}$$")
+                
+                # Verification of properties based on matrix type
+                st.markdown("### Matrix Properties")
+                
+                if matrix_type == "Identity Matrix":
+                    st.markdown("""
+                    **Properties of the Identity Matrix:**
+                    - For any matrix A of compatible size, A × I = I × A = A
+                    - The identity matrix is the multiplicative identity in matrix algebra
+                    - All eigenvalues of the identity matrix are 1
+                    - det(I) = 1
+                    """)
+                    
+                    # Verify: A × I = A (for a random matrix A)
+                    if size <= 5:  # Limit for clarity
+                        test_matrix = np.random.randint(1, 5, (size, size))
+                        product = test_matrix @ matrix
+                        
+                        st.markdown("**Verification**: A × I = A")
+                        st.markdown("Random matrix A:")
+                        st.markdown(f"$${self._matrix_to_latex(test_matrix)}$$")
+                        
+                        st.markdown("A × I:")
+                        st.markdown(f"$${self._matrix_to_latex(product)}$$")
+                        
+                        if np.allclose(product, test_matrix):
+                            st.success("Verification successful: A × I = A")
+                elif matrix_type == "Zero Matrix":
+                    st.markdown("""
+                    **Properties of the Zero Matrix:**
+                    - For any matrix A of compatible size, A × 0 = 0 × A = 0
+                    - The zero matrix is the additive identity in matrix algebra
+                    - All eigenvalues of the zero matrix are 0
+                    - det(0) = 0 (if n > 0)
+                    """)
+                elif matrix_type == "Diagonal Matrix":
+                    # Calculate determinant (product of diagonal elements)
+                    det = np.prod(diagonal_values)
+                    # Extract eigenvalues (which are the diagonal elements)
+                    eigenvalues = diagonal_values
+                    
+                    st.markdown("""
+                    **Properties of a Diagonal Matrix:**
+                    - A square matrix where non-diagonal elements are all zero
+                    - The determinant is the product of the diagonal elements
+                    - The eigenvalues are the diagonal elements
+                    - Diagonal matrices are easy to raise to powers: D^n has diagonal elements d_i^n
+                    """)
+                    
+                    st.markdown(f"Determinant = {det}")
+                    st.markdown(f"Eigenvalues = {eigenvalues}")
+                elif matrix_type in ["Upper Triangular Matrix", "Lower Triangular Matrix"]:
+                    # For triangular matrices, determinant is product of diagonal elements
+                    det = np.prod(diagonal_values)
+                    
+                    triangle_type = "upper" if matrix_type == "Upper Triangular Matrix" else "lower"
+                    st.markdown(f"""
+                    **Properties of a {triangle_type.capitalize()} Triangular Matrix:**
+                    - A square matrix where all elements below (upper) or above (lower) the diagonal are zero
+                    - The determinant is the product of the diagonal elements: {det}
+                    - The eigenvalues are the diagonal elements: {diagonal_values}
+                    - The product of two {triangle_type} triangular matrices is also {triangle_type} triangular
+                    """)
+                elif matrix_type == "Symmetric Matrix":
+                    # Check if eigenvalues are real
+                    eigenvalues = np.linalg.eigvals(matrix)
+                    are_eigenvalues_real = np.allclose(eigenvalues.imag, 0)
+                    
+                    st.markdown("""
+                    **Properties of a Symmetric Matrix:**
+                    - A square matrix that equals its transpose: A = A^T
+                    - All eigenvalues of a symmetric real matrix are real
+                    - Eigenvectors corresponding to distinct eigenvalues are orthogonal
+                    - Every symmetric matrix is diagonalizable
+                    """)
+                    
+                    # Verify symmetry: A = A^T
+                    transposed = matrix.T
+                    is_symmetric = np.allclose(matrix, transposed)
+                    
+                    st.markdown("**Verification**: A = A^T (Symmetry)")
+                    if is_symmetric:
+                        st.success("Verification successful: Matrix is symmetric")
+                    else:
+                        st.error("Verification failed: Matrix is not symmetric")
+                    
+                    st.markdown(f"Eigenvalues are {'all real' if are_eigenvalues_real else 'not all real'}")
+                elif matrix_type == "2D Rotation Matrix":
+                    # Properties of rotation matrix
+                    det = np.linalg.det(matrix)
+                    is_orthogonal = np.allclose(matrix.T @ matrix, np.eye(2))
+                    
+                    st.markdown(f"""
+                    **Properties of a 2D Rotation Matrix:**
+                    - Rotates points in the plane counterclockwise by {angle_degrees}° around the origin
+                    - Has determinant = {det:.4f} (should be 1)
+                    - Is orthogonal: R^T R = I (Identity)
+                    - Preserves the length of vectors and angles between vectors
+                    """)
+                    
+                    # Verify orthogonality
+                    st.markdown("**Verification**: R^T R = I (Orthogonality)")
+                    product = matrix.T @ matrix
+                    st.markdown(f"R^T R = {self._matrix_to_latex(product)}")
+                    
+                    if is_orthogonal:
+                        st.success("Verification successful: Matrix is orthogonal")
+                elif matrix_type == "2D Scaling Matrix":
+                    # Properties of scaling matrix
+                    det = np.linalg.det(matrix)
+                    eigenvalues = np.linalg.eigvals(matrix)
+                    
+                    st.markdown(f"""
+                    **Properties of a 2D Scaling Matrix:**
+                    - Scales vectors along the x-axis by factor {scale_x} and along the y-axis by factor {scale_y}
+                    - Has determinant = {det:.4f} (which equals the product of scaling factors)
+                    - Eigenvalues = [{eigenvalues[0]:.4f}, {eigenvalues[1]:.4f}] (which are the scaling factors)
+                    - Is diagonal, which means the coordinate axes are eigenvectors
+                    """)
+                elif matrix_type == "2D Reflection Matrix":
+                    # Properties of reflection matrix
+                    det = np.linalg.det(matrix)
+                    is_orthogonal = np.allclose(matrix.T @ matrix, np.eye(2))
+                    
+                    st.markdown(f"""
+                    **Properties of a 2D Reflection Matrix (about {reflection_type}):**
+                    - Reflects points across the specified line or point
+                    - Has determinant = {det:.4f} (should be -1 for reflections)
+                    - Is orthogonal: R^T R = I (Identity)
+                    - Applying the reflection twice returns to the original point
+                    """)
+                    
+                    # Verify orthogonality
+                    st.markdown("**Verification**: R^T R = I (Orthogonality)")
+                    product = matrix.T @ matrix
+                    st.markdown(f"R^T R = {self._matrix_to_latex(product)}")
+                    
+                    if is_orthogonal:
+                        st.success("Verification successful: Matrix is orthogonal")
+                elif matrix_type == "Orthogonal Matrix":
+                    # Properties of orthogonal matrix
+                    det = np.linalg.det(matrix)
+                    product = matrix.T @ matrix
+                    is_orthogonal = np.allclose(product, np.eye(size))
+                    
+                    st.markdown(f"""
+                    **Properties of an Orthogonal Matrix:**
+                    - A square matrix whose transpose equals its inverse: Q^T = Q^(-1)
+                    - Has determinant = {det:.4f} (must be ±1)
+                    - Preserves the dot product of vectors, meaning it preserves lengths and angles
+                    - The columns (and rows) form an orthonormal basis
+                    """)
+                    
+                    # Verify orthogonality
+                    st.markdown("**Verification**: Q^T Q = I (Orthogonality)")
+                    st.markdown(f"Q^T Q = {self._matrix_to_latex(product)}")
+                    
+                    if is_orthogonal:
+                        st.success("Verification successful: Matrix is orthogonal")
+                    else:
+                        st.warning("Matrix is not perfectly orthogonal due to numerical precision")
+            
+            with col2:
+                st.markdown("### Visualizations")
+                
+                # Matrix heatmap visualization
+                display_matrix_heatmap(matrix, title=f"{matrix_type}")
+                
+                # For 2D transformation matrices, visualize their effect on a set of points
+                if matrix_type in ["2D Rotation Matrix", "2D Scaling Matrix", "2D Reflection Matrix"]:
+                    st.markdown("### Effect on Standard Shapes")
+                    
+                    # Create points for a simple shape (square/rectangle)
+                    points = np.array([
+                        [1, 1],   # top-right
+                        [-1, 1],  # top-left
+                        [-1, -1], # bottom-left
+                        [1, -1],  # bottom-right
+                        [1, 1]    # close the shape
+                    ])
+                    
+                    # Apply the transformation
+                    transformed_points = points @ matrix.T
+                    
+                    # Create a visualization with plotly
+                    fig = go.Figure()
+                    
+                    # Original shape
+                    fig.add_trace(go.Scatter(
+                        x=points[:, 0],
+                        y=points[:, 1],
+                        mode='lines+markers',
+                        name='Original',
+                        line=dict(color='blue', width=2),
+                        marker=dict(size=8, color='blue')
+                    ))
+                    
+                    # Transformed shape
+                    fig.add_trace(go.Scatter(
+                        x=transformed_points[:, 0],
+                        y=transformed_points[:, 1],
+                        mode='lines+markers',
+                        name='Transformed',
+                        line=dict(color='red', width=2),
+                        marker=dict(size=8, color='red')
+                    ))
+                    
+                    # Coordinate axes
+                    fig.add_trace(go.Scatter(
+                        x=[-3, 3],
+                        y=[0, 0],
+                        mode='lines',
+                        line=dict(color='black', width=1),
+                        name='x-axis'
+                    ))
+                    
+                    fig.add_trace(go.Scatter(
+                        x=[0, 0],
+                        y=[-3, 3],
+                        mode='lines',
+                        line=dict(color='black', width=1),
+                        name='y-axis'
+                    ))
+                    
+                    # Set aspect ratio equal and other layout settings
+                    fig.update_layout(
+                        title=f"Effect of {matrix_type} on a Square",
+                        xaxis=dict(
+                            title="x",
+                            range=[-3, 3],
+                            zeroline=True,
+                            zerolinewidth=1,
+                            zerolinecolor='gray',
+                        ),
+                        yaxis=dict(
+                            title="y",
+                            range=[-3, 3],
+                            scaleanchor="x",
+                            scaleratio=1,
+                            zeroline=True,
+                            zerolinewidth=1,
+                            zerolinecolor='gray',
+                        ),
+                        showlegend=True,
+                        legend=dict(x=0.02, y=0.98)
+                    )
+                    
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    # Add explanation based on the transformation
+                    if matrix_type == "2D Rotation Matrix":
+                        st.markdown(f"""
+                        The rotation matrix rotates points counterclockwise by {angle_degrees}° around the origin.
+                        Note how the shape maintains its size and proportions, demonstrating that rotation preserves distances.
+                        """)
+                    elif matrix_type == "2D Scaling Matrix":
+                        st.markdown(f"""
+                        The scaling matrix stretches or shrinks the shape along the coordinate axes.
+                        - X-axis scaling: {scale_x}
+                        - Y-axis scaling: {scale_y}
+                        
+                        This changes the size and possibly the proportions of the shape.
+                        """)
+                    elif matrix_type == "2D Reflection Matrix":
+                        st.markdown(f"""
+                        The reflection matrix flips the shape across the {reflection_type.lower()}.
+                        This creates a mirror image with respect to that line or point.
+                        """)
+                
+                # For other matrices, provide applications and additional information
+                else:
+                    st.markdown("### Applications and Examples")
+                    
+                    if matrix_type == "Identity Matrix":
+                        st.markdown("""
+                        **Applications of Identity Matrices:**
+                        1. Representing the neutral element in matrix multiplication
+                        2. Preserving vectors when multiplied: I·v = v
+                        3. Used in defining inverses: A·A⁻¹ = A⁻¹·A = I
+                        4. Starting point for many iterative algorithms
+                        5. In graphics transformations, represents "no change"
+                        """)
+                    elif matrix_type == "Zero Matrix":
+                        st.markdown("""
+                        **Applications of Zero Matrices:**
+                        1. Representing systems with no interaction between variables
+                        2. Neutral element for matrix addition
+                        3. Representing the null transformation (maps all vectors to zero)
+                        4. Used in initializing matrices before filling them with values
+                        5. Representing degenerate systems of equations
+                        """)
+                    elif matrix_type == "Diagonal Matrix":
+                        st.markdown("""
+                        **Applications of Diagonal Matrices:**
+                        1. Representing simple linear transformations (scaling along coordinate axes)
+                        2. Simplifying computations - multiplication and powers are much faster
+                        3. Eigenvalue/eigenvector decomposition (diagonalization): P⁻¹AP = D
+                        4. Covariance matrices in statistics (when variables are uncorrelated)
+                        5. Inertia matrices in physics when using principal axes
+                        """)
+                    elif matrix_type in ["Upper Triangular Matrix", "Lower Triangular Matrix"]:
+                        triangle_type = "upper" if matrix_type == "Upper Triangular Matrix" else "lower"
+                        st.markdown(f"""
+                        **Applications of {triangle_type.capitalize()} Triangular Matrices:**
+                        1. LU decomposition in solving linear systems
+                        2. Gaussian elimination process (results in triangular form)
+                        3. Representing certain causal systems (one-way dependencies)
+                        4. More efficient matrix operations (zeros don't need to be processed)
+                        5. Efficiently solving systems via forward/backward substitution
+                        """)
+                    elif matrix_type == "Symmetric Matrix":
+                        st.markdown("""
+                        **Applications of Symmetric Matrices:**
+                        1. Covariance and correlation matrices in statistics
+                        2. Inertia tensors in physics
+                        3. Adjacency matrices of undirected graphs
+                        4. Hessian matrices in optimization (second derivatives)
+                        5. Quadratic forms in mathematics
+                        6. Distance matrices in data analysis
+                        """)
+                    elif matrix_type == "Orthogonal Matrix":
+                        st.markdown("""
+                        **Applications of Orthogonal Matrices:**
+                        1. Representing rotations, reflections, and rigid transformations
+                        2. QR decomposition algorithm
+                        3. Principal Component Analysis (PCA)
+                        4. Preserving distances in data transformations
+                        5. Gram-Schmidt orthogonalization process
+                        6. Orthogonal polynomials in function approximation
+                        """)
+            
+            return matrix
+        
+        return None
+        
     def matrix_determinant(self, matrix_input):
         """Calculate the determinant of a matrix."""
         
