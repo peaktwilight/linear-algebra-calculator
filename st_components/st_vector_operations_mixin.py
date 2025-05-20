@@ -242,8 +242,11 @@ class VectorOperationsMixin:
         # Parse vectors from args (assuming args.vector_a and args.vector_b are string inputs)
         a = self.framework.parse_vector(args.vector_a)
         b = self.framework.parse_vector(args.vector_b)
-        cross = result["cross_product"]
-        area = result["area"]
+        
+        # The result from framework.cross_product is a numpy array
+        # Create a dictionary with the cross product and its magnitude (for area calculations)
+        cross = result  # The actual cross product
+        area = np.linalg.norm(cross) / 2  # Half the magnitude is the triangle area
         
         # Validate vector dimensions
         if len(a) != 3 or len(b) != 3:

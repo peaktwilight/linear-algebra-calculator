@@ -318,7 +318,8 @@ def main():
     elif category == "Matrix Operations":
         operation = st.sidebar.selectbox(
             "Select Matrix Operation",
-            ["Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose"]
+            ["Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
+             "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Eigenvalues and Eigenvectors"]
         )
         
         st.subheader(operation)
@@ -394,6 +395,133 @@ def main():
             if st.button("Calculate Transpose"):
                 if matrix_a:
                     calculator.matrix_operations("transpose", matrix_a)
+                else:
+                    st.error("Please enter a matrix.")
+        
+        elif operation == "Matrix Multiplication":
+            st.write("This operation multiplies two matrices together.")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                matrix_a = st.text_area(
+                    "Enter Matrix A (format: a,b,c; d,e,f or separate rows with newlines):",
+                    value="1, 2, 3\n4, 5, 6"
+                )
+            
+            with col2:
+                matrix_b = st.text_area(
+                    "Enter Matrix B (format: a,b,c; d,e,f or separate rows with newlines):",
+                    value="7, 8\n9, 10\n11, 12"
+                )
+            
+            with st.expander("Help: Matrix Multiplication"):
+                st.write("""
+                Matrix multiplication requires that the number of columns in the first matrix (A) equals 
+                the number of rows in the second matrix (B).
+                
+                If A is a m×n matrix and B is a n×p matrix, their product C = A×B will be a m×p matrix.
+                
+                Example:
+                - A = 2×3 matrix (2 rows, 3 columns)
+                - B = 3×2 matrix (3 rows, 2 columns)
+                - C = A×B will be a 2×2 matrix
+                
+                Each element c_{ij} in the product is calculated as:
+                c_{ij} = Σ(a_{ik} * b_{kj}) for k = 1 to n
+                """)
+            
+            if st.button("Calculate Product"):
+                if matrix_a and matrix_b:
+                    calculator.matrix_multiply(matrix_a, matrix_b)
+                else:
+                    st.error("Please enter both matrices.")
+        
+        elif operation == "Matrix Determinant":
+            st.write("This operation calculates the determinant of a square matrix.")
+            
+            matrix = st.text_area(
+                "Enter Matrix (format: a,b,c; d,e,f or separate rows with newlines):",
+                value="1, 2\n3, 4"
+            )
+            
+            with st.expander("Help: Matrix Determinant"):
+                st.write("""
+                The determinant is a scalar value calculated from a square matrix.
+                
+                Properties:
+                - Only defined for square matrices
+                - Determinant of 2×2 matrix [[a, b], [c, d]] is ad - bc
+                - For larger matrices, calculated using minors and cofactors
+                - If determinant = 0, the matrix is singular (not invertible)
+                - Determinant of a product = product of determinants
+                
+                The determinant has geometric meaning: it represents the scaling factor of the transformation 
+                represented by the matrix.
+                """)
+            
+            if st.button("Calculate Determinant"):
+                if matrix:
+                    calculator.matrix_determinant(matrix)
+                else:
+                    st.error("Please enter a matrix.")
+        
+        elif operation == "Matrix Inverse":
+            st.write("This operation calculates the inverse of a square matrix.")
+            
+            matrix = st.text_area(
+                "Enter Matrix (format: a,b,c; d,e,f or separate rows with newlines):",
+                value="1, 2\n3, 4"
+            )
+            
+            with st.expander("Help: Matrix Inverse"):
+                st.write("""
+                The inverse of a matrix A is denoted A⁻¹ and satisfies: A × A⁻¹ = A⁻¹ × A = I (identity matrix).
+                
+                Properties:
+                - Only defined for square matrices with non-zero determinant
+                - For a 2×2 matrix [[a, b], [c, d]], the inverse is:
+                  [[d/(ad-bc), -b/(ad-bc)], [-c/(ad-bc), a/(ad-bc)]]
+                - If A is invertible, the system Ax = b has unique solution x = A⁻¹b
+                
+                A matrix without an inverse is called singular or non-invertible.
+                """)
+            
+            if st.button("Calculate Inverse"):
+                if matrix:
+                    calculator.matrix_inverse(matrix)
+                else:
+                    st.error("Please enter a matrix.")
+        
+        elif operation == "Eigenvalues and Eigenvectors":
+            st.write("This operation calculates the eigenvalues and eigenvectors of a square matrix.")
+            
+            matrix = st.text_area(
+                "Enter Matrix (format: a,b,c; d,e,f or separate rows with newlines):",
+                value="1, 2\n3, 4"
+            )
+            
+            with st.expander("Help: Eigenvalues and Eigenvectors"):
+                st.write("""
+                An eigenvector of a square matrix A is a non-zero vector v such that when multiplied 
+                by A, yields a scalar multiple of itself: Av = λv. This scalar λ is the eigenvalue 
+                associated with the eigenvector v.
+                
+                Properties:
+                - Only defined for square matrices
+                - Eigenvalues are the roots of the characteristic polynomial: det(A - λI) = 0
+                - A matrix with n×n dimensions has n eigenvalues (counting multiplicities)
+                - Real symmetric matrices have real eigenvalues and orthogonal eigenvectors
+                
+                Applications:
+                - Principal Component Analysis (PCA)
+                - Stability analysis in dynamical systems
+                - Quantum mechanics
+                - Google's PageRank algorithm
+                """)
+            
+            if st.button("Calculate Eigenvalues and Eigenvectors"):
+                if matrix:
+                    calculator.eigenvalues_eigenvectors(matrix)
                 else:
                     st.error("Please enter a matrix.")
     
