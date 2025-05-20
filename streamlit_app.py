@@ -130,33 +130,27 @@ def apply_styling():
                             });
                     };
                     
-                    // Update title text shadow based on current color
-                    const updateTitleGlow = function() {
+                    // Enhance title rainbow wave effect
+                    const enhanceTitleEffect = function() {
                         const title = document.querySelector('.animate-title');
                         if (title) {
-                            // Get computed color of the title
-                            const color = window.getComputedStyle(title).color;
-                            // Extract RGB values
-                            const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-                            if (rgbMatch) {
-                                const r = rgbMatch[1];
-                                const g = rgbMatch[2];
-                                const b = rgbMatch[3];
-                                // Update text shadow with current color
-                                title.style.textShadow = `0 0 15px rgba(${r}, ${g}, ${b}, 0.6)`;
-                            }
+                            // Set initial state
+                            title.style.opacity = "0"; // Start invisible
+                            
+                            // Force a repaint to ensure animation runs smoothly
+                            setTimeout(() => {
+                                title.style.opacity = "1"; // Make visible with animation
+                                console.log("Rainbow wave animation activated");
+                            }, 50);
                         }
                     };
                     
-                    // Run initial fixes
+                    // Run initial fixes and enhancements
                     fixAlerts();
+                    enhanceTitleEffect();
                     
                     // Keep checking for new alerts
                     setInterval(fixAlerts, 200);
-                    
-                    // Update title glow periodically during animation
-                    const glowInterval = setInterval(updateTitleGlow, 100);
-                    setTimeout(() => clearInterval(glowInterval), 5000); // Stop after animation completes
                 }, 100);
             });
             </script>

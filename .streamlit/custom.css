@@ -50,41 +50,48 @@
   }
 }
 
-/* Animation for title and headers */
-@keyframes rainbowText {
+/* Clean text gradient animation */
+@keyframes titleGradient {
   0% {
-    color: #FF9AA2;
+    color: white;
   }
   20% {
-    color: #FFDAC1;
-  }
-  40% {
-    color: #B5EAD7;
-  }
-  60% {
-    color: #C7CEEA;
+    background-position: 0% 50%;
+    color: transparent;
   }
   80% {
-    color: #B8B5F4;
+    background-position: 100% 50%;
+    color: transparent;
   }
   100% {
-    color: #fff;
+    color: white;
   }
 }
 
 .animate-title {
   position: relative;
-  animation: slideInUp 0.8s ease-out forwards, rainbowText 3s 1s ease-out forwards;
-  color: #FF9AA2;
   font-size: 2.8rem;
   font-weight: 800;
   letter-spacing: 0.5px;
   margin-bottom: 1.8rem;
   text-align: center;
+  animation: 
+    slideInUp 0.8s ease-out forwards,
+    titleGradient 3s 1s ease-in-out forwards;
   opacity: 0;
   overflow: hidden;
-  /* Rainbow text glow effect */
-  text-shadow: 0 0 10px rgba(255, 154, 162, 0.5);
+  background: linear-gradient(
+    90deg, 
+    #ff6ec4, 
+    #7873f5, 
+    #00c2ff, 
+    #7873f5, 
+    #ff6ec4
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: white;
 }
 
 /* Removed underline effect */
