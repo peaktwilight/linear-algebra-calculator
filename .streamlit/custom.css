@@ -51,19 +51,31 @@
 }
 
 /* Animation for title and headers */
-@keyframes shimmer {
+@keyframes rainbowText {
   0% {
-    background-position: -100% 0;
+    color: #FF9AA2;
+  }
+  20% {
+    color: #FFDAC1;
+  }
+  40% {
+    color: #B5EAD7;
+  }
+  60% {
+    color: #C7CEEA;
+  }
+  80% {
+    color: #B8B5F4;
   }
   100% {
-    background-position: 200% 0;
+    color: #fff;
   }
 }
 
 .animate-title {
   position: relative;
-  animation: slideInUp 0.8s ease-out forwards;
-  color: rgba(255, 255, 255, 0.95);
+  animation: slideInUp 0.8s ease-out forwards, rainbowText 3s 1s ease-out forwards;
+  color: #FF9AA2;
   font-size: 2.8rem;
   font-weight: 800;
   letter-spacing: 0.5px;
@@ -71,27 +83,8 @@
   text-align: center;
   opacity: 0;
   overflow: hidden;
-}
-
-/* Shimmer overlay that passes over the text */
-.animate-title::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -200%;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.6) 50%,
-    transparent 100%
-  );
-  animation: shimmerOverlay 1.5s 0.9s ease-out forwards;
-}
-
-@keyframes shimmerOverlay {
-  to { left: 100%; }
+  /* Rainbow text glow effect */
+  text-shadow: 0 0 10px rgba(255, 154, 162, 0.5);
 }
 
 /* Removed underline effect */

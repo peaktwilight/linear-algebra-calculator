@@ -121,40 +121,7 @@ def apply_styling():
                 setTimeout(function() {
                     document.body.classList.add('animations-ready');
                     
-                    // Enhance title shimmer effect
-                    const enhanceTitleShimmer = function() {
-                        const title = document.querySelector('.animate-title');
-                        if (title) {
-                            // Apply sleek shimmer effect
-                            const style = document.createElement('style');
-                            style.textContent = `
-                                @keyframes shimmerOverlayJs {
-                                    0% { left: -200%; }
-                                    100% { left: 100%; }
-                                }
-                                
-                                .animate-title::after {
-                                    content: '';
-                                    position: absolute;
-                                    top: 0;
-                                    left: -200%;
-                                    width: 200%;
-                                    height: 100%;
-                                    background: linear-gradient(
-                                        90deg,
-                                        transparent 0%,
-                                        rgba(255, 255, 255, 0.6) 50%,
-                                        transparent 100%
-                                    );
-                                    animation: shimmerOverlayJs 1.5s 0.9s ease-out forwards;
-                                    pointer-events: none;
-                                }
-                            `;
-                            document.head.appendChild(style);
-                        }
-                    };
-                    
-                    // Make sure alerts are visible
+                    // Fix alerts visibility
                     const fixAlerts = function() {
                         document.querySelectorAll('.stAlert, [data-testid="stAlert"], [data-testid="stAlertContainer"]')
                             .forEach(function(el) {
@@ -163,12 +130,33 @@ def apply_styling():
                             });
                     };
                     
-                    // Run initially
-                    enhanceTitleShimmer();
+                    // Update title text shadow based on current color
+                    const updateTitleGlow = function() {
+                        const title = document.querySelector('.animate-title');
+                        if (title) {
+                            // Get computed color of the title
+                            const color = window.getComputedStyle(title).color;
+                            // Extract RGB values
+                            const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+                            if (rgbMatch) {
+                                const r = rgbMatch[1];
+                                const g = rgbMatch[2];
+                                const b = rgbMatch[3];
+                                // Update text shadow with current color
+                                title.style.textShadow = `0 0 15px rgba(${r}, ${g}, ${b}, 0.6)`;
+                            }
+                        }
+                    };
+                    
+                    // Run initial fixes
                     fixAlerts();
                     
                     // Keep checking for new alerts
                     setInterval(fixAlerts, 200);
+                    
+                    // Update title glow periodically during animation
+                    const glowInterval = setInterval(updateTitleGlow, 100);
+                    setTimeout(() => clearInterval(glowInterval), 5000); // Stop after animation completes
                 }, 100);
             });
             </script>
