@@ -449,13 +449,12 @@ class VectorOperationsMixin:
             st.markdown("### Step-by-step Calculation")
             
             # Parse common inputs
-            point_p = self.framework.parse_vector(args.point_p)
-            st.markdown(f"**Point P:** ${point_p.tolist()}$")
+            point_b = self.framework.parse_vector(args.point_b)
+            st.markdown(f"**Point B:** ${point_b.tolist()}$")
             
             # Parse the needed vectors
             point_a = self.framework.parse_vector(args.point_a)
             direction = self.framework.parse_vector(args.direction)
-            point_b = self.framework.parse_vector(args.point_b)
             
             # The line is defined by point A and direction vector
             st.markdown(f"**Line defined by point A and direction vector d:**")
@@ -475,11 +474,11 @@ class VectorOperationsMixin:
             # Or for 3D: || AP x d || / ||d||
             # For 2D: | (P-A) . d_perp | / ||d|| where d_perp is (-dy, dx)
             
-            if len(point_p) == 3 and len(direction_vec_line) == 3:
+            if len(point_b) == 3 and len(direction_vec_line) == 3:
                 cross_prod = np.cross(vec_ap, direction_vec_line)
                 norm_d = np.linalg.norm(direction_vec_line)
                 st.markdown(f"$\\text{{Distance}} = \\frac{{|\\vec{{AP}} \\times \\vec{{d}}|}}{{|\\vec{{d}}|}} = \\frac{{|{cross_prod.tolist()}|}}{{{norm_d:.4f}}} = \\frac{{{np.linalg.norm(cross_prod):.4f}}}{{{norm_d:.4f}}} = {distance:.4f}$")
-            elif len(point_p) == 2 and len(direction_vec_line) == 2:
+            elif len(point_b) == 2 and len(direction_vec_line) == 2:
                 # Using 2D specific formula: |(x_p-x_a)d_y - (y_p-y_a)d_x| / sqrt(d_x^2 + d_y^2)
                 # This is equivalent to | vec_ap_x * d_y - vec_ap_y * d_x | / ||d||
                 # Which is the magnitude of the 2D cross product (scalar) / magnitude of d
@@ -501,7 +500,7 @@ class VectorOperationsMixin:
         with col2:
             st.markdown("### Visualization")
             
-            dim = len(point_p)
+            dim = len(point_b)
             construction_lines = []
             primary_vectors = [] # Vectors like AP, d
             primary_names = []
@@ -516,12 +515,12 @@ class VectorOperationsMixin:
             line_style = dict(color='blue', width=2)
             construction_lines.append((line_p1, line_p2, "Line Segment", line_style))
 
-            # Point P: can be visualized as a vector from origin, or just a marker if viz supports it
-            # For now, let display_vector_visualization handle it if P is added to primary_vectors.
-            # However, it's a point, not a vector. Let's find the closest point on the line to P.
+            # Point B: can be visualized as a vector from origin, or just a marker if viz supports it
+            # For now, let display_vector_visualization handle it if B is added to primary_vectors.
+            # However, it's a point, not a vector. Let's find the closest point on the line to B.
             
-            # Calculate closest point on line (Q) to P
-            # Q = A + proj_d(AP)  where d is direction_vec_line, A is point_a_on_line
+            # Calculate closest point on line (Q) to B
+            # Q = A + proj_d(AB)  where d is direction_vec_line, A is point_a_on_line
             if point_a_on_line is not None and direction_vec_line is not None and vec_ap is not None:
                 if np.dot(direction_vec_line, direction_vec_line) == 0:
                     # Direction vector is zero, line is just a point A.
@@ -533,24 +532,24 @@ class VectorOperationsMixin:
             
                 # Line segment from P to Q (the distance itself)
                 distance_line_style = dict(color='red', dash='dash', width=2)
-                construction_lines.append((point_p, q_closest_point, "Distance", distance_line_style))
+                construction_lines.append((point_b, q_closest_point, "Distance", distance_line_style))
                 
-                # Show point P and Q as markers / small vectors if possible
+                # Show point B and Q as markers / small vectors if possible
                 # Adding Q as a vector from origin for visualization
-                # primary_vectors.append(point_p) # Visualizing P as vector from origin
-                # primary_names.append("Point P")
+                # primary_vectors.append(point_b) # Visualizing B as vector from origin
+                # primary_names.append("Point B")
                 # primary_vectors.append(q_closest_point) # Visualizing Q as vector from origin
                 # primary_names.append("Closest Point Q")
-                # For better viz, use P, Q, and A as points in construction if possible, or as vectors from origin
-                # Let's try plotting key vectors: AP, d, and the perpendicular segment PQ
-                primary_vectors = [vec_ap, direction_vec_line, (point_p - q_closest_point)]
-                primary_names = ["Vector AP", "Line Direction d", "Perpendicular PQ"]
+                # For better viz, use B, Q, and A as points in construction if possible, or as vectors from origin
+                # Let's try plotting key vectors: AB, d, and the perpendicular segment BQ
+                primary_vectors = [vec_ap, direction_vec_line, (point_b - q_closest_point)]
+                primary_names = ["Vector AB", "Line Direction d", "Perpendicular BQ"]
                 
-                # To make the visualization clearer, we can also add the points A, P, Q explicitly.
+                # To make the visualization clearer, we can also add the points A, B, Q explicitly.
                 # The current display_vector_visualization is primarily for vectors from origin.
                 # For points, it's better to have specific markers.
                 # Let's adjust origin for the display if it helps center the view around relevant points.
-                # Centroid = (point_p + point_a_on_line + q_closest_point) / 3
+                # Centroid = (point_b + point_a_on_line + q_closest_point) / 3
                 # display_origin = centroid
                 display_origin = np.zeros(dim) # Keep origin for now
 
