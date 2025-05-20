@@ -18,70 +18,101 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Minimal CSS for a sleek footer animation
-st.markdown("""
-<style>
-/* Ultra-minimal animations inspired by GSAP */
-@keyframes fadeUp { 
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+# CSS is now loaded from the .streamlit/custom.css file
 
-.footer-container {
-    background: linear-gradient(135deg, rgba(25, 25, 30, 0.3) 0%, rgba(40, 40, 50, 0.4) 100%);
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 25px;
-    margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    animation: fadeUp 0.8s ease-out forwards;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
 
-.footer-container:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.footer-text {
-    font-size: 0.95em;
-    letter-spacing: 0.01em;
-    margin-bottom: 6px;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.85);
-}
-
-.footer-text a {
-    color: rgba(255, 255, 255, 0.85);
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
-}
-
-.footer-text a:hover {
-    color: white;
-    border-bottom: 1px solid white;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
-}
-
-.version-tag {
-    font-family: monospace;
-    background-color: rgba(0, 0, 0, 0.15);
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-size: 0.85em;
-}
-</style>
-""", unsafe_allow_html=True)
+def apply_styling():
+    """Apply styling with reliable animations"""
+    # Define simple animations directly in the code to ensure availability
+    st.markdown("""
+    <style>
+    /* Critical animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    /* Core animation classes */
+    .animate-title {
+      animation: slideInUp 0.8s ease-out forwards;
+      opacity: 0;
+    }
+    
+    .animate-subheader {
+      animation: slideInLeft 0.6s ease-out forwards;
+      opacity: 0;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+      display: inline-block !important;
+      background-color: rgba(55, 55, 60, 0.7) !important;
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 4px !important;
+      padding: 0.3rem 1rem !important;
+      margin: 0.5rem 0 !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    
+    /* Basic element animations */
+    h1, h2, h3, h4 {
+      animation: fadeIn 0.5s ease-out forwards;
+      opacity: 0;
+    }
+    
+    p {
+      animation: fadeIn 0.5s ease-out forwards;
+      opacity: 0;
+      animation-delay: 0.1s;
+    }
+    
+    /* Make animations complete */
+    h1, h2, h3, h4, p, .animate-title, .animate-subheader {
+      animation-fill-mode: forwards;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Then try to load the full CSS file for enhanced styling
+    try:
+        with open('.streamlit/custom.css', 'r') as f:
+            custom_css = f.read()
+            st.markdown(f'<style>{custom_css}</style>', unsafe_allow_html=True)
+    except Exception:
+        # Silently continue with the basic animations defined above
+        pass
 
 
 def main():
     calculator = LinAlgCalculator()
     quiz_component = QuizComponent()
     
-    # Simple header
-    st.title("Linear Algebra Calculator")
+    # Apply minimal styling approach 
+    apply_styling()
+    
+    # Animated header with enhanced styling
+    st.markdown('<h1 class="animate-title">Linear Algebra Calculator</h1>', unsafe_allow_html=True)
+    
+    # Example of animated tooltip usage
+    st.markdown('''
+    <div style="text-align: center; margin-bottom: 20px;">
+        <span class="tooltip">Interactive mathematical toolkit
+            <span class="tooltiptext">Explore vector operations, matrix calculations, and systems of linear equations with intuitive visualizations</span>
+        </span>
+    </div>
+    ''', unsafe_allow_html=True)
     
     # Define all available operations for search
     all_operations = {
@@ -160,7 +191,7 @@ def main():
             index=default_index
         )
         
-        st.subheader(operation)
+        st.markdown(f'<h2 class="animate-subheader">{operation}</h2>', unsafe_allow_html=True)
         
         if operation == "Vector Normalization":
             st.write("This operation normalizes a vector to unit length while preserving its direction.")
@@ -170,7 +201,8 @@ def main():
                 value="3, 4"
             )
             
-            if st.button("Calculate Normalization"):
+            # Regular Streamlit button with a key
+            if st.button("Calculate Normalization", key="norm_button"):
                 if vector_input:
                     calculator.normalize_vector(vector_input)
                 else:
@@ -436,7 +468,7 @@ def main():
             index=default_index
         )
         
-        st.subheader(operation)
+        st.markdown(f'<h2 class="animate-subheader">{operation}</h2>', unsafe_allow_html=True)
         
         if operation == "Matrix Addition":
             st.write("This operation adds two matrices element-wise.")
@@ -683,7 +715,7 @@ def main():
             index=default_index
         )
         
-        st.subheader(operation)
+        st.markdown(f'<h2 class="animate-subheader">{operation}</h2>', unsafe_allow_html=True)
         
         # Common input for all operations
         matrix_input = st.text_area(
@@ -809,15 +841,15 @@ def main():
         6.  **Visit Learning Resources:** For guides, examples, and concept explanations.
         """)
 
-    # Simple, clear footer
+    # Enhanced footer with animations (CSS now in custom.css)
     st.sidebar.markdown('''
     <div class="footer-container">
         <div class="footer-text">
-            Made with ❤️ by <a href="https://doruk.ch" target="_blank">Doruk</a>
+            Made with <span class="heart-pulse">❤️</span> by <a href="https://doruk.ch" target="_blank">Doruk</a>
         </div>
         <div class="footer-text">
             <a href="https://github.com/peaktwilight/linear-algebra-calculator" target="_blank">GitHub</a> 
-            <span class="version-tag">v1.6.3</span>
+            <span class="version-tag floating">v1.6.3</span>
         </div>
         <div class="footer-text">FHNW Linear Algebra Module</div>
     </div>

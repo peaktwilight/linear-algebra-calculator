@@ -1,0 +1,236 @@
+/* Clean, reliable styling with simple animations */
+
+/* Basic animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from { 
+    opacity: 0; 
+    transform: translateX(-20px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0);
+  }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes floating {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Animation for title and headers */
+.animate-title {
+  animation: slideInUp 0.8s ease-out forwards;
+  color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
+  opacity: 0;
+}
+
+.animate-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 30%;
+  right: 30%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(200, 200, 220, 0.7), transparent);
+  border-radius: 3px;
+}
+
+.animate-subheader {
+  animation: slideInLeft 0.6s ease-out forwards;
+  color: #f0f2f6;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(180, 180, 200, 0.4);
+  opacity: 0;
+}
+
+/* Standard heading styling with animations */
+h1 {
+  animation: slideInUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+h2, h3, h4 {
+  animation: fadeIn 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+/* Basic button styling */
+.stButton > button {
+  display: inline-block !important;
+  background-color: rgba(55, 55, 60, 0.7) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px !important;
+  padding: 0.3rem 1rem !important;
+  margin: 0.5rem 0 !important;
+  font-weight: 400 !important;
+  transition: all 0.2s ease !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.stButton > button:hover {
+  background-color: rgba(70, 70, 80, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Basic text animation */
+p {
+  animation: fadeIn 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Clean footer styling */
+.footer-container {
+  animation: fadeIn 0.7s ease-out forwards;
+  background: rgba(30, 30, 35, 0.4);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0;
+}
+
+.footer-text {
+  font-size: 0.95em;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.footer-text a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+  padding: 0 2px;
+  transition: all 0.2s ease;
+}
+
+.footer-text a:hover {
+  color: white;
+  border-bottom: 1px solid white;
+}
+
+.version-tag {
+  font-family: monospace;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.heart-pulse {
+  display: inline-block;
+  animation: heartbeat 1.5s infinite;
+  color: #ff5b7f;
+}
+
+.floating {
+  display: inline-block;
+  animation: floating 3s ease-in-out infinite;
+}
+
+/* Simple tooltip styling */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted rgba(220, 220, 240, 0.6);
+  cursor: help;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: rgba(25, 28, 36, 0.95);
+  color: #f0f2f6;
+  text-align: center;
+  border-radius: 6px;
+  padding: 10px 14px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -80px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  width: 180px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(200, 200, 220, 0.3);
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Basic scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(180, 180, 200, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 200, 220, 0.5);
+}
+
+/* Clean layout */
+.main .block-container {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  max-width: 1200px;
+}
+
+/* Animation delays for smoother appearance */
+h1 { animation-delay: 0.1s; }
+h2 { animation-delay: 0.15s; }
+h3 { animation-delay: 0.2s; }
+p { animation-delay: 0.25s; }
+.footer-container { animation-delay: 0.3s; }
+
+/* Make all animations complete properly */
+h1, h2, h3, h4, p, .animate-title, .animate-subheader, .footer-container {
+  animation-fill-mode: forwards;
+}
