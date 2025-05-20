@@ -45,18 +45,81 @@ def main():
     # Simple header
     st.title("Linear Algebra Calculator")
     
-    # Sidebar with categories
-    st.sidebar.title("Categories")
-    category = st.sidebar.selectbox(
-        "Select Operation Category",
-        ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Quiz Mode", "Learning Resources"]
-    )
+    # Define all available operations for search
+    all_operations = {
+        "Vector Operations": ["Vector Normalization", "Vector Projection/Shadow", "Vector Angle", "Cross Product", 
+                             "Triangle Area", "Point-Line Distance", "Check Collinear"],
+        "Matrix Operations": ["Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
+                             "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", 
+                             "Eigenvalues and Eigenvectors"],
+        "Systems of Linear Equations": ["Solve System (Gaussian Elimination)", "Standard Form Analysis", 
+                                       "Row Operations Analysis", "Free Parameter Analysis", 
+                                       "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation"]
+    }
+    
+    # Flatten list for searching
+    all_operations_flat = [(cat, op) for cat in all_operations for op in all_operations[cat]]
+    
+    # Sidebar with search and categories
+    st.sidebar.title("Linear Algebra Tools")
+    
+    # Search box in sidebar
+    search_query = st.sidebar.text_input("🔍 Search operations...", 
+                                       placeholder="E.g., matrix multiply, eigenvalues...")
+    
+    # Process search if entered
+    if search_query:
+        matches = []
+        for category_name, operation_name in all_operations_flat:
+            if (search_query.lower() in operation_name.lower() or 
+                search_query.lower() in category_name.lower()):
+                matches.append((category_name, operation_name))
+        
+        if matches:
+            st.sidebar.success(f"Found {len(matches)} matching operations")
+            search_category, search_operation = st.sidebar.selectbox(
+                "Select an operation:",
+                matches,
+                format_func=lambda x: f"{x[1]} (in {x[0]})"
+            )
+            # Auto-select this category and operation
+            category = search_category
+            # We'll use this later to auto-select the operation
+            selected_operation_from_search = search_operation
+        else:
+            st.sidebar.warning("No matches found. Try different keywords.")
+            selected_operation_from_search = None
+            st.sidebar.markdown("---")
+            category = st.sidebar.selectbox(
+                "Select Operation Category",
+                ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Quiz Mode", "Learning Resources"]
+            )
+    else:
+        selected_operation_from_search = None
+        st.sidebar.markdown("---")
+        # Default categories selection if no search
+        category = st.sidebar.selectbox(
+            "Select Operation Category",
+            ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Quiz Mode", "Learning Resources"]
+        )
     
     if category == "Vector Operations":
+        vector_operations = ["Vector Normalization", "Vector Projection/Shadow", "Vector Angle", "Cross Product", 
+                           "Triangle Area", "Point-Line Distance", "Check Collinear"]
+        
+        # Auto-select operation if it came from search
+        default_index = 0
+        if selected_operation_from_search:
+            # Find the closest matching operation
+            for i, op in enumerate(vector_operations):
+                if selected_operation_from_search in op or op in selected_operation_from_search:
+                    default_index = i
+                    break
+                    
         operation = st.sidebar.selectbox(
             "Select Vector Operation",
-            ["Vector Normalization", "Vector Projection/Shadow", "Vector Angle", "Cross Product", 
-             "Triangle Area", "Point-Line Distance", "Check Collinear"]
+            vector_operations,
+            index=default_index
         )
         
         st.subheader(operation)
@@ -316,10 +379,23 @@ def main():
                     st.error("Please enter all vectors.")
     
     elif category == "Matrix Operations":
+        matrix_operations = ["Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
+                           "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", 
+                           "Eigenvalues and Eigenvectors"]
+        
+        # Auto-select operation if it came from search
+        default_index = 0
+        if selected_operation_from_search:
+            # Find the closest matching operation
+            for i, op in enumerate(matrix_operations):
+                if selected_operation_from_search in op or op in selected_operation_from_search:
+                    default_index = i
+                    break
+                    
         operation = st.sidebar.selectbox(
             "Select Matrix Operation",
-            ["Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
-             "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", "Eigenvalues and Eigenvectors"]
+            matrix_operations,
+            index=default_index
         )
         
         st.subheader(operation)
@@ -551,10 +627,22 @@ def main():
                     st.error("Please enter a matrix.")
     
     elif category == "Systems of Linear Equations":
+        system_operations = ["Solve System (Gaussian Elimination)", "Standard Form Analysis", "Row Operations Analysis", 
+                           "Free Parameter Analysis", "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation"]
+        
+        # Auto-select operation if it came from search
+        default_index = 0
+        if selected_operation_from_search:
+            # Find the closest matching operation
+            for i, op in enumerate(system_operations):
+                if selected_operation_from_search in op or op in selected_operation_from_search:
+                    default_index = i
+                    break
+                    
         operation = st.sidebar.selectbox(
             "Select Operation",
-            ["Solve System (Gaussian Elimination)", "Standard Form Analysis", "Row Operations Analysis", 
-             "Free Parameter Analysis", "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation"]
+            system_operations,
+            index=default_index
         )
         
         st.subheader(operation)
@@ -670,12 +758,73 @@ def main():
     elif category == "Learning Resources":
         render_learning_resources_page()
     
+    # UI Settings
+    with st.sidebar.expander("⚙️ UI Settings", expanded=False):
+        # Dark mode toggle
+        theme_choice = st.radio(
+            "Theme",
+            ["Light", "Dark"],
+            horizontal=True
+        )
+        if theme_choice == "Dark":
+            # Apply dark theme CSS
+            st.markdown("""
+            <style>
+            .stApp {
+                background-color: #1e1e1e;
+                color: #f0f0f0;
+            }
+            .stMarkdown, .stText, .stSubheader, .stTitle, div[data-testid="stText"] p {
+                color: #f0f0f0 !important;
+            }
+            .stButton button, .stSelectbox div[data-baseweb="select"] {
+                background-color: #333333;
+                color: #f0f0f0;
+                border-color: #555555;
+            }
+            .stTextInput input, .stTextArea textarea {
+                background-color: #333333;
+                color: #f0f0f0;
+                border-color: #555555;
+            }
+            .stTabs [data-baseweb="tab-list"] {
+                background-color: #2a2a2a;
+            }
+            .stTabs [data-baseweb="tab"] {
+                color: #f0f0f0;
+            }
+            .stTabs [aria-selected="true"] {
+                background-color: #3a3a3a;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
+        # Text size setting
+        text_size = st.select_slider(
+            "Text Size",
+            options=["Small", "Medium", "Large"]
+        )
+        
+        text_size_css = {
+            "Small": "0.9rem",
+            "Medium": "1rem",
+            "Large": "1.2rem"
+        }
+        
+        st.markdown(f"""
+        <style>
+        .stMarkdown, .stText, div[data-testid="stText"] p {{
+            font-size: {text_size_css[text_size]} !important;
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+
     # Quick Start & Tips Expander
     with st.sidebar.expander("💡 Quick Start & Tips", expanded=False):
         st.markdown("""
         #### How to use this calculator:
-        1.  **Select a Category:** Choose from Vector Ops, Matrix Ops, etc., in the sidebar.
-        2.  **Select an Operation:** Further specify the exact calculation.
+        1.  **Search or Browse:** Use the search bar at the top or browse categories in the sidebar.
+        2.  **Select an Operation:** Choose the specific calculation you need.
         3.  **Enter Inputs:** Provide vectors/matrices in the specified format (e.g., `1,2,3` or `1,2;3,4`).
         4.  **Get Results:** Outputs and explanations will appear below the inputs.
         5.  **Explore Quiz Mode:** Test your knowledge with interactive questions.
