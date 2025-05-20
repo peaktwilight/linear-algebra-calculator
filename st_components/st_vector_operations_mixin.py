@@ -537,14 +537,47 @@ class VectorOperationsMixin:
 
     def point_line_distance(self, args):
         """Calculate the distance from a point to a line (defined by a point and direction vector)."""
+        # Parse the points and direction
+        point_a = self.framework.parse_vector(args.point_a)  # Point on line
+        direction = self.framework.parse_vector(args.direction)  # Direction vector
+        point_b = self.framework.parse_vector(args.point_b)  # Point to find distance from
+        
+        # Calculate vector from point on line to point B
+        vec_ap = point_b - point_a
+        
         # Capture print output from the CLI function
         with StreamOutput() as output:
             result = self.framework.point_line_distance(args)
         
+        # The framework's point_line_distance method returns the distance directly
+        distance = result if isinstance(result, (int, float)) else 0
+        
+        # Calculate the distance ourselves for verification
+        if len(direction) > 0 and np.linalg.norm(direction) > 0:
+            if len(point_a) == 3 and len(direction) == 3 and len(point_b) == 3:
+                # 3D case - use cross product
+                cross_prod = np.cross(vec_ap, direction)
+                norm_d = np.linalg.norm(direction)
+                calculated_distance = np.linalg.norm(cross_prod) / norm_d
+            elif len(point_a) == 2 and len(direction) == 2 and len(point_b) == 2:
+                # 2D case - use determinant
+                numerator = abs(vec_ap[0]*direction[1] - vec_ap[1]*direction[0])
+                denominator = np.linalg.norm(direction)
+                calculated_distance = numerator / denominator
+            else:
+                # General case - use projection
+                proj_d_ap = np.dot(vec_ap, direction) / np.dot(direction, direction) * direction
+                vec_perp = vec_ap - proj_d_ap # Vector from line to point P, perpendicular to line
+                calculated_distance = np.linalg.norm(vec_perp)
+        else:
+            calculated_distance = 0
+            
+        # Use our calculated distance if significantly different
+        if abs(calculated_distance - distance) > 1e-6:
+            distance = calculated_distance
+        
         # Display the result and steps
         st.subheader("Result")
-        
-        distance = result["distance"] if isinstance(result, dict) else 0
         
         col1, col2 = st.columns([1,1])
         
@@ -552,53 +585,44 @@ class VectorOperationsMixin:
             st.markdown("### Step-by-step Calculation")
             
             # Parse common inputs
-            point_b = self.framework.parse_vector(args.point_b)
             st.markdown(f"**Point B:** ${point_b.tolist()}$")
-            
-            # Parse the needed vectors
-            point_a = self.framework.parse_vector(args.point_a)
-            direction = self.framework.parse_vector(args.direction)
             
             # The line is defined by point A and direction vector
             st.markdown(f"**Line defined by point A and direction vector d:**")
             st.markdown(f"$A = {point_a.tolist()}$")
             st.markdown(f"$\\vec{{d}} = {direction.tolist()}$")
             
-            # Calculate vector from point on line to point B
-            vec_ap = point_b - point_a
-            direction_vec_line = direction
-            point_a_on_line = point_a
-            
             st.markdown(f"**Vector AB (from A to B):** $\\vec{{AB}} = B - A = {vec_ap.tolist()}$")
-            st.markdown(f"**Direction vector of the line:** $\\vec{{d}} = {direction_vec_line.tolist()}$")
+            st.markdown(f"**Direction vector of the line:** $\\vec{{d}} = {direction.tolist()}$")
             
             st.markdown("**Distance formula (using cross product for 3D, projection for 2D/general):**")
             # Universal formula: Distance = || (P-A) - proj_d(P-A) ||
             # Or for 3D: || AP x d || / ||d||
             # For 2D: | (P-A) . d_perp | / ||d|| where d_perp is (-dy, dx)
             
-            if len(point_b) == 3 and len(direction_vec_line) == 3:
-                cross_prod = np.cross(vec_ap, direction_vec_line)
-                norm_d = np.linalg.norm(direction_vec_line)
+            if len(point_b) == 3 and len(direction) == 3:
+                cross_prod = np.cross(vec_ap, direction)
+                norm_d = np.linalg.norm(direction)
                 st.markdown(f"$\\text{{Distance}} = \\frac{{|\\vec{{AP}} \\times \\vec{{d}}|}}{{|\\vec{{d}}|}} = \\frac{{|{cross_prod.tolist()}|}}{{{norm_d:.4f}}} = \\frac{{{np.linalg.norm(cross_prod):.4f}}}{{{norm_d:.4f}}} = {distance:.4f}$")
-            elif len(point_b) == 2 and len(direction_vec_line) == 2:
+            elif len(point_b) == 2 and len(direction) == 2:
                 # Using 2D specific formula: |(x_p-x_a)d_y - (y_p-y_a)d_x| / sqrt(d_x^2 + d_y^2)
                 # This is equivalent to | vec_ap_x * d_y - vec_ap_y * d_x | / ||d||
                 # Which is the magnitude of the 2D cross product (scalar) / magnitude of d
-                numerator = abs(vec_ap[0]*direction_vec_line[1] - vec_ap[1]*direction_vec_line[0])
-                denominator = np.linalg.norm(direction_vec_line)
-                st.markdown(f"$\\text{{Distance}} = \\frac{{|(P_x-A_x)d_y - (P_y-A_y)d_x|}}{{\\sqrt{{d_x^2 + d_y^2}}}} = \\frac{{|({vec_ap[0]})({direction_vec_line[1]}) - ({vec_ap[1]})({direction_vec_line[0]})|}}{{{denominator:.4f}}} = \\frac{{{numerator:.4f}}}{{{denominator:.4f}}} = {distance:.4f}$")
+                numerator = abs(vec_ap[0]*direction[1] - vec_ap[1]*direction[0])
+                denominator = np.linalg.norm(direction)
+                st.markdown(f"$\\text{{Distance}} = \\frac{{|(P_x-A_x)d_y - (P_y-A_y)d_x|}}{{\\sqrt{{d_x^2 + d_y^2}}}} = \\frac{{|({vec_ap[0]})({direction[1]}) - ({vec_ap[1]})({direction[0]})|}}{{{denominator:.4f}}} = \\frac{{{numerator:.4f}}}{{{denominator:.4f}}} = {distance:.4f}$")
             else:
                 # General case using projection, works for any dimension
                 # Distance = || vec_ap - proj_d(vec_ap) ||
-                proj_d_ap = np.dot(vec_ap, direction_vec_line) / np.dot(direction_vec_line, direction_vec_line) * direction_vec_line
-                vec_perp = vec_ap - proj_d_ap # Vector from line to point P, perpendicular to line
-                # The distance is the magnitude of this perpendicular vector.
-                st.markdown(f"Projection of AP onto d: $proj_d(AP) = \\frac{{AP \cdot d}}{{d \cdot d}} d = {proj_d_ap.tolist()}$")
-                st.markdown(f"Perpendicular vector (from line to P): $AP - proj_d(AP) = {vec_perp.tolist()}$")
-                st.markdown(f"Distance = $||AP - proj_d(AP)|| = {np.linalg.norm(vec_perp):.4f}$")
-                if abs(np.linalg.norm(vec_perp) - distance) > 1e-3: # Check if matches CLI result
-                    st.warning(f"Calculated distance {np.linalg.norm(vec_perp):.4f} differs slightly from CLI result {distance:.4f}. Using CLI result.")
+                if np.dot(direction, direction) > 0:
+                    proj_d_ap = np.dot(vec_ap, direction) / np.dot(direction, direction) * direction
+                    vec_perp = vec_ap - proj_d_ap # Vector from line to point P, perpendicular to line
+                    # The distance is the magnitude of this perpendicular vector.
+                    st.markdown(f"Projection of AP onto d: $proj_d(AP) = \\frac{{AP \cdot d}}{{d \cdot d}} d = {proj_d_ap.tolist()}$")
+                    st.markdown(f"Perpendicular vector (from line to P): $AP - proj_d(AP) = {vec_perp.tolist()}$")
+                    st.markdown(f"Distance = $||AP - proj_d(AP)|| = {np.linalg.norm(vec_perp):.4f}$")
+                else:
+                    st.warning("Cannot calculate projection since direction vector has zero magnitude")
 
         with col2:
             st.markdown("### Visualization")
