@@ -19,8 +19,15 @@ from linalg_cli import LinearAlgebraExerciseFramework
 # Import Utilities
 from .st_utils import StreamOutput
 
-class LinAlgCalculator:
+# Import Mixins
+from .st_vector_operations_mixin import VectorOperationsMixin
+from .st_matrix_operations_mixin import MatrixOperationsMixin
+
+class LinAlgCalculator(VectorOperationsMixin, MatrixOperationsMixin):
     def __init__(self):
+        super().__init__() # Initialize mixins if they have their own __init__ (optional)
         self.framework = LinearAlgebraExerciseFramework()
     
-    # All vector methods previously here have been moved to VectorOperationsMixin
+    # All vector and matrix methods are now inherited from mixins.
+    # The main calculator class can be kept lean, or include 
+    # additional high-level orchestration logic if needed in the future.
