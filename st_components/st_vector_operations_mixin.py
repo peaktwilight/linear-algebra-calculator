@@ -300,8 +300,8 @@ class VectorOperationsMixin:
         with StreamOutput() as output:
             result = self.framework.cross_product(args)
         
-        # Extract values from the result
-        cross_prod = result.get("cross_product", np.array([0, 0, 0]))
+        # Since the framework's cross_product method returns the cross product directly (not in a dict)
+        cross_prod = result if isinstance(result, np.ndarray) else np.array([0, 0, 0])
         
         # Display the results
         st.subheader("Cross Product")
