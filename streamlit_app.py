@@ -31,7 +31,7 @@ st.set_page_config(
     menu_items={
         'Get Help': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
         'Report a bug': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
-        'About': "# Linear Algebra Calculator\nA comprehensive toolkit for learning and solving linear algebra problems. Made with ❤️ by Doruk for the LAG Fachmodul at FHNW.\n\nVersion 1.6.0 | Open source at https://github.com/peaktwilight/linear-algebra-calculator"
+        'About': "# Linear Algebra Calculator\nA comprehensive toolkit for learning and solving linear algebra problems. Made with ❤️ by Doruk for the LAG Fachmodul at FHNW.\n\nVersion 1.6.1 | Open source at https://github.com/peaktwilight/linear-algebra-calculator"
     }
 )
 
@@ -773,7 +773,7 @@ def main():
 
     st.sidebar.markdown("--- ")
     st.sidebar.markdown("<div title='Hoping we all get 6s in the LAG module 🤞'>Made with ❤️ by Doruk</div>", unsafe_allow_html=True)
-    st.sidebar.markdown("<div title='The person reading this will ace their next math test'><a href='https://github.com/peaktwilight/linear-algebra-calculator'>GitHub</a> v1.6 | FHNW Linear Algebra Module</div>", unsafe_allow_html=True)
+    st.sidebar.markdown("<div title='The person reading this will ace their next math test'><a href='https://github.com/peaktwilight/linear-algebra-calculator'>GitHub</a> v1.6.1 | FHNW Linear Algebra Module</div>", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
