@@ -326,7 +326,7 @@ class VectorOperationsMixin:
         return result
 
     def triangle_area(self, args):
-        """Calculate the area of a triangle defined by three points or two vectors."""
+        """Calculate the area of a triangle defined by three points."""
         # Capture print output from the CLI function
         with StreamOutput() as output:
             result = self.framework.triangle_area(args)
@@ -334,106 +334,77 @@ class VectorOperationsMixin:
         # Display the result and steps
         st.subheader("Result")
         
-        # Parse inputs based on mode
-        mode = args.mode
-        area = result["area"]
+        # The args object has point_a, point_b, and point_c attributes
+        area = result["area"] if isinstance(result, dict) else 0
         
         col1, col2 = st.columns([1, 1])
         
         with col1:
             st.markdown("### Step-by-step Calculation")
             
-            if mode == "points":
-                p1 = self.framework.parse_vector(args.point1)
-                p2 = self.framework.parse_vector(args.point2)
-                p3 = self.framework.parse_vector(args.point3)
-                
-                st.markdown("**Input points:**")
-                st.markdown(f"$P_1 = {p1.tolist()}$")
-                st.markdown(f"$P_2 = {p2.tolist()}$")
-                st.markdown(f"$P_3 = {p3.tolist()}$")
-                
-                # Form vectors from points
-                vec1 = p2 - p1
-                vec2 = p3 - p1
-                st.markdown("**Forming vectors from points:**")
-                st.markdown(f"$\\vec{{v_1}} = P_2 - P_1 = {vec1.tolist()}$")
-                st.markdown(f"$\\vec{{v_2}} = P_3 - P_1 = {vec2.tolist()}$")
-                
-                st.markdown("**Area calculation (using cross product for 3D, or determinant for 2D):**")
-                if len(p1) == 3: # 3D case
-                    cross_prod = np.cross(vec1, vec2)
-                    st.markdown(f"$\\text{{Area}} = 0.5 \\cdot |\\vec{{v_1}} \\times \\vec{{v_2}}| = 0.5 \\cdot |{cross_prod.tolist()}| = 0.5 \\cdot {np.linalg.norm(cross_prod):.4f} = {area:.4f}$")
-                elif len(p1) == 2: # 2D case
-                    # Using Shoelace formula / determinant method for 2D triangle area
-                    # Area = 0.5 |(x1(y2 − y3) + x2(y3 − y1) + x3(y1 − y2))|
-                    # Or using the determinant of vectors formed from edges: 0.5 * |x1*y2 - x2*y1|
-                    determinant = vec1[0]*vec2[1] - vec1[1]*vec2[0]
-                    st.markdown(f"$\\text{{Area}} = 0.5 \\cdot |(v_{{1x}}v_{{2y}} - v_{{1y}}v_{{2x}})| = 0.5 \\cdot |({vec1[0]} \\cdot {vec2[1]}) - ({vec1[1]} \\cdot {vec2[0]})| = 0.5 \\cdot |{determinant}| = {area:.4f}$")
-                else:
-                    st.warning("Visualization and detailed steps are best for 2D or 3D points.")
+            # Parse the points from args
+            p1 = self.framework.parse_vector(args.point_a)
+            p2 = self.framework.parse_vector(args.point_b)
+            p3 = self.framework.parse_vector(args.point_c)
             
-            elif mode == "vectors":
-                vec1 = self.framework.parse_vector(args.vector_a)
-                vec2 = self.framework.parse_vector(args.vector_b)
-                
-                st.markdown("**Input vectors (forming two sides of the triangle):**")
-                st.markdown(f"$\\vec{{v_1}} = {vec1.tolist()}$")
-                st.markdown(f"$\\vec{{v_2}} = {vec2.tolist()}$")
-                
-                st.markdown("**Area calculation (using cross product for 3D, or determinant for 2D):**")
-                if len(vec1) == 3: # 3D case
-                    cross_prod = np.cross(vec1, vec2)
-                    st.markdown(f"$\\text{{Area}} = 0.5 \\cdot |\\vec{{v_1}} \\times \\vec{{v_2}}| = 0.5 \\cdot |{cross_prod.tolist()}| = 0.5 \\cdot {np.linalg.norm(cross_prod):.4f} = {area:.4f}$")
-                elif len(vec1) == 2: # 2D case
-                    determinant = vec1[0]*vec2[1] - vec1[1]*vec2[0]
-                    st.markdown(f"$\\text{{Area}} = 0.5 \\cdot |(v_{{1x}}v_{{2y}} - v_{{1y}}v_{{2x}})| = 0.5 \\cdot |({vec1[0]} \\cdot {vec2[1]}) - ({vec1[1]} \\cdot {vec2[0]})| = 0.5 \\cdot |{determinant}| = {area:.4f}$")
-                else:
-                    st.warning("Visualization and detailed steps are best for 2D or 3D vectors.")
+            st.markdown("**Input points:**")
+            st.markdown(f"$P_1 = {p1.tolist()}$")
+            st.markdown(f"$P_2 = {p2.tolist()}$")
+            st.markdown(f"$P_3 = {p3.tolist()}$")
+            
+            # Form vectors from points
+            vec1 = p2 - p1
+            vec2 = p3 - p1
+            st.markdown("**Forming vectors from points:**")
+            st.markdown(f"$\\vec{{v_1}} = P_2 - P_1 = {vec1.tolist()}$")
+            st.markdown(f"$\\vec{{v_2}} = P_3 - P_1 = {vec2.tolist()}$")
+            
+            st.markdown("**Area calculation (using cross product for 3D, or determinant for 2D):**")
+            if len(p1) == 3: # 3D case
+                cross_prod = np.cross(vec1, vec2)
+                st.markdown(f"$\\text{{Area}} = 0.5 \\cdot |\\vec{{v_1}} \\times \\vec{{v_2}}| = 0.5 \\cdot |{cross_prod.tolist()}| = 0.5 \\cdot {np.linalg.norm(cross_prod):.4f} = {area:.4f}$")
+            elif len(p1) == 2: # 2D case
+                # Using Shoelace formula / determinant method for 2D triangle area
+                # Area = 0.5 |(x1(y2 − y3) + x2(y3 − y1) + x3(y1 − y2))|
+                # Or using the determinant of vectors formed from edges: 0.5 * |x1*y2 - x2*y1|
+                determinant = vec1[0]*vec2[1] - vec1[1]*vec2[0]
+                st.markdown(f"$\\text{{Area}} = 0.5 \\cdot |(v_{{1x}}v_{{2y}} - v_{{1y}}v_{{2x}})| = 0.5 \\cdot |({vec1[0]} \\cdot {vec2[1]}) - ({vec1[1]} \\cdot {vec2[0]})| = 0.5 \\cdot |{determinant}| = {area:.4f}$")
+            else:
+                st.warning("Visualization and detailed steps are best for 2D or 3D points.")
         
         with col2:
             st.markdown("### Visualization")
-            origin = np.zeros(len(p1) if mode == "points" else len(vec1))
+            origin = np.zeros(len(p1))
             fig_vectors = []
             fig_names = []
             construction_lines = []
             line_style = dict(color='rgba(200, 200, 200, 0.9)', width=2)
-
-            if mode == "points":
-                p1_arr, p2_arr, p3_arr = np.array(p1), np.array(p2), np.array(p3)
-                # Plot points if they are not all at the origin (or very close)
-                if not (np.allclose(p1_arr, origin) and np.allclose(p2_arr, origin) and np.allclose(p3_arr, origin)):
-                    # To visualize points themselves, we can create tiny vectors from origin to each point, or use scatter plot markers directly.
-                    # Let's ensure display_vector_visualization can handle points if given as vectors.
-                    # For now, let's represent points as vectors from origin for simplicity with current viz tool
-                    # Or, it might be better to plot the triangle sides.
-                    # fig_vectors.extend([p1_arr, p2_arr, p3_arr])
-                    # fig_names.extend(["P1", "P2", "P3"])
-                    pass # Points themselves are implicitly shown by triangle construction
-
-                # Triangle sides
-                # Side P1-P2
-                construction_lines.append((p1_arr, p2_arr, "Side P1-P2", line_style))
-                # Side P2-P3
-                construction_lines.append((p2_arr, p3_arr, "Side P2-P3", line_style))
-                # Side P3-P1
-                construction_lines.append((p3_arr, p1_arr, "Side P3-P1", line_style))
-                
-                # We can also show the vectors used for area calc if desired (v1, v2 from P1)
-                # fig_vectors.extend([p2_arr - p1_arr, p3_arr - p1_arr])
-                # fig_names.extend(["Vector P1->P2", "Vector P1->P3"]) 
-                # For clarity, let's pass the primary vectors as the ones used in calculation.
-                fig_vectors = [p2_arr - p1_arr, p3_arr - p1_arr]
-                fig_names = ["Vector P1P2", "Vector P1P3"]
             
-            elif mode == "vectors":
-                vec1_arr, vec2_arr = np.array(vec1), np.array(vec2)
-                fig_vectors.extend([vec1_arr, vec2_arr])
-                fig_names.extend(["Vector v1", "Vector v2"]) 
-                # Construction line for the third side of the triangle (from tip of v1 to tip of v2, assuming they start at origin)
-                # This represents v2 - v1 if origin is common start. Or, if v1 and v2 are sides from a vertex,
-                # then the third side connects their endpoints.
-                construction_lines.append((vec1_arr, vec2_arr, "Connecting side (tip of v1 to tip of v2)", line_style))
+            p1_arr, p2_arr, p3_arr = np.array(p1), np.array(p2), np.array(p3)
+            # Plot points if they are not all at the origin (or very close)
+            if not (np.allclose(p1_arr, origin) and np.allclose(p2_arr, origin) and np.allclose(p3_arr, origin)):
+                # To visualize points themselves, we can create tiny vectors from origin to each point, or use scatter plot markers directly.
+                # Let's ensure display_vector_visualization can handle points if given as vectors.
+                # For now, let's represent points as vectors from origin for simplicity with current viz tool
+                # Or, it might be better to plot the triangle sides.
+                # fig_vectors.extend([p1_arr, p2_arr, p3_arr])
+                # fig_names.extend(["P1", "P2", "P3"])
+                pass # Points themselves are implicitly shown by triangle construction
+
+            # Triangle sides
+            # Side P1-P2
+            construction_lines.append((p1_arr, p2_arr, "Side P1-P2", line_style))
+            # Side P2-P3
+            construction_lines.append((p2_arr, p3_arr, "Side P2-P3", line_style))
+            # Side P3-P1
+            construction_lines.append((p3_arr, p1_arr, "Side P3-P1", line_style))
+            
+            # We can also show the vectors used for area calc if desired (v1, v2 from P1)
+            # fig_vectors.extend([p2_arr - p1_arr, p3_arr - p1_arr])
+            # fig_names.extend(["Vector P1->P2", "Vector P1->P3"]) 
+            # For clarity, let's pass the primary vectors as the ones used in calculation.
+            fig_vectors = [p2_arr - p1_arr, p3_arr - p1_arr]
+            fig_names = ["Vector P1P2", "Vector P1P3"]
 
 
             if fig_vectors: # Only call if there are vectors to plot
@@ -447,7 +418,7 @@ class VectorOperationsMixin:
                 else:
                     st.info(f"Direct visualization is for 2D/3D. Triangle involves {dim}D inputs.")
             else:
-                 st.info("No primary vectors to display for this triangle mode/input.")
+                 st.info("No primary vectors to display for this triangle input.")
 
             # Add result info box
             result_box = f"""
@@ -462,7 +433,7 @@ class VectorOperationsMixin:
         return result
 
     def point_line_distance(self, args):
-        """Calculate the distance from a point to a line (defined by two points or a point and direction vector)."""
+        """Calculate the distance from a point to a line (defined by a point and direction vector)."""
         # Capture print output from the CLI function
         with StreamOutput() as output:
             result = self.framework.point_line_distance(args)
@@ -470,8 +441,7 @@ class VectorOperationsMixin:
         # Display the result and steps
         st.subheader("Result")
         
-        mode = args.mode
-        distance = result["distance"]
+        distance = result["distance"] if isinstance(result, dict) else 0
         
         col1, col2 = st.columns([1,1])
         
@@ -482,34 +452,23 @@ class VectorOperationsMixin:
             point_p = self.framework.parse_vector(args.point_p)
             st.markdown(f"**Point P:** ${point_p.tolist()}$")
             
-            vec_ap = None # Vector from a point on the line to P
-            direction_vec_line = None # Direction vector of the line
-            point_a_on_line = None # A point on the line
-
-            if mode == "two_points":
-                point_a = self.framework.parse_vector(args.point_a)
-                point_b = self.framework.parse_vector(args.point_b)
-                st.markdown(f"**Line defined by points A and B:**")
-                st.markdown(f"$A = {point_a.tolist()}$")
-                st.markdown(f"$B = {point_b.tolist()}$")
-                
-                direction_vec_line = point_b - point_a
-                vec_ap = point_p - point_a
-                point_a_on_line = point_a
-                
-                st.markdown(f"**Vector AP (from A to P):** $\\vec{{AP}} = P - A = {vec_ap.tolist()}$")
-                st.markdown(f"**Direction vector of the line AB:** $\\vec{{d}} = B - A = {direction_vec_line.tolist()}$")
-
-            elif mode == "point_direction":
-                point_a = self.framework.parse_vector(args.point_a)
-                direction_vec_line = self.framework.parse_vector(args.direction_vec)
-                st.markdown(f"**Line defined by point A and direction vector d:**")
-                st.markdown(f"$A = {point_a.tolist()}$")
-                st.markdown(f"$\\vec{{d}} = {direction_vec_line.tolist()}$")
-                
-                vec_ap = point_p - point_a
-                point_a_on_line = point_a
-                st.markdown(f"**Vector AP (from A to P):** $\\vec{{AP}} = P - A = {vec_ap.tolist()}$")
+            # Parse the needed vectors
+            point_a = self.framework.parse_vector(args.point_a)
+            direction = self.framework.parse_vector(args.direction)
+            point_b = self.framework.parse_vector(args.point_b)
+            
+            # The line is defined by point A and direction vector
+            st.markdown(f"**Line defined by point A and direction vector d:**")
+            st.markdown(f"$A = {point_a.tolist()}$")
+            st.markdown(f"$\\vec{{d}} = {direction.tolist()}$")
+            
+            # Calculate vector from point on line to point B
+            vec_ap = point_b - point_a
+            direction_vec_line = direction
+            point_a_on_line = point_a
+            
+            st.markdown(f"**Vector AB (from A to B):** $\\vec{{AB}} = B - A = {vec_ap.tolist()}$")
+            st.markdown(f"**Direction vector of the line:** $\\vec{{d}} = {direction_vec_line.tolist()}$")
             
             st.markdown("**Distance formula (using cross product for 3D, projection for 2D/general):**")
             # Universal formula: Distance = || (P-A) - proj_d(P-A) ||
@@ -548,16 +507,11 @@ class VectorOperationsMixin:
             primary_names = []
             
             # Line visualization: show a segment of the line
-            # We need two points on the line. If given two points A,B, use them.
-            # If given point A and direction d, create A-d and A+d (or A and A+d)
-            if mode == "two_points":
-                line_p1 = self.framework.parse_vector(args.point_a)
-                line_p2 = self.framework.parse_vector(args.point_b)
-            else: # point_direction
-                line_p1 = self.framework.parse_vector(args.point_a)
-                # Make line_p2 by extending along direction_vec. For viz, scale d if it's too small/large
-                # Let's just use A and A+d for the segment.
-                line_p2 = line_p1 + direction_vec_line 
+            # Create a segment of the line using the point and direction
+            line_p1 = self.framework.parse_vector(args.point_a)
+            # Make line_p2 by extending along direction_vec. For viz, scale d if it's too small/large
+            # Let's just use A and A+d for the segment.
+            line_p2 = line_p1 + direction_vec_line 
             
             line_style = dict(color='blue', width=2)
             construction_lines.append((line_p1, line_p2, "Line Segment", line_style))
