@@ -2299,7 +2299,14 @@ Where:
                 
                 # LaTeX version of the calculation
                 matrix_latex = self._matrix_to_latex(matrix)
-                st.markdown(f"$$\\det\\begin{{pmatrix}} {matrix_latex[14:-14]} \\end{{pmatrix}} = {determinant:.6f}$$")
+                # Properly format the matrix for the determinant notation
+                # Extract the matrix content without slicing by position, which could be unreliable
+                if "\\begin{pmatrix}" in matrix_latex and "\\end{pmatrix}" in matrix_latex:
+                    # Just use the entire matrix_latex directly
+                    st.markdown(f"$$\\det{matrix_latex} = {determinant:.6f}$$")
+                else:
+                    # Fallback in case matrix_latex doesn't have the expected format
+                    st.markdown(f"$$\\det(A) = {determinant:.6f}$$")
                 
                 # Properties of the determinant
                 st.markdown("### Properties")
