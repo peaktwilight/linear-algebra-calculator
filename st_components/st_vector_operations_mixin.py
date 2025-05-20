@@ -415,34 +415,49 @@ class VectorOperationsMixin:
 
     def triangle_area(self, args):
         """Calculate the area of a triangle defined by three points."""
+        # Parse the points from args
+        p1 = self.framework.parse_vector(args.point_a)
+        p2 = self.framework.parse_vector(args.point_b)
+        p3 = self.framework.parse_vector(args.point_c)
+        
+        # Form vectors from points
+        vec1 = p2 - p1
+        vec2 = p3 - p1
+        
         # Capture print output from the CLI function
         with StreamOutput() as output:
             result = self.framework.triangle_area(args)
         
+        # The framework's triangle_area method returns the area directly (not in a dict)
+        area = result if isinstance(result, (int, float)) else 0
+        
+        # Calculate the area ourselves as a double-check
+        if len(p1) == 3:  # 3D case
+            cross_prod = np.cross(vec1, vec2)
+            calculated_area = np.linalg.norm(cross_prod) / 2
+        elif len(p1) == 2:  # 2D case
+            determinant = vec1[0]*vec2[1] - vec1[1]*vec2[0]
+            calculated_area = abs(determinant) / 2
+        else:
+            calculated_area = 0
+            
+        # Use the calculated area if it differs significantly from the returned area
+        if abs(calculated_area - area) > 1e-6:
+            area = calculated_area
+        
         # Display the result and steps
         st.subheader("Result")
-        
-        # The args object has point_a, point_b, and point_c attributes
-        area = result["area"] if isinstance(result, dict) else 0
         
         col1, col2 = st.columns([1, 1])
         
         with col1:
             st.markdown("### Step-by-step Calculation")
             
-            # Parse the points from args
-            p1 = self.framework.parse_vector(args.point_a)
-            p2 = self.framework.parse_vector(args.point_b)
-            p3 = self.framework.parse_vector(args.point_c)
-            
             st.markdown("**Input points:**")
             st.markdown(f"$P_1 = {p1.tolist()}$")
             st.markdown(f"$P_2 = {p2.tolist()}$")
             st.markdown(f"$P_3 = {p3.tolist()}$")
             
-            # Form vectors from points
-            vec1 = p2 - p1
-            vec2 = p3 - p1
             st.markdown("**Forming vectors from points:**")
             st.markdown(f"$\\vec{{v_1}} = P_2 - P_1 = {vec1.tolist()}$")
             st.markdown(f"$\\vec{{v_2}} = P_3 - P_1 = {vec2.tolist()}$")
