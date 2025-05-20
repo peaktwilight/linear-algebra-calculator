@@ -183,53 +183,8 @@ def main():
     </div>
     ''', unsafe_allow_html=True)
     
-    # GitHub version tag with simplified rainbow effect
+    # GitHub version tag using styles from custom.css
     st.markdown('''
-    <style>
-    @keyframes rainbowFlow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    
-    @keyframes fadeSlideUp {
-      0% { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    
-    .github-version-tag {
-      display: inline-flex;
-      align-items: center;
-      font-family: 'Courier New', monospace;
-      font-size: 0.85rem;
-      font-weight: 600;
-      background-color: rgba(25, 25, 35, 0.5);
-      padding: 2px 8px;
-      border-radius: 3px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      animation: fadeSlideUp 0.7s ease-out forwards;
-      margin-top: -5px;
-      transition: all 0.2s ease;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    
-    .github-version-tag:hover {
-      background-color: rgba(40, 40, 50, 0.8);
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-    
-    .rainbow-text {
-      background: linear-gradient(90deg, #ff6ec4, #7873f5, #00c2ff, #7873f5, #ff6ec4);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      animation: rainbowFlow 6s ease-in-out infinite;
-    }
-    </style>
     <div style="text-align: center; margin-bottom: 20px;">
         <a href="https://github.com/peaktwilight/linear-algebra-calculator" target="_blank" class="github-version-tag">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;" stroke="#f0f2f6" stroke-width="2">
