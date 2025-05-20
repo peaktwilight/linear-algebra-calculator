@@ -15,94 +15,63 @@ st.set_page_config(
     page_title="Linear Algebra Calculator",
     page_icon="🧮",
     layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'Get Help': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
-        'Report a bug': 'https://github.com/peaktwilight/linear-algebra-calculator/issues',
-        'About': "# Linear Algebra Calculator\\nA comprehensive toolkit for learning and solving linear algebra problems. Made with ❤️ by Doruk for the LAG Fachmodul at FHNW.\\n\\nVersion 1.6.3 | Open source at https://github.com/peaktwilight/linear-algebra-calculator"
-    }
+    initial_sidebar_state="expanded"
 )
 
-# Custom CSS for animations
+# Minimal CSS for a sleek footer animation
 st.markdown("""
 <style>
-@keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
+/* Ultra-minimal animations inspired by GSAP */
+@keyframes fadeUp { 
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.shimmer-text {
-    display: inline-block;
-    background-image: linear-gradient(
-        90deg,
-        rgba(235, 235, 235, 0.98) 0%,    /* Default light text color */
-        rgba(235, 235, 235, 0.98) 40%,   /* Text is light before wave */
-        rgba(30, 30, 30, 0.7) 50%,     /* Narrow, defined dark wave */
-        rgba(235, 235, 235, 0.98) 60%,   /* Text is light after wave */
-        rgba(235, 235, 235, 0.98) 100%  /* Default light text color */
-    );
-    background-size: 220% 100%; /* Adjusted for new gradient stops */
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    background-clip: text;
-    color: transparent; 
-    animation: shimmer 7s infinite linear; /* Using linear for more predictable travel */
-    font-weight: 500; 
+.footer-container {
+    background: linear-gradient(135deg, rgba(25, 25, 30, 0.3) 0%, rgba(40, 40, 50, 0.4) 100%);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    animation: fadeUp 0.8s ease-out forwards;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.shimmer-text > a, 
-.animated-link, /* Keep .animated-link for targeting if needed, but simplify its role */
-.shimmer-text a /* General rule for links inside shimmer-text */ {
-    color: rgba(230, 230, 230, 0.95); /* A solid, light, visible color */
-    text-decoration: underline; 
-    position: relative; /* Keep for any future pseudo-elements if added back */
-    /* Remove background-clip for links if they are not transparent */
-    /* 
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    background-clip: text; 
-    */
+.footer-container:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Remove animated-link specific hover and after styles */
-/* 
-.shimmer-text a:hover,
-.animated-link:hover {
-    text-decoration: none; 
+.footer-text {
+    font-size: 0.95em;
+    letter-spacing: 0.01em;
+    margin-bottom: 6px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.85);
 }
 
-.animated-link::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 1.5px; 
-    bottom: -3px; 
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(50, 50, 50, 0.75); 
-    transition: width 0.35s ease-in-out;
+.footer-text a {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
 }
 
-.animated-link:hover::after {
-    width: 100%;
-}
-*/
-
-.sidebar-footer-container {
-    margin-bottom: 10px; /* Overall margin for the group of three lines */
+.footer-text a:hover {
+    color: white;
+    border-bottom: 1px solid white;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
 
-.sidebar-footer-text {
-    display: block;
-    text-align: left;
-    margin-bottom: 4px; /* Smaller margin between the three lines */
-    line-height: 1.4;
+.version-tag {
+    font-family: monospace;
+    background-color: rgba(0, 0, 0, 0.15);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.85em;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -840,17 +809,19 @@ def main():
         6.  **Visit Learning Resources:** For guides, examples, and concept explanations.
         """)
 
-    st.sidebar.markdown("--- ")
-    st.sidebar.markdown("""
-    <div class='sidebar-footer-container'>
-        <div title='Crafted with care' class='sidebar-footer-text'>
-            <span class='shimmer-text'>Made with ❤️ by <a href='https://doruk.ch' target='_blank' class='animated-link'>Doruk</a></span>
+    # Simple, clear footer
+    st.sidebar.markdown('''
+    <div class="footer-container">
+        <div class="footer-text">
+            Made with ❤️ by <a href="https://doruk.ch" target="_blank">Doruk</a>
         </div>
-        <div title='The person reading this will ace their next math test' class='sidebar-footer-text'>
-            <span class='shimmer-text'><a href='https://github.com/peaktwilight/linear-algebra-calculator' target='_blank' class='animated-link'>GitHub</a> v1.6.3 | FHNW Linear Algebra Module</span>
+        <div class="footer-text">
+            <a href="https://github.com/peaktwilight/linear-algebra-calculator" target="_blank">GitHub</a> 
+            <span class="version-tag">v1.6.3</span>
         </div>
+        <div class="footer-text">FHNW Linear Algebra Module</div>
     </div>
-    """, unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
