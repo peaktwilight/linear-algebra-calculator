@@ -170,17 +170,73 @@ def main():
     
     # Animated header with text shimmer effect
     st.markdown('''
-    <div class="title-container" style="position: relative; overflow: hidden; margin-bottom: 20px;">
+    <style>
+    .title-container {
+      position: relative;
+      margin-bottom: 20px;
+      text-align: center;
+      width: 100%;
+    }
+    </style>
+    <div class="title-container">
         <h1 class="animate-title">Linear Algebra Calculator</h1>
     </div>
     ''', unsafe_allow_html=True)
     
-    # Example of animated tooltip usage
+    # GitHub version tag with simplified rainbow effect
     st.markdown('''
+    <style>
+    @keyframes rainbowFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes fadeSlideUp {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    .github-version-tag {
+      display: inline-flex;
+      align-items: center;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background-color: rgba(25, 25, 35, 0.5);
+      padding: 2px 8px;
+      border-radius: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: fadeSlideUp 0.7s ease-out forwards;
+      margin-top: -5px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    .github-version-tag:hover {
+      background-color: rgba(40, 40, 50, 0.8);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .rainbow-text {
+      background: linear-gradient(90deg, #ff6ec4, #7873f5, #00c2ff, #7873f5, #ff6ec4);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: rainbowFlow 6s ease-in-out infinite;
+    }
+    </style>
     <div style="text-align: center; margin-bottom: 20px;">
-        <span class="tooltip">Interactive mathematical toolkit
-            <span class="tooltiptext">Explore vector operations, matrix calculations, and systems of linear equations with intuitive visualizations</span>
-        </span>
+        <a href="https://github.com/peaktwilight/linear-algebra-calculator" target="_blank" class="github-version-tag">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;" stroke="#f0f2f6" stroke-width="2">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+            <span class="rainbow-text">GitHub v1.6.5</span>
+        </a>
     </div>
     ''', unsafe_allow_html=True)
     
@@ -916,10 +972,6 @@ def main():
     <div class="footer-container">
         <div class="footer-text">
             Made with <span class="heart-pulse">❤️</span> by <a href="https://doruk.ch" target="_blank">Doruk</a>
-        </div>
-        <div class="footer-text">
-            <a href="https://github.com/peaktwilight/linear-algebra-calculator" target="_blank">GitHub</a> 
-            <span class="version-tag floating">v1.6.5</span>
         </div>
         <div class="footer-text">FHNW Linear Algebra Module</div>
     </div>
