@@ -50,16 +50,7 @@
   opacity: 0;
 }
 
-.animate-title::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 30%;
-  right: 30%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, rgba(200, 200, 220, 0.7), transparent);
-  border-radius: 3px;
-}
+/* Removed underline effect */
 
 .animate-subheader {
   animation: slideInLeft 0.6s ease-out forwards;
@@ -68,7 +59,6 @@
   font-weight: 600;
   margin: 1.5rem 0 1rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid rgba(180, 180, 200, 0.4);
   opacity: 0;
 }
 

@@ -46,11 +46,20 @@ def apply_styling():
     .animate-title {
       animation: slideInUp 0.8s ease-out forwards;
       opacity: 0;
+      color: #ffffff;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      text-align: center;
     }
     
     .animate-subheader {
       animation: slideInLeft 0.6s ease-out forwards;
       opacity: 0;
+      color: #f0f2f6;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 1.5rem 0 1rem 0;
     }
     
     /* Button styling */
