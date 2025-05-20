@@ -927,14 +927,24 @@ class LinAlgCalculator:
         v_norm = np.linalg.norm(v)
         v_unit = v / v_norm if v_norm > 0 else v
         B_minus_A = B - A
-        cross_product = np.cross(v, B_minus_A)
-        cross_norm = np.linalg.norm(cross_product)
-        distance = cross_norm / v_norm
         
-        # Calculate the closest point on the line to B
-        # Formula: closest = A + ((B-A)·v_unit) * v_unit
+        # Calculate the closest point first
+        # Project B-A onto v to get the parallel component
         t_closest = np.dot(B_minus_A, v_unit)
         closest = A + t_closest * v_unit
+        
+        # The perpendicular vector from B to the line is B - closest
+        perp_vector = B - closest
+        distance = np.linalg.norm(perp_vector)
+        
+        # For visualization and verification, also calculate via cross product
+        cross_product = np.cross(B_minus_A, v)
+        cross_norm = np.linalg.norm(cross_product)
+        distance_via_cross = cross_norm / v_norm
+        
+        # Verify both methods give same result (within numerical precision)
+        if abs(distance - distance_via_cross) > 1e-10:
+            st.warning("Warning: Distance calculations differ between methods. This might indicate a numerical precision issue.")
         
         # Create a formatted display of the calculations
         col1, col2 = st.columns([1, 1])
