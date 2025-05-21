@@ -1,11 +1,15 @@
 # Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.6.5-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.6.5)
 
 ## Features
--   Calculators for vectors, matrices and more
--   Interactive visualizations for intuitive understanding
--   Step-by-step solution explanations
--   Practice quizzes and learning resources
--   Includes a CLI, TUI and a Web App
+
+-   🔢 **Calculators:** Vectors, matrices, and many more linear algebra operations.
+-   🎨 **Interactive Visualizations:** Understand complex concepts intuitively with dynamic graphical representations in a user-friendly Web App.
+-   📚 **Step-by-Step Explanations:** Understand the "how" and "why" with detailed walkthroughs for solutions.
+-   🧠 **Practice & Learn:** Test yourself with engaging quizzes and explore comprehensive learning resources.
+-   💻 **Multiple Interfaces:** Choose your preferred way to work:
+    -   🌐 **Sleek Web App:** A rich, graphical experience with interactive visualizations.
+    -   ⌨️ **Efficient CLI:** For quick calculations and scripting power.
+    -   💡 **Intuitive TUI:** A user-friendly, terminal-based interactive mode.
 
 ## CLI Demo
 ![CLI Demo](public/Doruks_Algebra_Calculator_CLI.gif)
