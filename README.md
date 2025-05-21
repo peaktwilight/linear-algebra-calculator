@@ -1,5 +1,8 @@
 # Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.6.5-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.6.5)
 
+## Web App Demo
+![Web App Demo](public/linear-algebra-calculator.gif)
+
 ## Features
 
 -   🔢 **Calculators:** Vectors, matrices, and many more linear algebra operations.
