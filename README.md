@@ -1,10 +1,18 @@
-# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.6-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.6)
+# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.6.5-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.6.5)
 
+## Features
+-   Calculators for vectors, matrices and more
+-   Interactive visualizations for intuitive understanding
+-   Step-by-step solution explanations
+-   Practice quizzes and learning resources
+-   Includes a CLI, TUI and a Web App
+
+## CLI Demo
 ![CLI Demo](public/Doruks_Algebra_Calculator_CLI.gif)
 
 A comprehensive toolkit for learning and solving linear algebra problems. This project offers three main interfaces:
--   **TUI (Text-based User Interface)**: An interactive, terminal-based experience (default).
 -   **CLI (Command-Line Interface)**: For direct command execution and scripting.
+-   **TUI (Text-based User Interface)**: An interactive, terminal-based experience (default).
 -   **Web App**: A graphical interface with interactive visualizations, hosted at [lag.doruk.ch](https://lag.doruk.ch).
 
 ## Quick Start
@@ -14,26 +22,19 @@ A comprehensive toolkit for learning and solving linear algebra problems. This p
 git clone https://github.com/peaktwilight/linear-algebra-calculator.git
 cd linear-algebra-calculator
 
-# Install all dependencies
+# Install dependencies based on your needs (see Installation Options below)
 pip install -r requirements.txt
 
-# Run the interactive UI (recommended for first-time users)
-python linalg.py
+# NOW YOU HAVE 2 OPTIONS
 
-# OR run the web interface
+# 1) Run the interactive UI (recommended for first-time users)
+python linalg.py
+# OR
+# 2) run the web interface
 streamlit run streamlit_app.py
 ```
 
-## Choose Your Interface
-
-### 1. Interactive Terminal UI (Default)
-Best for learning with guided step-by-step solutions.
-```bash
-python linalg.py
-```
-
-### 2. Command-Line Interface
-Best for quick calculations or scripting.
+## For advanced users, there's also a CLI
 ```bash
 # Show available commands
 python linalg.py --cli --help
@@ -45,47 +46,6 @@ python linalg.py --cli --command "normalize_vector --vector '3,4'"
 python linalg.py --cli --command "solve_gauss --matrix '1,2,3; 4,5,6; 7,8,9'"
 ```
 
-### 3. Web Interface (Streamlit)
-Best for visualizations and interactive learning.
-```bash
-streamlit run streamlit_app.py
-# Then open http://localhost:8501 in your browser
-```
-
-## Features
-
--   Core linear algebra operations:
-    -   **Vectors**: Normalization, projections, angles, cross products
-    -   **Matrices**: Addition, multiplication, Gaussian elimination
-    -   **Geometric**: Distances, plane intersections, triangle areas
--   Interactive visualizations
--   Step-by-step solution explanations
--   Practice quizzes and learning resources
-
-## Installation Options
-
-Choose one of these options based on your needs:
-
-### Full Installation (All Interfaces)
-```bash
-pip install -r requirements.txt
-```
-
-### Minimal CLI Version Only
-```bash
-pip install numpy sympy scipy
-```
-
-### Terminal UI Version
-```bash
-pip install numpy sympy scipy rich questionary
-```
-
-### Web UI Version
-```bash
-pip install numpy sympy scipy streamlit pandas plotly matplotlib
-```
-
 ## File Structure
 
 -   `linalg.py`: Main entry point (recommended starting point)
@@ -95,13 +55,6 @@ pip install numpy sympy scipy streamlit pandas plotly matplotlib
 -   `st_components/`: Streamlit interface components
 -   `given_reference/`: Reference code and core algorithms
 -   `help_guides.py`: Learning resources and tutorials
-
-## Docker Support
-
-For quick testing of the Streamlit application:
-```bash
-./run_docker.sh  # Access at http://localhost:8501
-```
 
 ## Online Version
 
