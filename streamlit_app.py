@@ -178,7 +178,7 @@ def main():
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;" stroke="#f0f2f6" stroke-width="2">
                 <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
-            <span class="rainbow-text">GitHub v1.6.5</span>
+            <span class="rainbow-text">GitHub v1.6.6</span>
         </a>
     </div>
     ''', unsafe_allow_html=True)
@@ -192,7 +192,8 @@ def main():
                              "Eigenvalues and Eigenvectors"],
         "Systems of Linear Equations": ["Solve System (Gaussian Elimination)", "Standard Form Analysis", 
                                        "Row Operations Analysis", "Free Parameter Analysis", 
-                                       "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation"]
+                                       "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation",
+                                       "Calculate Null Space (Basis)"]
     }
     
     # Flatten list for searching
@@ -767,7 +768,8 @@ def main():
     
     elif category == "Systems of Linear Equations":
         system_operations = ["Solve System (Gaussian Elimination)", "Standard Form Analysis", "Row Operations Analysis", 
-                           "Free Parameter Analysis", "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation"]
+                           "Free Parameter Analysis", "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation",
+                           "Calculate Null Space (Basis)"]
         
         # Auto-select operation if it came from search
         default_index = 0
@@ -786,110 +788,116 @@ def main():
         
         st.markdown(f'<h2 class="animate-subheader">{operation}</h2>', unsafe_allow_html=True)
         
-        # Common input for all operations
+        # Unified matrix input for all operations in this category.
+        # Label will guide user on what to input based on the operation.
         matrix_input = st.text_area(
-            "Enter Augmented Matrix [A|b] (format: a,b,c,d; e,f,g,h or separate rows with newlines):",
-            value="1, -4, -2, -25\n0, -3, 6, -18\n7, -13, -4, -85"
+            "Enter Matrix (for Ax=b systems, use [A|b] format; for Null Space, enter only coefficient matrix A):",
+            value="1, -4, -2, -25\n0, -3, 6, -18\n7, -13, -4, -85",
+            key="system_matrix_unified_input" # A unique key for this unified input
         )
         
-        # Add helpful explanation
-        with st.expander("Help: Format Explanation"):
+        # The expander provides general help for [A|b] but users are guided by the main label for Null Space.
+        with st.expander("Help: Matrix Format Explanation (primarily for [A|b] systems)"):
             st.write("""
-            For a system of linear equations:
+            For a system of linear equations like:
             ```
             a₁x + b₁y + c₁z = d₁
             a₂x + b₂y + c₂z = d₂
             a₃x + b₃y + c₃z = d₃
             ```
-            
-            The augmented matrix would be:
+            The **augmented matrix [A|b]** would be:
             ```
             a₁, b₁, c₁, d₁
             a₂, b₂, c₂, d₂
             a₃, b₃, c₃, d₃
             ```
-            
-            Example: For the system
+            When calculating a **Null Space (Ax=0)**, you only need to enter the **coefficient matrix A** into the field above:
             ```
-            x - 4y - 2z = -25
-            -3y + 6z = -18
-            7x - 13y - 4z = -85
-            ```
-            
-            Enter:
-            ```
-            1, -4, -2, -25
-            0, -3, 6, -18
-            7, -13, -4, -85
+            a₁, b₁, c₁
+            a₂, b₂, c₂
+            a₃, b₃, c₃
             ```
             """)
         
+        equations_input = None # Initialize, only used by Standard Form Analysis if checkbox is ticked
+
         if operation == "Solve System (Gaussian Elimination)":
             st.write("This operation solves a system of linear equations using Gaussian elimination.")
-            
             if st.button("Solve System"):
                 if matrix_input:
                     calculator.solve_gauss(matrix_input)
                 else:
-                    st.error("Please enter the augmented matrix.")
+                    st.error("Please enter the augmented matrix [A|b].")
                     
         elif operation == "Standard Form Analysis":
             st.write("This operation analyzes a system and presents it in the standard form (Ax = b).")
-            
-            # Option to enter system as equations instead of matrix
             use_equations = st.checkbox("Enter as equations instead of matrix")
-            equations_input = None
             
             if use_equations:
                 equations_input = st.text_area(
                     "Enter system of equations (one per line, format: 2x1 - 3x2 + 5x3 = 7):",
-                    value="x1 - 4x2 - 2x3 = -25\n-3x2 + 6x3 = -18\n7x1 - 13x2 - 4x3 = -85"
+                    value="x1 - 4x2 - 2x3 = -25\n-3x2 + 6x3 = -18\n7x1 - 13x2 - 4x3 = -85",
+                    key="system_equations_input"
                 )
-                
-                # When using equations, matrix input is ignored
-                matrix_input = None
             
             if st.button("Analyze Standard Form"):
-                if matrix_input or equations_input:
-                    calculator.standard_form(matrix_input, equations_input)
+                if use_equations and equations_input:
+                    calculator.standard_form(None, equations_input)
+                elif not use_equations and matrix_input:
+                    calculator.standard_form(matrix_input, None)
                 else:
-                    st.error("Please enter either the augmented matrix or equations.")
+                    st.error("Please enter the matrix [A|b] or provide equations.")
                     
         elif operation == "Row Operations Analysis":
             st.write("This operation shows step-by-step row operations to solve the system.")
-            
             if st.button("Analyze Row Operations"):
                 if matrix_input:
                     calculator.row_operations_analysis(matrix_input)
                 else:
-                    st.error("Please enter the augmented matrix.")
+                    st.error("Please enter the augmented matrix [A|b].")
                     
         elif operation == "Free Parameter Analysis":
             st.write("This operation identifies free parameters and expresses the solution in parametric form.")
-            
             if st.button("Analyze Free Parameters"):
                 if matrix_input:
                     calculator.free_parameter_analysis(matrix_input)
                 else:
-                    st.error("Please enter the augmented matrix.")
+                    st.error("Please enter the augmented matrix [A|b].")
                     
         elif operation == "Homogeneous/Inhomogeneous Solutions":
             st.write("This operation compares the solutions of Ax = b and Ax = 0 for the same coefficient matrix.")
-            
             if st.button("Analyze Solution Relationship"):
                 if matrix_input:
                     calculator.homogeneous_inhomogeneous_solutions(matrix_input)
                 else:
-                    st.error("Please enter the augmented matrix.")
-                    
+                    st.error("Please enter the augmented matrix [A|b].")
+
+        elif operation == "Calculate Null Space (Basis)":
+            st.write("This operation calculates a basis for the Null Space (Kernel) of a given matrix A (solutions to Ax = 0).")
+            st.caption("Ensure you enter only the coefficient matrix A into the input field above.")
+            
+            # No separate input field here; it uses the common matrix_input from the category.
+            # The help text for matrix_input and the caption above guide the user.
+            
+            with st.expander("Help: Null Space (Kernel) - Quick Reminder"):
+                st.write("""
+                The Null Space of a matrix A contains all vectors **x** such that A**x** = **0**.
+                This operation finds a basis for that space using the matrix A you provide in the field above.
+                """)
+
+            if st.button("Calculate Null Space Basis"):
+                if matrix_input: 
+                    calculator.calculate_null_space_basis(matrix_input) # Uses the common matrix_input
+                else:
+                    st.error("Please enter the coefficient matrix A in the field above.")
+        
         elif operation == "Geometric Interpretation":
             st.write("This operation visualizes the geometric meaning of the system as intersecting lines/planes.")
-            
             if st.button("Show Geometric Interpretation"):
-                if matrix_input:
+                if matrix_input: 
                     calculator.geometric_interpretation(matrix_input)
                 else:
-                    st.error("Please enter the augmented matrix.")
+                    st.error("Please enter the augmented matrix [A|b].")
     
     elif category == "Quiz Mode":
         quiz_component.render()
