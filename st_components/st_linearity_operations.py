@@ -6,7 +6,6 @@ Streamlit Component for Linear Mapping Operations
 
 import streamlit as st
 import numpy as np
-import sympy as sp
 from sympy import symbols, sympify
 import pandas as pd
 from typing import List, Tuple, Dict, Any, Optional
@@ -120,7 +119,6 @@ class LinearityOperations:
             result.append(value)
         
         return np.array(result)
-    
     
     def _evaluate_trigonometric_mapping(self, formula: str, vector: np.ndarray, phi: float) -> np.ndarray:
         """Evaluate trigonometric mapping like L(x,y) = [cos(x)*phi, sin(y)*phi]."""
