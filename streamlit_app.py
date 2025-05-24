@@ -780,7 +780,7 @@ def main():
     
     elif category == "Systems of Linear Equations":
         system_operations = ["Solve System (Gaussian Elimination)", "Standard Form Analysis", "Row Operations Analysis", 
-                           "Free Parameter Analysis", "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
+                           "Free Variable / Pivot Analysis", "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
                            "Calculate Null Space (Basis)", "Geometric Interpretation"]
         
         # Auto-select operation if it came from search
