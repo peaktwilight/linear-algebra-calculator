@@ -22,7 +22,11 @@ class QuizComponent:
             "Vector Normalization",
             "Matrix Multiplication", 
             "Dot Product",
-            "Matrix Determinant"
+            "Matrix Determinant",
+            "Linear Systems",
+            "Matrix Algebra",
+            "Summations",
+            "Linear Mappings"
         ]
     
     def _generate_simple_quiz(self, quiz_type, difficulty, num_questions):
@@ -30,7 +34,13 @@ class QuizComponent:
         questions = []
         
         for i in range(num_questions):
-            if quiz_type == "random" or quiz_type == "Vector Normalization":
+            # For random quiz, pick a random question type
+            current_quiz_type = quiz_type
+            if quiz_type == "random":
+                available_types = [t for t in self.available_quiz_types if t != "random"]
+                current_quiz_type = random.choice(available_types)
+            
+            if current_quiz_type == "Vector Normalization":
                 # Generate vector normalization question
                 if difficulty == "easy":
                     vector = [random.randint(1, 5), random.randint(1, 5)]
@@ -50,7 +60,7 @@ class QuizComponent:
                     "explanation": f"Magnitude = √({' + '.join([f'{x}²' for x in vector])}) = {magnitude:.3f}\nNormalized = {vector} / {magnitude:.3f} = {[round(x, 3) for x in normalized]}"
                 })
             
-            elif quiz_type == "Dot Product":
+            elif current_quiz_type == "Dot Product":
                 # Generate dot product question
                 if difficulty == "easy":
                     v1 = [random.randint(1, 5), random.randint(1, 5)]
@@ -67,6 +77,127 @@ class QuizComponent:
                     "type": "Dot Product", 
                     "answer": dot_product,
                     "explanation": f"Dot product = {' + '.join([f'{a}×{b}' for a, b in zip(v1, v2)])} = {dot_product}"
+                })
+            
+            elif current_quiz_type == "Matrix Multiplication":
+                # Generate matrix multiplication question
+                if difficulty == "easy":
+                    A = [[random.randint(1, 3) for _ in range(2)] for _ in range(2)]
+                    B = [[random.randint(1, 3) for _ in range(2)] for _ in range(2)]
+                else:
+                    rows_A, cols_A = (2, 3) if difficulty == "medium" else (3, 3)
+                    rows_B, cols_B = (3, 2) if difficulty == "medium" else (3, 3)
+                    A = [[random.randint(-2, 2) for _ in range(cols_A)] for _ in range(rows_A)]
+                    B = [[random.randint(-2, 2) for _ in range(cols_B)] for _ in range(rows_B)]
+                
+                # Calculate result
+                result = [[sum(A[i][k] * B[k][j] for k in range(len(B))) for j in range(len(B[0]))] for i in range(len(A))]
+                
+                questions.append({
+                    "title": "Matrix Multiplication",
+                    "question": f"Calculate A × B where A = {A} and B = {B}",
+                    "type": "Matrix Multiplication",
+                    "answer": result,
+                    "explanation": f"Matrix multiplication: Result[i][j] = Σ(A[i][k] × B[k][j])"
+                })
+            
+            elif current_quiz_type == "Matrix Determinant":
+                # Generate determinant question
+                if difficulty == "easy":
+                    matrix = [[random.randint(1, 5), random.randint(1, 5)], 
+                             [random.randint(1, 5), random.randint(1, 5)]]
+                    det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+                    explanation = f"det = {matrix[0][0]}×{matrix[1][1]} - {matrix[0][1]}×{matrix[1][0]} = {det}"
+                else:
+                    matrix = [[random.randint(-3, 3) for _ in range(3)] for _ in range(3)]
+                    det = (matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1]) -
+                           matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0]) +
+                           matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]))
+                    explanation = "Using cofactor expansion along first row"
+                
+                questions.append({
+                    "title": "Matrix Determinant",
+                    "question": f"Calculate the determinant of {matrix}",
+                    "type": "Matrix Determinant",
+                    "answer": det,
+                    "explanation": explanation
+                })
+            
+            elif current_quiz_type == "Linear Systems":
+                # Generate linear system question
+                if difficulty == "easy":
+                    # 2x2 system
+                    a, b, c = random.randint(1, 3), random.randint(1, 3), random.randint(1, 5)
+                    d, e, f = random.randint(1, 3), random.randint(1, 3), random.randint(1, 5)
+                    system = f"{a}x + {b}y = {c}\n{d}x + {e}y = {f}"
+                    det = a*e - b*d
+                    if det != 0:
+                        x = (c*e - b*f) / det
+                        y = (a*f - c*d) / det
+                        answer = {"x": round(x, 3), "y": round(y, 3)}
+                    else:
+                        answer = "infinite" if (c*e == b*f and a*f == c*d) else "no solution"
+                else:
+                    # 3x3 system with parameters
+                    system = "x₁ + x₂ + 2x₃ = 4\nx₂ - 4x₃ = 1\n2x₂ - 12x₃ = 3"
+                    answer = "inconsistent"
+                
+                questions.append({
+                    "title": "Linear System",
+                    "question": f"Solve the system:\n{system}",
+                    "type": "Linear Systems",
+                    "answer": answer,
+                    "explanation": "Use Gaussian elimination or Cramer's rule"
+                })
+            
+            elif current_quiz_type == "Summations":
+                # Generate summation question
+                if difficulty == "easy":
+                    # Geometric series
+                    r = 1/5
+                    n = 4
+                    terms = [f"(1/5)^{i}" for i in range(n+1)]
+                    result = sum(r**i for i in range(n+1))
+                    
+                    questions.append({
+                        "title": "Geometric Series",
+                        "question": f"Calculate: Σ(1/5)ⁱ for i=0 to {n}",
+                        "type": "Summations",
+                        "answer": round(result, 4),
+                        "explanation": f"Geometric series: a(1-rⁿ⁺¹)/(1-r) = 1(1-(1/5)⁵)/(1-1/5) = {result:.4f}"
+                    })
+                else:
+                    # Arithmetic series
+                    n = random.randint(10, 25)
+                    result = sum((i + 5)**2 for i in range(1, n+1)) - 350
+                    
+                    questions.append({
+                        "title": "Arithmetic Series",
+                        "question": f"Calculate: Σ(i+5)² for i=1 to {n}, then subtract 350",
+                        "type": "Summations", 
+                        "answer": result,
+                        "explanation": f"Use formula for sum of squares: Σk² = n(n+1)(2n+1)/6"
+                    })
+            
+            elif current_quiz_type == "Linear Mappings":
+                # Generate linear mapping question
+                if difficulty == "easy":
+                    # Simple 2D transformation
+                    mapping = "L(x,y) = (3y, 2y)"
+                    is_linear = True
+                    matrix = [[0, 3], [0, 2]]
+                else:
+                    # Non-linear mapping
+                    mapping = "L(v) = (1 - v₂)"
+                    is_linear = False
+                    matrix = None
+                
+                questions.append({
+                    "title": "Linear Mapping",
+                    "question": f"Is the mapping {mapping} linear? If yes, provide its matrix representation.",
+                    "type": "Linear Mappings",
+                    "answer": {"is_linear": is_linear, "matrix": matrix},
+                    "explanation": "Check additivity L(u+v)=L(u)+L(v) and homogeneity L(cu)=cL(u)"
                 })
         
         return questions
@@ -141,7 +272,66 @@ class QuizComponent:
                 
                 # Custom input based on question type
                 user_answer = None # Initialize user_answer
-                if question["type"] == "polar_to_cartesian":
+                if question["type"] == "Dot Product":
+                    user_answer = st.number_input("Enter the dot product:", key=f"q{i}_dot")
+                
+                elif question["type"] == "Matrix Determinant":
+                    user_answer = st.number_input("Enter the determinant:", key=f"q{i}_det", format="%.3f")
+                
+                elif question["type"] == "Summations":
+                    user_answer = st.number_input("Enter the sum:", key=f"q{i}_sum", format="%.4f")
+                
+                elif question["type"] == "Linear Systems":
+                    if isinstance(question["answer"], dict):
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            x_val = st.number_input("x =", key=f"q{i}_x", format="%.3f")
+                        with col2:
+                            y_val = st.number_input("y =", key=f"q{i}_y", format="%.3f")
+                        user_answer = {"x": x_val, "y": y_val}
+                    else:
+                        solution_type = st.selectbox(
+                            "Solution type:",
+                            ["unique", "infinite", "no solution", "inconsistent"],
+                            key=f"q{i}_solution_type"
+                        )
+                        user_answer = solution_type
+                
+                elif question["type"] == "Linear Mappings":
+                    linear_check = st.radio("Is the mapping linear?", ["Yes", "No"], key=f"q{i}_linear")
+                    is_linear = linear_check == "Yes"
+                    
+                    matrix_input = None
+                    if is_linear:
+                        st.write("Enter the matrix representation:")
+                        if "2x2" in str(question["answer"].get("matrix", [])):
+                            cols = st.columns(2)
+                            row1 = []
+                            row2 = []
+                            for j in range(2):
+                                with cols[j]:
+                                    row1.append(st.number_input(f"a1{j+1}:", key=f"q{i}_m1{j}"))
+                                    row2.append(st.number_input(f"a2{j+1}:", key=f"q{i}_m2{j}"))
+                            matrix_input = [row1, row2]
+                    
+                    user_answer = {"is_linear": is_linear, "matrix": matrix_input}
+                
+                elif question["type"] == "Matrix Multiplication":
+                    st.write("Enter the result matrix:")
+                    result_shape = len(question["answer"]), len(question["answer"][0])
+                    matrix_result = []
+                    
+                    for row_idx in range(result_shape[0]):
+                        cols = st.columns(result_shape[1])
+                        row = []
+                        for col_idx in range(result_shape[1]):
+                            with cols[col_idx]:
+                                val = st.number_input(f"[{row_idx+1}][{col_idx+1}]:", key=f"q{i}_r{row_idx}{col_idx}")
+                                row.append(val)
+                        matrix_result.append(row)
+                    user_answer = matrix_result
+                
+                elif question["type"] == "polar_to_cartesian":
                     col1, col2 = st.columns(2)
                     with col1:
                         x_response = st.number_input("x coordinate:", key=f"q{i}_x", format="%.4f")
@@ -171,15 +361,20 @@ class QuizComponent:
                 # Add more input types for other question types as needed
                 
                 # Default fallback for other question types (if no specific input is defined)
-                # This case should ideally be handled or avoided by ensuring all quiz types have UI
-                if user_answer is None and not question["type"] in ["polar_to_cartesian", "vector_normalization", "orthogonal_vectors"]:
+                supported_types = [
+                    "Dot Product", "Matrix Determinant", "Summations", "Linear Systems", 
+                    "Linear Mappings", "Matrix Multiplication", "Vector Normalization",
+                    "polar_to_cartesian", "vector_normalization", "orthogonal_vectors"
+                ]
+                
+                if user_answer is None and question["type"] not in supported_types:
                     st.write("This question type has no interactive input in the UI yet. You can view the solution.")
 
                 # Check answer button
                 check_col, reset_col = st.columns([3, 1])
                 with check_col:
                     # Disable check if no answer can be provided by UI yet
-                    disable_check = user_answer is None and not question["type"] in ["polar_to_cartesian", "vector_normalization", "orthogonal_vectors"]
+                    disable_check = user_answer is None and question["type"] not in supported_types
                     check_answer_button = st.button("Check Answer", key=f"check_q{i}", disabled=disable_check)
                 with reset_col:
                     reset_answer = st.button("Reset", key=f"reset_q{i}")
@@ -216,7 +411,61 @@ class QuizComponent:
         answer_type = question["type"]
         correct_answer = question["answer"]
         
-        if answer_type == "polar_to_cartesian":
+        if answer_type == "Dot Product":
+            return abs(user_answer - correct_answer) < 0.001
+        
+        elif answer_type == "Matrix Determinant":
+            return abs(user_answer - correct_answer) < 0.001
+        
+        elif answer_type == "Summations":
+            return abs(user_answer - correct_answer) < 0.001
+        
+        elif answer_type == "Matrix Multiplication":
+            if not isinstance(user_answer, list) or not isinstance(correct_answer, list):
+                return False
+            if len(user_answer) != len(correct_answer):
+                return False
+            for i in range(len(user_answer)):
+                if len(user_answer[i]) != len(correct_answer[i]):
+                    return False
+                for j in range(len(user_answer[i])):
+                    if abs(user_answer[i][j] - correct_answer[i][j]) > 0.001:
+                        return False
+            return True
+        
+        elif answer_type == "Linear Systems":
+            if isinstance(correct_answer, dict) and isinstance(user_answer, dict):
+                x_correct = abs(user_answer["x"] - correct_answer["x"]) < 0.01
+                y_correct = abs(user_answer["y"] - correct_answer["y"]) < 0.01
+                return x_correct and y_correct
+            else:
+                return user_answer == correct_answer
+        
+        elif answer_type == "Linear Mappings":
+            if isinstance(correct_answer, dict) and isinstance(user_answer, dict):
+                linear_correct = user_answer["is_linear"] == correct_answer["is_linear"]
+                if not linear_correct:
+                    return False
+                
+                if correct_answer["is_linear"] and correct_answer["matrix"] is not None:
+                    if user_answer["matrix"] is None:
+                        return False
+                    # Check matrix equality
+                    for i in range(len(correct_answer["matrix"])):
+                        for j in range(len(correct_answer["matrix"][i])):
+                            if abs(user_answer["matrix"][i][j] - correct_answer["matrix"][i][j]) > 0.01:
+                                return False
+                return True
+            return False
+        
+        elif answer_type == "Vector Normalization":
+            # Check if normalized vector components are within acceptable tolerance
+            if isinstance(user_answer, list) and isinstance(correct_answer, list):
+                if len(user_answer) == len(correct_answer):
+                    return all(abs(u - c) < 0.01 for u, c in zip(user_answer, correct_answer))
+            return False
+        
+        elif answer_type == "polar_to_cartesian":
             # Check if x and y coordinates are within acceptable tolerance
             x_correct = abs(user_answer["x"] - correct_answer["x"]) < 0.01
             y_correct = abs(user_answer["y"] - correct_answer["y"]) < 0.01
@@ -233,8 +482,6 @@ class QuizComponent:
         elif answer_type == "orthogonal_vectors":
             # Check if the orthogonality assessment is correct
             return user_answer == correct_answer["are_orthogonal"]
-        
-        # Add more checks for other question types as needed
         
         # Default fallback
         st.warning(f"Answer checking for quiz type '{answer_type}' is not fully implemented in the UI yet.")
