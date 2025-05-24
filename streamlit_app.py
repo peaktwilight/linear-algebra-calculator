@@ -11,11 +11,12 @@ from st_components.st_quiz_ui import QuizComponent
 from st_components.st_learning_resources import render_learning_resources_page
 from st_components.st_linearity_operations import LinearityOperations
 from st_components.st_batch_calculator import BatchMatrixCalculator
+from st_components.st_summation_calculator import SummationCalculator
 
 # Set page configuration
 st.set_page_config(
     page_title="Linear Algebra Calculator",
-    page_icon="🧮",
+    page_icon="📐",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -168,6 +169,7 @@ def main():
     quiz_component = QuizComponent()
     linearity_checker = LinearityOperations()
     batch_calculator = BatchMatrixCalculator()
+    summation_calculator = SummationCalculator()
     
     # Apply minimal styling approach 
     apply_styling()
@@ -199,7 +201,8 @@ def main():
                                        "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
                                        "Calculate Null Space (Basis)", "Geometric Interpretation"],
         "Linear Mappings": ["Check Linearity", "Matrix Representation", "Polynomial Mappings", "Trigonometric Mappings", 
-                           "Dot Product Mappings", "Quadratic Forms"]
+                           "Dot Product Mappings", "Quadratic Forms"],
+        "Series & Summations": ["General Summation", "Geometric Series", "Arithmetic Series", "Pattern Recognition", "Exercise Helper"]
     }
     
     # Flatten list for searching
@@ -237,7 +240,7 @@ def main():
             st.sidebar.markdown("---")
             category = st.sidebar.selectbox(
                 "Select Operation Category",
-                ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Quiz Mode", "Learning Resources"]
+                ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Series & Summations", "Quiz Mode", "Learning Resources"]
             )
     else:
         selected_operation_from_search = None
@@ -245,7 +248,7 @@ def main():
         # Default categories selection if no search
         category = st.sidebar.selectbox(
             "Select Operation Category",
-            ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Quiz Mode", "Learning Resources"]
+            ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Series & Summations", "Quiz Mode", "Learning Resources"]
         )
     
     if category == "Vector Operations":
@@ -944,6 +947,9 @@ def main():
     elif category == "Linear Mappings":
         # Use the linearity checker component (it has its own header)
         linearity_checker.render_linearity_checker()
+    
+    elif category == "Series & Summations":
+        summation_calculator.render_summation_calculator()
     
     elif category == "Quiz Mode":
         quiz_component.render()
