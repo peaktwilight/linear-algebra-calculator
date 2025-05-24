@@ -13,6 +13,7 @@ import scipy.linalg as sp
 from given_reference.core import mrref # For displaying RREF steps
 from .st_visualization_utils import display_matrix_heatmap
 from .st_utils import StreamOutput
+from .st_math_utils import MathUtils
 
 class MatrixOperationsMixin:
     """
@@ -34,13 +35,8 @@ class MatrixOperationsMixin:
         st.subheader(f"Result for Matrix {operation.replace('_', ' ').title()}")
         
         try:
-            # It's crucial that self.framework is available from the main class
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
-
-            matrix_a = self.framework.parse_matrix(matrix_a_input)
-            matrix_b = self.framework.parse_matrix(matrix_b_input) if matrix_b_input else None
+            matrix_a = MathUtils.parse_matrix(matrix_a_input)
+            matrix_b = MathUtils.parse_matrix(matrix_b_input) if matrix_b_input else None
             scalar = float(scalar_input) if scalar_input is not None else None
 
             result = None
@@ -136,19 +132,28 @@ class MatrixOperationsMixin:
         st.subheader("Gaussian Elimination Result")
 
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
 
-            augmented_matrix = self.framework.parse_matrix(args.matrix)
+            augmented_matrix = MathUtils.parse_matrix(args.matrix)
 
-            # Capture print output from the CLI function for detailed steps
-            with StreamOutput() as captured_output:
-                # The framework's solve_gauss returns the solution if one exists,
-                # and prints steps. We want to display those steps.
-                solution = self.framework.solve_gauss(args) 
+            # Solve the system directly using numpy
+            if augmented_matrix.shape[1] < 2:
+                st.error("Invalid augmented matrix format. Need at least coefficient matrix and constants.")
+                return
+                
+            # Separate coefficient matrix and constants
+            A = augmented_matrix[:, :-1]
+            b = augmented_matrix[:, -1]
             
-            cli_steps = captured_output.get_output()
+            # Try to solve the system
+            try:
+                solution = np.linalg.solve(A, b)
+            except np.linalg.LinAlgError:
+                # System might be singular or inconsistent
+                # Use least squares as fallback
+                try:
+                    solution = np.linalg.lstsq(A, b, rcond=None)[0]
+                except:
+                    solution = None
 
             col1, col2 = st.columns([1, 1])
 
@@ -319,17 +324,9 @@ class MatrixOperationsMixin:
                         for step in steps_markdown:
                             st.markdown(step)
                 
-                # Display CLI steps as reference (collapsed)
-                with st.expander("CLI Solver Output (Reference)"):
-                    st.text_area("Solver Steps", value=cli_steps, height=300, disabled=True)
-
                 st.markdown("**Solution:**")
                 if solution is None:
-                    # Check cli_steps for inconsistency message as framework prints it
-                    if "inconsistent" in cli_steps.lower() or "no solution" in cli_steps.lower():
-                         st.warning("The system is inconsistent (no solution).")
-                    else:
-                         st.info("The framework did not return a solution (it might be inconsistent or an issue occurred).")
+                    st.warning("The system is inconsistent (no solution) or singular.")
                 elif isinstance(solution, dict) and "particular" in solution and "null_space" in solution:
                     st.markdown("The system has infinitely many solutions.")
                     
@@ -445,13 +442,10 @@ class MatrixOperationsMixin:
         st.subheader("Standard Form of Linear System")
         
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
             
             # Parse the matrix if provided
             if matrix_input:
-                augmented_matrix = self.framework.parse_matrix(matrix_input)
+                augmented_matrix = MathUtils.parse_matrix(matrix_input)
                 matrix_provided = True
             else:
                 matrix_provided = False
@@ -695,12 +689,9 @@ class MatrixOperationsMixin:
         st.subheader("Row Operations Analysis")
         
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
             
             # Parse the matrix
-            matrix = self.framework.parse_matrix(matrix_input)
+            matrix = MathUtils.parse_matrix(matrix_input)
             
             # Display the original matrix
             st.markdown("### Original Matrix")
@@ -972,12 +963,9 @@ class MatrixOperationsMixin:
         st.subheader("Free Parameter Analysis")
         
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
             
             # Parse the augmented matrix for the linear system
-            augmented_matrix = self.framework.parse_matrix(matrix_input)
+            augmented_matrix = MathUtils.parse_matrix(matrix_input)
             
             # Split the matrix into coefficient matrix A and RHS vector b
             A = augmented_matrix[:, :-1]
@@ -1306,12 +1294,9 @@ class MatrixOperationsMixin:
         st.subheader("Homogeneous & Inhomogeneous Solutions")
         
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
             
             # Parse the augmented matrix for the linear system Ax=b
-            augmented_matrix = self.framework.parse_matrix(matrix_input)
+            augmented_matrix = MathUtils.parse_matrix(matrix_input)
             
             # Split into coefficient matrix A and RHS vector b
             A = augmented_matrix[:, :-1]
@@ -1724,12 +1709,9 @@ class MatrixOperationsMixin:
         st.subheader("Geometric Interpretation of Linear Systems")
         
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
             
             # Parse the augmented matrix
-            augmented_matrix = self.framework.parse_matrix(matrix_input)
+            augmented_matrix = MathUtils.parse_matrix(matrix_input)
             
             # Split into coefficient matrix A and constant vector b
             A = augmented_matrix[:, :-1]
@@ -1806,8 +1788,14 @@ class MatrixOperationsMixin:
                         def __init__(self, matrix):
                             self.matrix = matrix
                             
-                    args = Args(matrix_input)
-                    solution = self.framework.solve_gauss(args)
+                    # Parse and solve directly
+                    augmented_matrix = MathUtils.parse_matrix(matrix_input)
+                    A = augmented_matrix[:, :-1]
+                    b = augmented_matrix[:, -1]
+                    try:
+                        solution = np.linalg.solve(A, b)
+                    except:
+                        solution = None
                     
                     if isinstance(solution, np.ndarray):
                         solution_vector = solution.reshape(-1, 1)
@@ -2066,13 +2054,10 @@ class MatrixOperationsMixin:
         st.subheader("Matrix Multiplication")
         
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
             
             # Parse the matrices
-            matrix_a = self.framework.parse_matrix(matrix_a_input)
-            matrix_b = self.framework.parse_matrix(matrix_b_input)
+            matrix_a = MathUtils.parse_matrix(matrix_a_input)
+            matrix_b = MathUtils.parse_matrix(matrix_b_input)
             
             # Check compatibility for multiplication
             if matrix_a.shape[1] != matrix_b.shape[0]:
@@ -2338,12 +2323,9 @@ class MatrixOperationsMixin:
         st.subheader("Matrix Inverse")
         
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
             
             # Parse the matrix
-            matrix = self.framework.parse_matrix(matrix_input)
+            matrix = MathUtils.parse_matrix(matrix_input)
             
             # Check if the matrix is square
             if matrix.shape[0] != matrix.shape[1]:
@@ -2925,12 +2907,9 @@ Where:
         st.subheader("Matrix Determinant")
         
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
             
             # Parse the matrix
-            matrix = self.framework.parse_matrix(matrix_input)
+            matrix = MathUtils.parse_matrix(matrix_input)
             
             # Check if the matrix is square
             rows, cols = matrix.shape
@@ -3030,12 +3009,9 @@ Where:
         st.subheader("Eigenvalues and Eigenvectors")
         
         try:
-            if not hasattr(self, 'framework'):
-                st.error("Framework not initialized in the calculator.")
-                return None
             
             # Parse the matrix
-            matrix = self.framework.parse_matrix(matrix_input)
+            matrix = MathUtils.parse_matrix(matrix_input)
             
             # Check if the matrix is square
             rows, cols = matrix.shape

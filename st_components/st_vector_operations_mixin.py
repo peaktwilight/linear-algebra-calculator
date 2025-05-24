@@ -11,6 +11,7 @@ import plotly.express as px # Keep for potential future use
 import plotly.graph_objects as go # Keep for potential future use
 from .st_visualization_utils import display_vector_visualization
 from .st_utils import StreamOutput
+from .st_math_utils import MathUtils
 
 class VectorOperationsMixin:
     """
@@ -27,7 +28,21 @@ class VectorOperationsMixin:
                     self.vector = vector
             
             args = Args(vector_input)
-            result = self.framework.normalize_vector(args)
+            
+            # Parse and calculate normalization directly
+            vector = MathUtils.parse_vector(vector_input)
+            if vector is None:
+                st.error("Invalid vector format")
+                return
+                
+            normalized = MathUtils.normalize_vector(vector)
+            magnitude = MathUtils.vector_magnitude(vector)
+            
+            result = {
+                "original_vector": vector,
+                "magnitude": magnitude,
+                "normalized_vector": normalized
+            }
         
         # Print the output from CLI to for debugging
         # st.text(output.get_output())
@@ -36,7 +51,7 @@ class VectorOperationsMixin:
         st.subheader("Vector Normalization")
         
         # Parse original vector for display/visualization
-        vector = self.framework.parse_vector(vector_input)
+        vector = MathUtils.parse_vector(vector_input)
         
         col1, col2 = st.columns([1, 1])
         
@@ -95,7 +110,23 @@ class VectorOperationsMixin:
                     self.vector_b = vector_b
             
             args = Args(vector_a_input, vector_b_input)
-            result = self.framework.vector_shadow(args)
+            
+            # Parse vectors and calculate projection directly
+            vector_a = MathUtils.parse_vector(vector_a_input)
+            vector_b = MathUtils.parse_vector(vector_b_input)
+            
+            if vector_a is None or vector_b is None:
+                st.error("Invalid vector format")
+                return
+            
+            # Calculate projection of vector_b onto vector_a
+            projection = MathUtils.vector_projection(vector_a, vector_b)
+            
+            result = {
+                "vector_a": vector_a,
+                "vector_b": vector_b,
+                "projection": projection
+            }
         
         cli_output = output.get_output()
         
@@ -103,8 +134,8 @@ class VectorOperationsMixin:
         st.subheader("Vector Projection (Shadow)")
         
         # Parse vectors for display/visualization
-        vector_a = self.framework.parse_vector(vector_a_input)
-        vector_b = self.framework.parse_vector(vector_b_input)
+        vector_a = MathUtils.parse_vector(vector_a_input)
+        vector_b = MathUtils.parse_vector(vector_b_input)
         
         col1, col2 = st.columns([1, 1])
         
@@ -186,7 +217,25 @@ class VectorOperationsMixin:
                     self.vector_b = vector_b
             
             args = Args(vector_a_input, vector_b_input)
-            result = self.framework.vector_angle(args)
+            
+            # Parse vectors and calculate angle directly
+            vector_a = MathUtils.parse_vector(vector_a_input)
+            vector_b = MathUtils.parse_vector(vector_b_input)
+            
+            if vector_a is None or vector_b is None:
+                st.error("Invalid vector format")
+                return
+            
+            # Calculate angle in both radians and degrees
+            angle_deg = MathUtils.vector_angle(vector_a, vector_b, degrees=True)
+            angle_rad = MathUtils.vector_angle(vector_a, vector_b, degrees=False)
+            
+            result = {
+                "vector_a": vector_a,
+                "vector_b": vector_b,
+                "angle_rad": angle_rad,
+                "angle_deg": angle_deg
+            }
         
         # Get CLI output
         cli_output = output.get_output()
@@ -199,8 +248,8 @@ class VectorOperationsMixin:
         st.subheader("Angle Between Vectors")
         
         # Parse vectors for display and visualization
-        vector_a = self.framework.parse_vector(vector_a_input)
-        vector_b = self.framework.parse_vector(vector_b_input)
+        vector_a = MathUtils.parse_vector(vector_a_input)
+        vector_b = MathUtils.parse_vector(vector_b_input)
         
         col1, col2 = st.columns([1, 1])
         
@@ -263,18 +312,23 @@ class VectorOperationsMixin:
     def cross_product(self, args):
         """Calculate the cross product of two vectors."""
         # Capture print output from the CLI function
-        with StreamOutput() as output:
-            result = self.framework.cross_product(args)
+        # Parse vectors and calculate cross product directly
+        vector_a = MathUtils.parse_vector(args.vector_a)
+        vector_b = MathUtils.parse_vector(args.vector_b)
         
-        # Since the framework's cross_product method returns the cross product directly (not in a dict)
-        cross_prod = result if isinstance(result, np.ndarray) else np.array([0, 0, 0])
+        if vector_a is None or vector_b is None:
+            st.error("Invalid vector format")
+            return
+        
+        # Calculate cross product
+        cross_prod = MathUtils.vector_cross_product(vector_a, vector_b)
         
         # Display the results
         st.subheader("Cross Product")
         
         # Parse vectors for display/visualization
-        vector_a = self.framework.parse_vector(args.vector_a)
-        vector_b = self.framework.parse_vector(args.vector_b)
+        vector_a = MathUtils.parse_vector(args.vector_a)
+        vector_b = MathUtils.parse_vector(args.vector_b)
         
         col1, col2 = st.columns([1, 1])
         
@@ -377,25 +431,21 @@ class VectorOperationsMixin:
                 """
                 st.markdown(result_box, unsafe_allow_html=True)
         
-        return result
+        return cross_prod
 
     def triangle_area(self, args):
         """Calculate the area of a triangle defined by three points."""
         # Parse the points from args
-        p1 = self.framework.parse_vector(args.point_a)
-        p2 = self.framework.parse_vector(args.point_b)
-        p3 = self.framework.parse_vector(args.point_c)
+        p1 = MathUtils.parse_vector(args.point_a)
+        p2 = MathUtils.parse_vector(args.point_b)
+        p3 = MathUtils.parse_vector(args.point_c)
         
         # Form vectors from points
         vec1 = p2 - p1
         vec2 = p3 - p1
         
-        # Capture print output from the CLI function
-        with StreamOutput() as output:
-            result = self.framework.triangle_area(args)
-        
-        # The framework's triangle_area method returns the area directly (not in a dict)
-        area = result if isinstance(result, (int, float)) else 0
+        # Calculate triangle area directly using MathUtils
+        area = MathUtils.triangle_area_from_points(p1, p2, p3)
         
         # Calculate the area ourselves as a double-check
         if len(p1) == 3:  # 3D case
@@ -499,24 +549,20 @@ class VectorOperationsMixin:
             """
             st.markdown(result_box, unsafe_allow_html=True)
             
-        return result
+        return area
 
     def point_line_distance(self, args):
         """Calculate the distance from a point to a line (defined by a point and direction vector)."""
         # Parse the points and direction
-        point_a = self.framework.parse_vector(args.point_a)  # Point on line
-        direction = self.framework.parse_vector(args.direction)  # Direction vector
-        point_b = self.framework.parse_vector(args.point_b)  # Point to find distance from
+        point_a = MathUtils.parse_vector(args.point_a)  # Point on line
+        direction = MathUtils.parse_vector(args.direction)  # Direction vector
+        point_b = MathUtils.parse_vector(args.point_b)  # Point to find distance from
         
         # Calculate vector from point on line to point B
         vec_ap = point_b - point_a
         
-        # Capture print output from the CLI function
-        with StreamOutput() as output:
-            result = self.framework.point_line_distance(args)
-        
-        # The framework's point_line_distance method returns the distance directly
-        distance = result if isinstance(result, (int, float)) else 0
+        # Calculate point-line distance directly using MathUtils
+        distance = MathUtils.point_line_distance(point_a, direction, point_b)
         
         # Calculate the distance ourselves for verification
         if len(direction) > 0 and np.linalg.norm(direction) > 0:
@@ -601,7 +647,7 @@ class VectorOperationsMixin:
             
             # Line visualization: show a segment of the line
             # Create a segment of the line using the point and direction
-            line_p1 = self.framework.parse_vector(args.point_a)
+            line_p1 = MathUtils.parse_vector(args.point_a)
             # Make line_p2 by extending along direction_vec. For viz, scale d if it's too small/large
             # Let's just use A and A+d for the segment.
             line_p2 = line_p1 + direction 
@@ -652,7 +698,7 @@ class VectorOperationsMixin:
             """
             st.markdown(result_box, unsafe_allow_html=True)
             
-        return result
+        return distance
 
     def check_collinear(self, args):
         """Check if vectors are collinear."""
@@ -660,7 +706,7 @@ class VectorOperationsMixin:
         vectors = args.vectors
         
         # Parse each vector
-        parsed_vectors = [self.framework.parse_vector(v) for v in vectors if v]
+        parsed_vectors = [MathUtils.parse_vector(v) for v in vectors if v]
         
         # Implement the collinearity check directly since framework doesn't have it
         is_collinear = False

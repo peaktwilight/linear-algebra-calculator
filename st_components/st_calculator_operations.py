@@ -7,10 +7,10 @@ Streamlit Component for Linear Algebra Calculator Operations
 import streamlit as st
 import numpy as np
 import pandas as pd
-from given_reference.core import mrref # mnull, eliminate are used by linalg_cli, not directly here
+from given_reference.core import mrref # Keep for RREF functionality
 
-# Import CLI functionality to reuse functions
-from linalg_cli import LinearAlgebraExerciseFramework
+# Import self-sufficient utilities
+from .st_math_utils import MathUtils
 
 # Import Mixins
 from .st_vector_operations_mixin import VectorOperationsMixin
@@ -19,39 +19,19 @@ from .st_matrix_operations_mixin import MatrixOperationsMixin
 class LinAlgCalculator(VectorOperationsMixin, MatrixOperationsMixin):
     def __init__(self):
         super().__init__() # Initialize mixins if they have their own __init__ (optional)
-        self.framework = LinearAlgebraExerciseFramework()
+        self.math_utils = MathUtils()
     
     def _format_number_latex(self, num):
-        """Helper to format numbers for LaTeX, showing integers without .0"""
-        if np.isclose(num, round(num)):
-            return f"{int(round(num))}"
-        else:
-            # Attempt to show fractions for simple cases, otherwise use decimal
-            # For simplicity, we'll stick to decimals for now, can be expanded.
-            return f"{num:.4f}".rstrip('0').rstrip('.')
+        """Helper to format numbers for LaTeX - delegate to MathUtils"""
+        return MathUtils.format_number_latex(num)
     
     def _format_vector_to_latex_string(self, vector):
-        """Formats a NumPy vector into a LaTeX column vector string using pmatrix."""
-        if vector is None or vector.size == 0:
-            return ""
-        vec_cleaned = np.where(np.isclose(vector, 0) & (np.abs(vector) < 1e-9), 0, vector)
-        elements = [self._format_number_latex(x) for x in vec_cleaned]
-        return r"\begin{pmatrix} " + r" \\ ".join(elements) + r" \end{pmatrix}"
+        """Formats a NumPy vector into a LaTeX column vector string - delegate to MathUtils"""
+        return MathUtils.format_vector_latex(vector)
     
     def _format_matrix_to_latex_string(self, matrix_val):
-        """Formats a NumPy matrix into a LaTeX pmatrix string."""
-        if matrix_val is None or matrix_val.size == 0:
-            if isinstance(matrix_val, np.ndarray) and matrix_val.ndim == 2 and matrix_val.shape[0] > 0 and matrix_val.shape[1] == 0 : # Matrix with rows but 0 columns
-                 return r"\begin{pmatrix} " + r" \\ ".join([""] * matrix_val.shape[0]) + r" \end{pmatrix}"
-            return "(Empty or invalid matrix)"
-        
-        matrix_cleaned = np.where(np.isclose(matrix_val, 0) & (np.abs(matrix_val) < 1e-9), 0, matrix_val)
-        
-        rows_str = []
-        for row_idx in range(matrix_cleaned.shape[0]):
-            elements = [self._format_number_latex(x) for x in matrix_cleaned[row_idx, :]]
-            rows_str.append(" & ".join(elements))
-        return r"\begin{pmatrix} " + r" \\ ".join(rows_str) + r" \end{pmatrix}"
+        """Formats a NumPy matrix into a LaTeX pmatrix string - delegate to MathUtils"""
+        return MathUtils.format_matrix_latex(matrix_val)
     
     def calculate_null_space_basis(self, matrix_a_str):
         """
@@ -60,7 +40,7 @@ class LinAlgCalculator(VectorOperationsMixin, MatrixOperationsMixin):
         """
         st.write("### Null Space Calculation")
         try:
-            matrix_a = self.framework.parse_matrix(matrix_a_str)
+            matrix_a = MathUtils.parse_matrix(matrix_a_str)
             if matrix_a is None or matrix_a.size == 0:
                 st.error("Invalid or empty matrix format for Matrix A. Please check your input.")
                 return

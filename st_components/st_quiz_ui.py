@@ -11,18 +11,70 @@ import numpy as np # Used for checking answers, e.g. vector normalization
 # import plotly.express as px # Not used in QuizComponent
 # import plotly.graph_objects as go # Not used in QuizComponent
 
-# Import Quiz generator
-from linear_algebra_quiz import LinearAlgebraQuiz
+# Import self-sufficient utilities
+from .st_math_utils import MathUtils
+import random
 
 class QuizComponent:
     def __init__(self):
         """Initialize the quiz component."""
-        self.quiz_generator = LinearAlgebraQuiz()
-        self.available_quiz_types = self.quiz_generator.get_quiz_types()
+        self.available_quiz_types = [
+            "Vector Normalization",
+            "Matrix Multiplication", 
+            "Dot Product",
+            "Matrix Determinant"
+        ]
+    
+    def _generate_simple_quiz(self, quiz_type, difficulty, num_questions):
+        """Generate simple quiz questions"""
+        questions = []
+        
+        for i in range(num_questions):
+            if quiz_type == "random" or quiz_type == "Vector Normalization":
+                # Generate vector normalization question
+                if difficulty == "easy":
+                    vector = [random.randint(1, 5), random.randint(1, 5)]
+                elif difficulty == "medium": 
+                    vector = [random.randint(-5, 5), random.randint(-5, 5), random.randint(-5, 5)]
+                else:
+                    vector = [random.uniform(-10, 10), random.uniform(-10, 10), random.uniform(-10, 10)]
+                
+                magnitude = sum(x**2 for x in vector)**0.5
+                normalized = [x/magnitude for x in vector]
+                
+                questions.append({
+                    "title": "Vector Normalization",
+                    "question": f"Normalize the vector {vector}",
+                    "type": "Vector Normalization",
+                    "answer": normalized,
+                    "explanation": f"Magnitude = √({' + '.join([f'{x}²' for x in vector])}) = {magnitude:.3f}\nNormalized = {vector} / {magnitude:.3f} = {[round(x, 3) for x in normalized]}"
+                })
+            
+            elif quiz_type == "Dot Product":
+                # Generate dot product question
+                if difficulty == "easy":
+                    v1 = [random.randint(1, 5), random.randint(1, 5)]
+                    v2 = [random.randint(1, 5), random.randint(1, 5)]
+                else:
+                    v1 = [random.randint(-5, 5) for _ in range(3)]
+                    v2 = [random.randint(-5, 5) for _ in range(3)]
+                
+                dot_product = sum(a*b for a, b in zip(v1, v2))
+                
+                questions.append({
+                    "title": "Dot Product",
+                    "question": f"Calculate the dot product of {v1} and {v2}",
+                    "type": "Dot Product", 
+                    "answer": dot_product,
+                    "explanation": f"Dot product = {' + '.join([f'{a}×{b}' for a, b in zip(v1, v2)])} = {dot_product}"
+                })
+        
+        return questions
         
     def render(self):
         """Render the quiz component in Streamlit."""
         st.title("Linear Algebra Quiz")
+        st.write("Test your linear algebra knowledge with interactive questions!")
         
         # Quiz options
         with st.expander("Quiz Options", expanded=True):
@@ -57,17 +109,7 @@ class QuizComponent:
         
         # Generate quiz button
         if st.button("Generate New Quiz", key="generate_quiz"):
-            if quiz_type == "random":
-                questions = self.quiz_generator.generate_random_quiz(
-                    count=num_questions,
-                    difficulty=difficulty
-                )
-            else:
-                questions = self.quiz_generator.generate_quiz(
-                    quiz_type=quiz_type,
-                    difficulty=difficulty,
-                    count=num_questions
-                )
+            questions = self._generate_simple_quiz(quiz_type, difficulty, num_questions)
             
             # Store questions in session state
             st.session_state.quiz_questions = questions
@@ -161,8 +203,13 @@ class QuizComponent:
                 # Solution section
                 if responses[i]["answered"] or st.checkbox("Show Solution", key=f"show_solution_{i}"):
                     st.markdown("### Solution")
-                    for step in question["solution_steps"]:
-                        st.markdown(step)
+                    if "solution_steps" in question:
+                        for step in question["solution_steps"]:
+                            st.markdown(step)
+                    elif "explanation" in question:
+                        st.markdown(question["explanation"])
+                    
+                    st.markdown(f"**Answer:** {question['answer']}")
     
     def _check_answer(self, question, user_answer):
         """Check if the user's answer is correct."""
