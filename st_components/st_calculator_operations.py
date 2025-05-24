@@ -7,17 +7,10 @@ Streamlit Component for Linear Algebra Calculator Operations
 import streamlit as st
 import numpy as np
 import pandas as pd
-# import matplotlib.pyplot as plt # Not directly used in LinAlgCalculator, but good to keep if visualizations expand
-import plotly.express as px
-import plotly.graph_objects as go
 from given_reference.core import mrref # mnull, eliminate are used by linalg_cli, not directly here
-from .st_visualization_utils import display_vector_visualization, display_matrix_heatmap
 
 # Import CLI functionality to reuse functions
 from linalg_cli import LinearAlgebraExerciseFramework
-
-# Import Utilities
-from .st_utils import StreamOutput
 
 # Import Mixins
 from .st_vector_operations_mixin import VectorOperationsMixin
@@ -187,6 +180,142 @@ class LinAlgCalculator(VectorOperationsMixin, MatrixOperationsMixin):
             st.error(f"An unexpected error occurred: {e}")
             # import traceback
             # st.error(f"Traceback: {traceback.format_exc()}")
+
+    def check_vector_solutions(self, matrix_input, vectors_input):
+        """Check if given vectors are particular solutions, homogeneous solutions, or neither."""
+        try:
+            # Parse the augmented matrix [A|b]
+            augmented = self.framework.parse_matrix(matrix_input)
+            
+            # Split into coefficient matrix and right-hand side
+            A = augmented[:, :-1]
+            b = augmented[:, -1]
+            
+            # Parse the vectors to check
+            vector_lines = vectors_input.strip().split('\n')
+            vectors = []
+            for line in vector_lines:
+                if line.strip():
+                    vectors.append(self.framework.parse_vector(line.strip()))
+            
+            if not vectors:
+                st.error("No vectors provided to check.")
+                return
+            
+            st.subheader("Vector Solution Analysis")
+            
+            # Display the system
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.write("**Coefficient Matrix A:**")
+                st.latex(self._format_matrix_to_latex_string(A))
+                
+            with col2:
+                st.write("**Right-hand side b:**")
+                st.latex(self._format_vector_to_latex_string(b))
+            
+            # Check each vector
+            results = []
+            for i, v in enumerate(vectors):
+                st.write(f"### Vector {i+1}: {v.tolist()}")
+                
+                # Compute A·v
+                Av = A @ v
+                
+                # Check if A·v = b (particular solution)
+                diff_particular = Av - b
+                residual_norm_particular = np.linalg.norm(diff_particular)
+                is_particular = residual_norm_particular < 1e-10
+                
+                # Check if A·v = 0 (homogeneous solution)
+                residual_norm_homogeneous = np.linalg.norm(Av)
+                is_homogeneous = residual_norm_homogeneous < 1e-10
+                
+                # Display results
+                col1, col2, col3 = st.columns([1, 1, 1])
+                
+                with col1:
+                    st.write("**Computing A·v:**")
+                    st.latex(f"A \\vec{{v}} = {self._format_vector_to_latex_string(Av)}")
+                
+                with col2:
+                    st.write("**Particular Solution Check:**")
+                    st.write(f"A·v - b = {diff_particular.tolist()}")
+                    st.write(f"||A·v - b|| = {residual_norm_particular:.2e}")
+                    if is_particular:
+                        st.success("✅ **IS** a particular solution (A·v = b)")
+                    else:
+                        st.error("❌ **NOT** a particular solution")
+                
+                with col3:
+                    st.write("**Homogeneous Solution Check:**")
+                    st.write(f"||A·v|| = {residual_norm_homogeneous:.2e}")
+                    if is_homogeneous:
+                        st.success("✅ **IS** a homogeneous solution (A·v = 0)")
+                    else:
+                        st.error("❌ **NOT** a homogeneous solution")
+                
+                # Summary for this vector
+                if is_particular and not is_homogeneous:
+                    status = "Particular Solution Only"
+                    color = "success"
+                elif is_homogeneous and not is_particular:
+                    status = "Homogeneous Solution Only"
+                    color = "info"
+                elif is_particular and is_homogeneous:
+                    # This would only happen if b = 0
+                    status = "Both Particular and Homogeneous (b = 0)"
+                    color = "warning"
+                else:
+                    status = "Not a Solution"
+                    color = "error"
+                
+                if color == "success":
+                    st.success(f"**Final Classification: {status}**")
+                elif color == "info":
+                    st.info(f"**Final Classification: {status}**")
+                elif color == "warning":
+                    st.warning(f"**Final Classification: {status}**")
+                else:
+                    st.error(f"**Final Classification: {status}**")
+                
+                results.append({
+                    "vector": v,
+                    "is_particular": is_particular,
+                    "is_homogeneous": is_homogeneous,
+                    "status": status
+                })
+                
+                st.write("---")
+            
+            # Summary table
+            st.subheader("Summary Table")
+            summary_data = []
+            for i, result in enumerate(results):
+                summary_data.append({
+                    "Vector": f"v{i+1} = {result['vector'].tolist()}",
+                    "Particular Solution": "✅ Yes" if result['is_particular'] else "❌ No",
+                    "Homogeneous Solution": "✅ Yes" if result['is_homogeneous'] else "❌ No",
+                    "Classification": result['status']
+                })
+            
+            df = pd.DataFrame(summary_data)
+            st.dataframe(df, use_container_width=True)
+            
+            # Educational note
+            st.info("""
+            **Remember**: 
+            - A **particular solution** satisfies Ax = b (the original system)
+            - A **homogeneous solution** satisfies Ax = 0 (the associated homogeneous system)
+            - If the system is **inconsistent**, no particular solutions exist
+            - The **general solution** has the form: x = particular_solution + homogeneous_solutions
+            """)
+            
+        except ValueError as e:
+            st.error(f"Input Error: {e}")
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {e}")
 
     # All vector and matrix methods are now inherited from mixins.
     # The main calculator class can be kept lean, or include 

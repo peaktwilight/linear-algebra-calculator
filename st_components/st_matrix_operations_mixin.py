@@ -1423,30 +1423,35 @@ class MatrixOperationsMixin:
                     
                     # Compute null space basis
                     if homo_solution_type == "parametric":
-                        import scipy.linalg as la
-                        null_space = la.null_space(A)
-                        
-                        # If the null space has a non-zero dimension
-                        if null_space.shape[1] > 0:
-                            st.markdown("**Null Space Basis (Solutions to Ax = 0):**")
+                        from given_reference.core import mnull
+                        try:
+                            null_space = mnull(A)
                             
-                            # Display each basis vector
-                            for i in range(null_space.shape[1]):
-                                basis_vector = null_space[:, i].reshape(-1, 1)
-                                st.markdown(f"$$\\mathbf{{v}}_{i+1} = {self._vector_to_latex(basis_vector)}$$")
-                            
-                            # Display the general solution
-                            st.markdown("**General Solution to Ax = b:**")
-                            
-                            # Create a parametric form for display
-                            param_terms = [f"\\mathbf{{x}}_p"]
-                            for i in range(null_space.shape[1]):
-                                param_terms.append(f"c_{i+1} \\mathbf{{v}}_{i+1}")
-                            
-                            general_form = " + ".join(param_terms)
-                            st.markdown(f"$$\\mathbf{{x}} = {general_form}$$")
-                            
-                            st.markdown("Where c₁, c₂, ... are arbitrary scalar parameters.")
+                            # If the null space has a non-zero dimension
+                            if null_space.size > 0 and null_space.shape[1] > 0:
+                                st.markdown("**Null Space Basis (Solutions to Ax = 0):**")
+                                
+                                # Display each basis vector
+                                for i in range(null_space.shape[1]):
+                                    basis_vector = null_space[:, i].reshape(-1, 1)
+                                    st.markdown(f"$$\\mathbf{{v}}_{i+1} = {self._vector_to_latex(basis_vector)}$$")
+                                
+                                # Display the general solution
+                                st.markdown("**General Solution to Ax = b:**")
+                                
+                                # Create a parametric form for display
+                                param_terms = [f"\\mathbf{{x}}_p"]
+                                for i in range(null_space.shape[1]):
+                                    param_terms.append(f"c_{i+1} \\mathbf{{v}}_{i+1}")
+                                
+                                general_form = " + ".join(param_terms)
+                                st.markdown(f"$$\\mathbf{{x}} = {general_form}$$")
+                                
+                                st.markdown("Where c₁, c₂, ... are arbitrary scalar parameters.")
+                            else:
+                                st.markdown("**No null space basis found (unique solution case).**")
+                        except Exception as e:
+                            st.error(f"Error computing null space: {e}")
                 
                 # Visualize the solution space (for 2D and 3D cases)
                 if n <= 3:

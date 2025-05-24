@@ -194,8 +194,8 @@ def main():
                              "Eigenvalues and Eigenvectors"],
         "Systems of Linear Equations": ["Solve System (Gaussian Elimination)", "Standard Form Analysis", 
                                        "Row Operations Analysis", "Free Parameter Analysis", 
-                                       "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation",
-                                       "Calculate Null Space (Basis)"],
+                                       "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
+                                       "Calculate Null Space (Basis)", "Geometric Interpretation"],
         "Linear Mappings": ["Check Linearity", "Matrix Representation", "Polynomial Mappings", "Trigonometric Mappings", 
                            "Dot Product Mappings", "Quadratic Forms"]
     }
@@ -772,8 +772,8 @@ def main():
     
     elif category == "Systems of Linear Equations":
         system_operations = ["Solve System (Gaussian Elimination)", "Standard Form Analysis", "Row Operations Analysis", 
-                           "Free Parameter Analysis", "Homogeneous/Inhomogeneous Solutions", "Geometric Interpretation",
-                           "Calculate Null Space (Basis)"]
+                           "Free Parameter Analysis", "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
+                           "Calculate Null Space (Basis)", "Geometric Interpretation"]
         
         # Auto-select operation if it came from search
         default_index = 0
@@ -796,7 +796,7 @@ def main():
         # Label will guide user on what to input based on the operation.
         matrix_input = st.text_area(
             "Enter Matrix (for Ax=b systems, use [A|b] format; for Null Space, enter only coefficient matrix A):",
-            value="1, -4, -2, -25\n0, -3, 6, -18\n7, -13, -4, -85",
+            value="-5, 2, 0, -9\n3, 0, 3, 0",
             key="system_matrix_unified_input" # A unique key for this unified input
         )
         
@@ -875,6 +875,39 @@ def main():
                     calculator.homogeneous_inhomogeneous_solutions(matrix_input)
                 else:
                     st.error("Please enter the augmented matrix [A|b].")
+
+        elif operation == "Check Vector Solutions":
+            st.write("This operation checks if given vectors are particular solutions, homogeneous solutions, or not solutions at all.")
+            st.info("💡 **For your exercise**: Use matrix `-5,2,0,-9; 3,0,3,0` and vectors `1,-2,-1`, `2,5,-2`, `3,3,-3`")
+            
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                st.write("**Vectors to check (one per line):**")
+                vectors_input = st.text_area(
+                    "Enter vectors to check:",
+                    value="1, -2, -1\n2, 5, -2\n3, 3, -3",
+                    help="Enter one vector per line, comma-separated components. These should match the dimension of your system.",
+                    key="vectors_to_check"
+                )
+            
+            with col2:
+                with st.expander("Help: Understanding Solution Types"):
+                    st.write("""
+                    **Particular Solution**: A vector x such that Ax = b (solves the inhomogeneous system)
+                    
+                    **Homogeneous Solution**: A vector x such that Ax = 0 (solves the homogeneous system)
+                    
+                    **Not a Solution**: A vector that satisfies neither condition
+                    
+                    **Note**: If a vector is both a particular solution AND the system has b ≠ 0, 
+                    then it cannot simultaneously be a homogeneous solution.
+                    """)
+            
+            if st.button("Check Vector Solutions"):
+                if matrix_input and vectors_input:
+                    calculator.check_vector_solutions(matrix_input, vectors_input)
+                else:
+                    st.error("Please enter both the augmented matrix [A|b] and vectors to check.")
 
         elif operation == "Calculate Null Space (Basis)":
             st.write("This operation calculates a basis for the Null Space (Kernel) of a given matrix A (solutions to Ax = 0).")
