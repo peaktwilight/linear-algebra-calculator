@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--cli', action='store_true', help='Run in CLI mode')
     parser.add_argument('--command', help='Directly execute a CLI command')
     parser.add_argument('--no-banner', action='store_true', help='Skip displaying the banner')
-    parser.add_argument('--version', action='version', version='Linear Algebra Framework 1.7.1 - github.com/peaktwilight/linear-algebra-calculator')
+    parser.add_argument('--version', action='version', version='Linear Algebra Framework 1.7.2 - github.com/peaktwilight/linear-algebra-calculator')
     
     args, unknown_args = parser.parse_known_args()
     
