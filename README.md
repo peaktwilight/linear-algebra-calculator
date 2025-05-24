@@ -1,9 +1,10 @@
-# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.6.6-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.6.6)
+# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.7.0)
 ![Web App Demo](public/linear-algebra-calculator.gif)
 
 ## Features
 
 -   🔢 **Calculators:** Vectors, matrices, and many more linear algebra operations.
+-   🔍 **Linear Mapping Analysis:** Automatically test if mappings are linear and generate matrix representations.
 -   🎨 **Interactive Visualizations:** Understand complex concepts intuitively with dynamic graphical representations in a user-friendly Web App.
 -   📚 **Step-by-Step Explanations:** Understand the "how" and "why" with detailed walkthroughs for solutions.
 -   🧠 **Practice & Learn:** Test yourself with engaging quizzes and explore comprehensive learning resources.
