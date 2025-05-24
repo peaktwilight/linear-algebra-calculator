@@ -10,6 +10,7 @@ from st_components.st_calculator_operations import LinAlgCalculator
 from st_components.st_quiz_ui import QuizComponent
 from st_components.st_learning_resources import render_learning_resources_page
 from st_components.st_linearity_operations import LinearityOperations
+from st_components.st_batch_calculator import BatchMatrixCalculator
 
 # Set page configuration
 st.set_page_config(
@@ -166,6 +167,7 @@ def main():
     calculator = LinAlgCalculator()
     quiz_component = QuizComponent()
     linearity_checker = LinearityOperations()
+    batch_calculator = BatchMatrixCalculator()
     
     # Apply minimal styling approach 
     apply_styling()
@@ -189,7 +191,7 @@ def main():
     all_operations = {
         "Vector Operations": ["Vector Normalization", "Vector Projection/Shadow", "Vector Angle", "Cross Product", 
                              "Triangle Area", "Point-Line Distance", "Check Collinear"],
-        "Matrix Operations": ["Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
+        "Matrix Operations": ["Batch Expression Calculator", "Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
                              "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", 
                              "Eigenvalues and Eigenvectors"],
         "Systems of Linear Equations": ["Solve System (Gaussian Elimination)", "Standard Form Analysis", 
@@ -523,7 +525,7 @@ def main():
                     st.error("Please enter all vectors.")
     
     elif category == "Matrix Operations":
-        matrix_operations = ["Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
+        matrix_operations = ["Batch Expression Calculator", "Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
                            "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", 
                            "Eigenvalues and Eigenvectors"]
         
@@ -544,7 +546,10 @@ def main():
         
         st.markdown(f'<h2 class="animate-subheader">{operation}</h2>', unsafe_allow_html=True)
         
-        if operation == "Matrix Addition":
+        if operation == "Batch Expression Calculator":
+            batch_calculator.render_batch_calculator()
+            
+        elif operation == "Matrix Addition":
             st.write("This operation adds two matrices element-wise.")
             
             col1, col2 = st.columns(2)
