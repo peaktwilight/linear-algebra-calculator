@@ -232,8 +232,8 @@ class BatchMatrixCalculator:
                         st.latex(self._format_matrix_to_latex_string(result))
                         
                         # Show calculation steps
-                        with st.expander(f"Show calculation for {expression}"):
-                            st.write(explanation)
+                        st.write(f"**Calculation for {expression}:**")
+                        st.latex(explanation)
                             
                     else:
                         st.error("❌ Expression does not exist")
