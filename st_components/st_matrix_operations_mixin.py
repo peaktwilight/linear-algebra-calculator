@@ -53,10 +53,10 @@ class MatrixOperationsMixin:
                 st.markdown("### Calculation Summary")
                 st.markdown(f"**Operation:** {operation.replace('_', ' ').title()}")
                 st.markdown("**Matrix A:**")
-                st.text(str(matrix_a))
+                st.markdown(f"$${self._matrix_to_latex(matrix_a)}$$")
                 if matrix_b is not None and operation in ["add", "subtract"]:
                     st.markdown("**Matrix B:**")
-                    st.text(str(matrix_b))
+                    st.markdown(f"$${self._matrix_to_latex(matrix_b)}$$")
                 if scalar is not None and operation == "multiply_scalar":
                     st.markdown(f"**Scalar:** {scalar}")
 
@@ -68,25 +68,26 @@ class MatrixOperationsMixin:
                         st.error("Matrices must have the same dimensions for addition.")
                         return
                     result = matrix_a + matrix_b
-                    st.markdown("**A + B =**")
+                    st.markdown("**Result: A + B =**")
+                    st.markdown(f"$${self._matrix_to_latex(result)}$$")
                 elif args.operation == "subtract":
                     if matrix_a.shape != matrix_b.shape:
                         st.error("Matrices must have the same dimensions for subtraction.")
                         return
                     result = matrix_a - matrix_b
-                    st.markdown("**A - B =**")
+                    st.markdown("**Result: A - B =**")
+                    st.markdown(f"$${self._matrix_to_latex(result)}$$")
                 elif args.operation == "multiply_scalar":
                     result = scalar * matrix_a
-                    st.markdown(f"**{scalar} * A =**")
+                    st.markdown(f"**Result: {scalar} × A =**")
+                    st.markdown(f"$${self._matrix_to_latex(result)}$$")
                 elif args.operation == "transpose":
                     result = matrix_a.T
-                    st.markdown("**A<sup>T</sup> =**")
+                    st.markdown("**Result: A<sup>T</sup> =**")
+                    st.markdown(f"$${self._matrix_to_latex(result)}$$")
                 else:
                     st.error(f"Unknown operation: {args.operation}")
                     return
-
-                if result is not None:
-                    st.text(str(result))
 
             with col2:
                 st.markdown("### Visualization")
@@ -355,7 +356,7 @@ class MatrixOperationsMixin:
                     formatted_latex = "$$\mathbf{x} = " + self._vector_to_latex(solution) + "$$"
                     st.markdown(formatted_latex)
                 else: # Should not happen if framework.solve_gauss behaves as expected
-                    st.text(str(solution))
+                    st.markdown(f"$$\\text{{Solution: }} {solution}$$")
 
             with col2:
                 st.markdown("### Visualizations")
@@ -2925,7 +2926,7 @@ Where:
             with col1:
                 st.markdown("### Matrix and Result")
                 st.markdown("**Input Matrix:**")
-                st.text(str(matrix))
+                st.latex(MathUtils.format_matrix_latex(matrix))
                 
                 # LaTeX version of the calculation
                 matrix_latex = self._matrix_to_latex(matrix)
@@ -3032,7 +3033,7 @@ Where:
             with col1:
                 st.markdown("### Matrix and Results")
                 st.markdown("**Input Matrix:**")
-                st.text(str(matrix))
+                st.latex(MathUtils.format_matrix_latex(matrix))
                 
                 st.markdown("### Eigenvalues")
                 for i, eigenvalue in enumerate(eigenvalues):
