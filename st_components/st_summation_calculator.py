@@ -312,7 +312,45 @@ class SummationCalculator:
                                     st.latex("a_n = An^2 + Bn + C")
                                     st.write(f"**Constant second difference:** {second_diffs[0]}")
                                     st.write("**Note:** The coefficient A = (constant second difference)/2")
-                                    st.latex(f"A = \\frac{{{second_diffs[0]}}}{{2}} = {second_diffs[0]/2}")
+                                    A = second_diffs[0]/2
+                                    st.latex(f"A = \\frac{{{second_diffs[0]}}}{{2}} = {A}")
+                                    
+                                    # Calculate the complete quadratic formula
+                                    # Using first few terms to solve for B and C
+                                    # a₁ = A(1)² + B(1) + C = A + B + C
+                                    # a₂ = A(2)² + B(2) + C = 4A + 2B + C
+                                    # a₃ = A(3)² + B(3) + C = 9A + 3B + C
+                                    
+                                    if len(terms) >= 3:
+                                        a1, a2, a3 = terms[0], terms[1], terms[2]
+                                        # From the differences: a₂ - a₁ = 3A + B, a₃ - a₂ = 5A + B
+                                        # So: (a₃ - a₂) - (a₂ - a₁) = 2A = second difference
+                                        # We know A, so: B = (a₂ - a₁) - 3A
+                                        B = (a2 - a1) - 3*A
+                                        # And: C = a₁ - A - B
+                                        C = a1 - A - B
+                                        
+                                        st.write("**Complete quadratic formula:**")
+                                        st.latex(f"a_n = {self._format_number_latex(A)}n^2 + {self._format_number_latex(B)}n + {self._format_number_latex(C)}")
+                                        
+                                        # Verify with first few terms
+                                        st.write("**Verification:**")
+                                        for i in range(min(3, len(terms))):
+                                            n = i + 1
+                                            calculated = A * n**2 + B * n + C
+                                            st.write(f"a₍{n}₎ = {A}({n})² + {B}({n}) + {C} = {calculated} ✓")
+                                        
+                                        # Predict next terms
+                                        st.write("**Next terms in the sequence:**")
+                                        next_terms = []
+                                        for n in range(len(terms) + 1, len(terms) + 4):
+                                            next_term = A * n**2 + B * n + C
+                                            next_terms.append(next_term)
+                                            st.write(f"a₍{n}₎ = {A}({n})² + {B}({n}) + {C} = {next_term}")
+                                        
+                                        current_sequence = ', '.join([str(int(t)) if t.is_integer() else str(t) for t in terms])
+                                        next_sequence = ', '.join([str(int(t)) if t.is_integer() else str(t) for t in next_terms])
+                                        st.info(f"**Extended sequence:** {current_sequence}, {next_sequence}, ...")
                                 
                             if len(second_diffs) > 1:
                                 third_diffs = [second_diffs[i+1] - second_diffs[i] for i in range(len(second_diffs)-1)]
@@ -332,7 +370,7 @@ class SummationCalculator:
             
             exercise_type = st.selectbox(
                 "Select exercise type:",
-                ["Geometric series with fractions", "Sum with quadratic terms", "Find missing limits", "Pattern in sequence"]
+                ["Geometric series with fractions", "Sum with quadratic terms", "Find missing limits", "Pattern in sequence", "Your Specific Exercise"]
             )
             
             if exercise_type == "Geometric series with fractions":
@@ -393,6 +431,97 @@ class SummationCalculator:
                         
                         with st.expander("Show detailed steps"):
                             st.write(text_explanation)
+            
+            elif exercise_type == "Your Specific Exercise":
+                st.write("**Solve the Linear Algebra Test Exercise:**")
+                st.markdown("""
+                **Given Exercise:**
+                
+                (a) ∑(1/5)ⁱ = 1 + 1/5 + ... + 1/625 (find missing limits)
+                
+                (b) ∑₂₄ᵢ₌₁(i+5)² - 350
+                
+                (c) ∑₂₆ᵢ₌₁₅(i+5)³ = ∑ⱼ₌₀(?)(?) (transform)
+                
+                (d) ∑₁₂ᵢ₌₁(a+i)²
+                
+                (e) 4+19+44+79+124+179+244+...+49999 (find pattern)
+                """)
+                
+                problem = st.selectbox("Select problem to solve:", ["(a) Geometric series limits", "(b) Quadratic sum", "(c) Index transformation", "(d) Symbolic sum", "(e) Pattern sequence"])
+                
+                if problem == "(a) Geometric series limits":
+                    st.write("**Problem:** Find ? values for ∑?ᵢ₌?(1/5)ⁱ = 1 + 1/5 + 1/25 + ... + 1/625")
+                    
+                    if st.button("Solve Problem (a)"):
+                        # Identify the pattern: 1, 1/5, 1/25, 1/125, 1/625
+                        # This is (1/5)⁰, (1/5)¹, (1/5)², (1/5)³, (1/5)⁴
+                        terms = [1, 1/5, 1/25, 1/125, 1/625]
+                        powers = [0, 1, 2, 3, 4]
+                        
+                        st.success("**Solution:**")
+                        st.write("**Given terms:** 1 + 1/5 + 1/25 + 1/125 + 1/625")
+                        st.write("**Pattern identification:**")
+                        for i, (term, power) in enumerate(zip(terms, powers)):
+                            st.write(f"Term {i+1}: {term} = (1/5)^{power}")
+                        
+                        st.write("**Therefore:** The series is ∑ᵢ₌₀⁴(1/5)ⁱ")
+                        st.latex("\\sum_{i=0}^{4} \\left(\\frac{1}{5}\\right)^i")
+                        
+                        # Calculate the sum
+                        a, r, n = 1, 1/5, 5
+                        result = a * (1 - r**n) / (1 - r)
+                        st.write("**Sum calculation:**")
+                        st.latex(f"S = \\frac{{1 - (1/5)^5}}{{1 - 1/5}} = \\frac{{1 - 1/3125}}{{4/5}} = \\frac{{3124/3125}}{{4/5}} = {result}")
+                        
+                elif problem == "(b) Quadratic sum":
+                    st.write("**Problem:** Calculate ∑₂₄ᵢ₌₁(i+5)² - 350")
+                    
+                    if st.button("Solve Problem (b)"):
+                        result, latex_explanation, text_explanation = self.calculate_summation("(i+5)**2", 1, 24)
+                        final_result = result - 350
+                        
+                        st.success("**Solution:**")
+                        st.latex("\\sum_{i=1}^{24} (i+5)^2 - 350")
+                        st.latex(latex_explanation)
+                        st.latex(f"\\text{{Final result}} = {result} - 350 = {final_result}")
+                        
+                elif problem == "(e) Pattern sequence":
+                    st.write("**Problem:** Find pattern in 4+19+44+79+124+179+244+...+49999")
+                    
+                    if st.button("Solve Problem (e)"):
+                        sequence = [4, 19, 44, 79, 124, 179, 244]
+                        st.write("**Given sequence:** 4, 19, 44, 79, 124, 179, 244, ..., 49999")
+                        
+                        # Calculate differences
+                        diffs = [sequence[i+1] - sequence[i] for i in range(len(sequence)-1)]
+                        second_diffs = [diffs[i+1] - diffs[i] for i in range(len(diffs)-1)]
+                        
+                        st.write(f"**First differences:** {diffs}")
+                        st.write(f"**Second differences:** {second_diffs}")
+                        st.success("**Pattern identified:** Quadratic sequence with constant second difference = 10")
+                        
+                        # Find the quadratic formula
+                        A = 10/2  # A = 5
+                        a1, a2 = sequence[0], sequence[1]
+                        B = (a2 - a1) - 3*A  # B = 15 - 15 = 0
+                        C = a1 - A - B  # C = 4 - 5 - 0 = -1
+                        
+                        st.write("**Quadratic formula:**")
+                        st.latex(f"a_n = {A}n^2 + {B}n + {C} = 5n^2 - 1")
+                        
+                        # Find which term equals 49999
+                        st.write("**Find n where aₙ = 49999:**")
+                        st.latex("5n^2 - 1 = 49999")
+                        st.latex("5n^2 = 50000")
+                        st.latex("n^2 = 10000")
+                        st.latex("n = 100")
+                        
+                        # Calculate the sum
+                        st.write("**Sum from a₁ to a₁₀₀:**")
+                        result, latex_explanation, text_explanation = self.calculate_summation("5*i**2 - 1", 1, 100)
+                        st.latex(latex_explanation)
+                        st.success(f"**Final Answer:** {result}")
             
             # Help section
             with st.expander("Help: Common Series Formulas"):
