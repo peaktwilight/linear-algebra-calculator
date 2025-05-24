@@ -75,7 +75,7 @@ class LinearAlgebraRichUI:
                 ("📐 Calculate triangle area", self.ui_triangle_area),
                 ("📏 Calculate point-line distance", self.ui_point_line_distance),
             ],
-            "🧮 Matrix & Linear Systems": [
+            "📐 Matrix & Linear Systems": [
                 ("🧩 Solve system with Gaussian elimination", self.ui_solve_gauss),
                 ("✅ Check if vector is solution to system", self.ui_check_solution),
                 ("➗ Solve vector equation", self.ui_vector_equation),
