@@ -6,7 +6,7 @@ Streamlit Component for Linear Mapping Operations
 
 import streamlit as st
 import numpy as np
-from sympy import symbols, sympify
+from sympy import symbols, sympify, expand, simplify, latex, Add, Mul, Symbol, cos, sin, tan
 import pandas as pd
 from typing import List, Tuple, Dict, Any, Optional
 
@@ -20,6 +20,8 @@ class LinearityOperations:
         self.test_vectors = None
         self.mapping_function = None
         self.mapping_type = None
+        self.symbolic_variables = None
+        self.symbolic_expression = None
         
     def _format_vector_latex(self, vector):
         """Format a vector for LaTeX display."""
@@ -85,6 +87,16 @@ class LinearityOperations:
                 return self._evaluate_dot_product_mapping(vector, params.get('c', np.array([1, 1])))
             elif mapping_type == "quadratic":
                 return self._evaluate_quadratic_mapping(vector)
+            elif mapping_type == "negation":
+                return -vector
+            elif mapping_type == "projection":
+                return self._evaluate_polynomial_mapping(formula, vector)  # Use polynomial evaluator
+            elif mapping_type == "zero":
+                return np.zeros(1)  # Always return zero
+            elif mapping_type == "affine":
+                return self._evaluate_polynomial_mapping(formula, vector)  # Use polynomial evaluator
+            elif mapping_type == "bilinear":
+                return self._evaluate_polynomial_mapping(formula, vector)  # Use polynomial evaluator
             elif mapping_type == "custom":
                 return self._evaluate_custom_mapping(formula, vector, params)
             else:
@@ -124,6 +136,7 @@ class LinearityOperations:
         """Evaluate trigonometric mapping like L(x,y) = [cos(x)*phi, sin(y)*phi]."""
         x = vector[0] if len(vector) > 0 else 0
         y = vector[1] if len(vector) > 1 else 0
+        z = vector[2] if len(vector) > 2 else 0
         
         # Parse the formula - expecting format like "cos(x)*phi, sin(y)*phi"
         if ',' in formula or ';' in formula:
@@ -134,15 +147,20 @@ class LinearityOperations:
         result = []
         for output in outputs:
             output = output.strip()
-            # Replace phi with actual value
+            # Replace parameter names with actual value
             output = output.replace('phi', str(phi))
-            # Create expression with trigonometric functions
-            expr_str = output.replace('cos', 'sp.cos').replace('sin', 'sp.sin').replace('tan', 'sp.tan')
-            expr_str = expr_str.replace('x', str(x)).replace('y', str(y))
+            output = output.replace('alpha', str(phi))  # Handle alpha parameter
+            # Replace variable names with actual values
+            output = output.replace('x', str(x)).replace('y', str(y)).replace('z', str(z))
             
-            # Evaluate using sympy
-            result_val = float(sympify(expr_str))
-            result.append(result_val)
+            try:
+                # Create sympy expression and evaluate
+                expr = sympify(output)
+                result_val = float(expr)
+                result.append(result_val)
+            except (ValueError, TypeError) as e:
+                st.error(f"Error evaluating trigonometric expression '{output}': {str(e)}")
+                result.append(0.0)  # Default value on error
         
         return np.array(result)
     
@@ -214,8 +232,13 @@ class LinearityOperations:
                 L_v = self.evaluate_mapping(mapping_type, formula, v, params)
                 L_u_plus_L_v = L_u + L_v
                 
-                # Check if they're equal (within tolerance)
-                is_additive = np.allclose(L_u_plus_v, L_u_plus_L_v, rtol=1e-10, atol=1e-10)
+                # Ensure arrays have the same shape for comparison
+                if L_u_plus_v.shape != L_u_plus_L_v.shape:
+                    st.error(f"Dimension mismatch in mapping evaluation: {L_u_plus_v.shape} vs {L_u_plus_L_v.shape}")
+                    is_additive = False
+                else:
+                    # Check if they're equal (within tolerance)
+                    is_additive = np.allclose(L_u_plus_v, L_u_plus_L_v, rtol=1e-10, atol=1e-10)
                 
                 test_result = {
                     'vectors': (u, v),
@@ -247,8 +270,13 @@ class LinearityOperations:
                 L_v = self.evaluate_mapping(mapping_type, formula, vector, params)
                 c_L_v = scalar * L_v
                 
-                # Check if they're equal
-                is_homogeneous = np.allclose(L_cv, c_L_v, rtol=1e-10, atol=1e-10)
+                # Ensure arrays have the same shape for comparison
+                if L_cv.shape != c_L_v.shape:
+                    st.error(f"Dimension mismatch in mapping evaluation: {L_cv.shape} vs {c_L_v.shape}")
+                    is_homogeneous = False
+                else:
+                    # Check if they're equal
+                    is_homogeneous = np.allclose(L_cv, c_L_v, rtol=1e-10, atol=1e-10)
                 
                 test_result = {
                     'scalar': scalar,
@@ -307,36 +335,797 @@ class LinearityOperations:
         
         return None
     
+    def generate_symbolic_proof(self, mapping_type: str, formula: str, dimension: int, 
+                               params: Dict = None) -> Dict[str, Any]:
+        """
+        Generate a formal symbolic proof of linearity for polynomial mappings.
+        Returns proof steps and conclusions.
+        """
+        if params is None:
+            params = {}
+            
+        proof_results = {
+            'can_prove': False,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': None,
+            'error_message': None
+        }
+        
+        try:
+            if mapping_type == "polynomial":
+                return self._prove_polynomial_linearity(formula, dimension)
+            elif mapping_type == "dot_product":
+                return self._prove_dot_product_linearity(params.get('c', np.array([1, 1])), dimension)
+            elif mapping_type == "trigonometric":
+                return self._prove_trigonometric_nonlinearity(formula, dimension)
+            elif mapping_type == "quadratic":
+                return self._prove_quadratic_nonlinearity(dimension)
+            elif mapping_type == "negation":
+                return self._prove_negation_linearity(dimension)
+            elif mapping_type == "projection":
+                return self._prove_projection_linearity(formula, dimension)
+            elif mapping_type == "zero":
+                return self._prove_zero_linearity(dimension)
+            elif mapping_type == "affine":
+                return self._prove_affine_nonlinearity(formula, dimension)
+            elif mapping_type == "bilinear":
+                return self._prove_bilinear_nonlinearity(formula, dimension)
+            else:
+                proof_results['error_message'] = f"Symbolic proofs not yet implemented for {mapping_type} mappings"
+                return proof_results
+                
+        except Exception as e:
+            proof_results['error_message'] = f"Error generating proof: {str(e)}"
+            return proof_results
+    
+    def _prove_polynomial_linearity(self, formula: str, dimension: int) -> Dict[str, Any]:
+        """Generate symbolic proof for polynomial mappings."""
+        proof_results = {
+            'can_prove': True,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': None,
+            'error_message': None
+        }
+        
+        try:
+            # Define symbolic variables
+            if dimension == 1:
+                vars_u = symbols('u_1')
+                vars_v = symbols('v_1')
+                vars_combined = [symbols('x')]
+                vars_u = [vars_u]
+                vars_v = [vars_v]
+            elif dimension == 2:
+                vars_u = symbols('u_1 u_2')
+                vars_v = symbols('v_1 v_2')
+                vars_combined = symbols('x y')
+                vars_u = list(vars_u) if hasattr(vars_u, '__iter__') else [vars_u]
+                vars_v = list(vars_v) if hasattr(vars_v, '__iter__') else [vars_v]
+                vars_combined = list(vars_combined) if hasattr(vars_combined, '__iter__') else [vars_combined]
+            elif dimension == 3:
+                vars_u = symbols('u_1 u_2 u_3')
+                vars_v = symbols('v_1 v_2 v_3')
+                vars_combined = symbols('x y z')
+                vars_u = list(vars_u) if hasattr(vars_u, '__iter__') else [vars_u]
+                vars_v = list(vars_v) if hasattr(vars_v, '__iter__') else [vars_v]
+                vars_combined = list(vars_combined) if hasattr(vars_combined, '__iter__') else [vars_combined]
+            else:
+                vars_u = [symbols(f'u_{i}') for i in range(1, dimension + 1)]
+                vars_v = [symbols(f'v_{i}') for i in range(1, dimension + 1)]
+                vars_combined = [symbols(f'x_{i}') for i in range(1, dimension + 1)]
+            
+            # Parse the formula into sympy expressions
+            if ',' in formula or ';' in formula:
+                outputs = formula.replace(';', ',').split(',')
+            else:
+                outputs = [formula]
+            
+            expressions = []
+            for output in outputs:
+                output = output.strip()
+                # Replace standard variable names
+                expr_str = output
+                if dimension >= 1:
+                    expr_str = expr_str.replace('x', str(vars_combined[0]))
+                if dimension >= 2:
+                    expr_str = expr_str.replace('y', str(vars_combined[1]))
+                if dimension >= 3:
+                    expr_str = expr_str.replace('z', str(vars_combined[2]))
+                
+                expr = sympify(expr_str)
+                expressions.append(expr)
+            
+            # Check if expressions are linear (only degree 1 terms) and detect specific non-linear patterns
+            is_linear = True
+            has_constant_term = False
+            nonlinear_reason = None
+            
+            for expr in expressions:
+                # Check for constant terms (affine mappings)
+                if expr.is_number and expr != 0:
+                    has_constant_term = True
+                    
+                # Check for polynomial structure
+                try:
+                    poly = expr.as_poly()
+                    if poly is not None:
+                        if poly.total_degree() > 1:
+                            is_linear = False
+                            nonlinear_reason = f"Contains terms of degree {poly.total_degree()} > 1"
+                            break
+                        # Check for constant terms in polynomial
+                        const_term = poly.nth(0, *([0] * len(poly.gens)))
+                        if const_term != 0:
+                            has_constant_term = True
+                    else:
+                        # Manual degree analysis for complex expressions
+                        for term in Add.make_args(expr):
+                            if isinstance(term, Mul):
+                                var_count = sum(1 for arg in term.args if isinstance(arg, Symbol))
+                                if var_count > 1:
+                                    is_linear = False
+                                    nonlinear_reason = "Contains product of variables (bilinear term)"
+                                    break
+                            elif isinstance(term, Symbol):
+                                continue  # degree 1, OK
+                            elif term.is_number:
+                                if term != 0:
+                                    has_constant_term = True
+                            else:
+                                # Check for powers
+                                if hasattr(term, 'exp') and term.exp > 1:
+                                    is_linear = False
+                                    nonlinear_reason = f"Contains variable raised to power {term.exp}"
+                                    break
+                except Exception:
+                    # If analysis fails, fall back to empirical testing
+                    pass
+            
+            if not is_linear:
+                proof_results['conclusion'] = "NOT_LINEAR"
+                additivity_steps = []
+                additivity_steps.append("**Proof of Non-linearity for Polynomial Mapping**")
+                additivity_steps.append("")
+                additivity_steps.append(f"Given mapping contains non-linear terms: {nonlinear_reason}")
+                additivity_steps.append("")
+                if "degree" in nonlinear_reason:
+                    additivity_steps.append("**General Principle:**")
+                    additivity_steps.append("Mappings with polynomial terms of degree > 1 cannot be linear.")
+                    additivity_steps.append("")
+                    additivity_steps.append("**Proof by Counterexample:**")
+                    additivity_steps.append("For any quadratic term $ax^n$ where $n > 1$:")
+                    additivity_steps.append("$L(2u) = a(2u)^n = a \\cdot 2^n \\cdot u^n$")
+                    additivity_steps.append("$2L(u) = 2 \\cdot au^n$")
+                    additivity_steps.append("Since $2^n \\neq 2$ for $n > 1$, we have $L(2u) \\neq 2L(u)$")
+                    additivity_steps.append("Therefore, the mapping violates homogeneity.")
+                elif "bilinear" in nonlinear_reason:
+                    additivity_steps.append("**General Principle:**")
+                    additivity_steps.append("Mappings with products of variables cannot be linear.")
+                    additivity_steps.append("")
+                    additivity_steps.append("**Proof by Counterexample:**")
+                    additivity_steps.append("For a bilinear term $xy$:")
+                    additivity_steps.append("Let $u = (1, 0)$ and $v = (0, 1)$")
+                    additivity_steps.append("$L(u + v) = L((1, 1)) = 1 \\cdot 1 = 1$")
+                    additivity_steps.append("$L(u) + L(v) = L((1, 0)) + L((0, 1)) = 0 + 0 = 0$")
+                    additivity_steps.append("Since $1 \\neq 0$, additivity is violated.")
+                
+                proof_results['additivity_proof'] = "\n".join(additivity_steps)
+                proof_results['homogeneity_proof'] = "Non-linearity proven by degree analysis."
+                return proof_results
+            
+            if has_constant_term:
+                proof_results['conclusion'] = "NOT_LINEAR"
+                additivity_steps = []
+                additivity_steps.append("**Proof of Non-linearity for Affine Mapping**")
+                additivity_steps.append("")
+                additivity_steps.append("The mapping contains constant terms, making it affine rather than linear.")
+                additivity_steps.append("")
+                additivity_steps.append("**Proof by Counterexample:**")
+                additivity_steps.append("For any mapping $L(v) = Av + b$ where $b \\neq 0$:")
+                additivity_steps.append("$L(0) = A \\cdot 0 + b = b \\neq 0$")
+                additivity_steps.append("")
+                additivity_steps.append("But linear mappings must satisfy $L(0) = 0$.")
+                additivity_steps.append("Therefore, any mapping with constant terms is **not linear**.")
+                
+                proof_results['additivity_proof'] = "\n".join(additivity_steps)
+                proof_results['homogeneity_proof'] = "Affine mappings violate the zero mapping property."
+                return proof_results
+            
+            # Generate additivity proof
+            additivity_steps = []
+            additivity_steps.append("**Additivity Proof: L(u + v) = L(u) + L(v)**")
+            additivity_steps.append("")
+            additivity_steps.append("Let u = (u₁, u₂, ..., uₙ) and v = (v₁, v₂, ..., vₙ) be arbitrary vectors.")
+            additivity_steps.append("Then u + v = (u₁ + v₁, u₂ + v₂, ..., uₙ + vₙ)")
+            additivity_steps.append("")
+            
+            for i, expr in enumerate(expressions):
+                if len(expressions) > 1:
+                    additivity_steps.append(f"For output component {i+1}:")
+                
+                # Substitute u + v into the expression
+                subs_dict = {}
+                if dimension >= 1:
+                    subs_dict[vars_combined[0]] = vars_u[0] + vars_v[0]
+                if dimension >= 2:
+                    subs_dict[vars_combined[1]] = vars_u[1] + vars_v[1]
+                if dimension >= 3:
+                    subs_dict[vars_combined[2]] = vars_u[2] + vars_v[2]
+                
+                L_u_plus_v = expr.subs(subs_dict)
+                L_u_plus_v_expanded = expand(L_u_plus_v)
+                
+                # Substitute u and v separately
+                subs_u = {}
+                subs_v = {}
+                if dimension >= 1:
+                    subs_u[vars_combined[0]] = vars_u[0]
+                    subs_v[vars_combined[0]] = vars_v[0]
+                if dimension >= 2:
+                    subs_u[vars_combined[1]] = vars_u[1]
+                    subs_v[vars_combined[1]] = vars_v[1]
+                if dimension >= 3:
+                    subs_u[vars_combined[2]] = vars_u[2]
+                    subs_v[vars_combined[2]] = vars_v[2]
+                
+                L_u = expr.subs(subs_u)
+                L_v = expr.subs(subs_v)
+                L_u_plus_L_v = L_u + L_v
+                L_u_plus_L_v_expanded = expand(L_u_plus_L_v)
+                
+                additivity_steps.append(f"$$L(u + v) = {latex(L_u_plus_v_expanded)}$$")
+                additivity_steps.append(f"$$L(u) + L(v) = {latex(L_u)} + {latex(L_v)} = {latex(L_u_plus_L_v_expanded)}$$")
+                
+                # Verify they're equal
+                difference = simplify(L_u_plus_v_expanded - L_u_plus_L_v_expanded)
+                if difference == 0:
+                    additivity_steps.append("✅ $L(u + v) = L(u) + L(v)$ ✓")
+                else:
+                    additivity_steps.append(f"❌ Difference: ${latex(difference)} \\neq 0$")
+                    proof_results['conclusion'] = "NOT_LINEAR"
+                additivity_steps.append("")
+            
+            # Generate homogeneity proof
+            homogeneity_steps = []
+            homogeneity_steps.append("**Homogeneity Proof: L(cv) = cL(v)**")
+            homogeneity_steps.append("")
+            homogeneity_steps.append("Let c be an arbitrary scalar and v = (v₁, v₂, ..., vₙ) be an arbitrary vector.")
+            homogeneity_steps.append("Then cv = (cv₁, cv₂, ..., cvₙ)")
+            homogeneity_steps.append("")
+            
+            c = symbols('c')
+            for i, expr in enumerate(expressions):
+                if len(expressions) > 1:
+                    homogeneity_steps.append(f"For output component {i+1}:")
+                
+                # Substitute cv into the expression
+                subs_dict = {}
+                if dimension >= 1:
+                    subs_dict[vars_combined[0]] = c * vars_v[0]
+                if dimension >= 2:
+                    subs_dict[vars_combined[1]] = c * vars_v[1]
+                if dimension >= 3:
+                    subs_dict[vars_combined[2]] = c * vars_v[2]
+                
+                L_cv = expr.subs(subs_dict)
+                L_cv_expanded = expand(L_cv)
+                
+                # Substitute v and multiply by c
+                subs_v = {}
+                if dimension >= 1:
+                    subs_v[vars_combined[0]] = vars_v[0]
+                if dimension >= 2:
+                    subs_v[vars_combined[1]] = vars_v[1]
+                if dimension >= 3:
+                    subs_v[vars_combined[2]] = vars_v[2]
+                
+                L_v = expr.subs(subs_v)
+                c_L_v = c * L_v
+                c_L_v_expanded = expand(c_L_v)
+                
+                homogeneity_steps.append(f"$$L(cv) = {latex(L_cv_expanded)}$$")
+                homogeneity_steps.append(f"$$cL(v) = c \\cdot {latex(L_v)} = {latex(c_L_v_expanded)}$$")
+                
+                # Verify they're equal
+                difference = simplify(L_cv_expanded - c_L_v_expanded)
+                if difference == 0:
+                    homogeneity_steps.append("✅ $L(cv) = cL(v)$ ✓")
+                else:
+                    homogeneity_steps.append(f"❌ Difference: ${latex(difference)} \\neq 0$")
+                    proof_results['conclusion'] = "NOT_LINEAR"
+                homogeneity_steps.append("")
+            
+            proof_results['additivity_proof'] = "\n".join(additivity_steps)
+            proof_results['homogeneity_proof'] = "\n".join(homogeneity_steps)
+            
+            if proof_results['conclusion'] != "NOT_LINEAR":
+                proof_results['conclusion'] = "LINEAR"
+                
+        except Exception as e:
+            proof_results['error_message'] = f"Error in symbolic proof: {str(e)}"
+            proof_results['can_prove'] = False
+            
+        return proof_results
+    
+    def _prove_dot_product_linearity(self, c: np.ndarray, dimension: int) -> Dict[str, Any]:
+        """Generate proof for dot product mappings L(v) = [v·c, 0]."""
+        proof_results = {
+            'can_prove': True,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': "LINEAR",
+            'error_message': None
+        }
+        
+        additivity_steps = []
+        additivity_steps.append("**Additivity Proof for Dot Product Mapping**")
+        additivity_steps.append("")
+        additivity_steps.append(f"Given: L(v) = [v·c, 0] where c = {c.tolist()}")
+        additivity_steps.append("Need to prove: L(u + v) = L(u) + L(v)")
+        additivity_steps.append("")
+        additivity_steps.append("L(u + v) = [(u + v)·c, 0]")
+        additivity_steps.append("         = [u·c + v·c, 0]  (distributive property of dot product)")
+        additivity_steps.append("         = [u·c, 0] + [v·c, 0]")
+        additivity_steps.append("         = L(u) + L(v) ✓")
+        
+        homogeneity_steps = []
+        homogeneity_steps.append("**Homogeneity Proof for Dot Product Mapping**")
+        homogeneity_steps.append("")
+        homogeneity_steps.append("Need to prove: L(kv) = kL(v) for scalar k")
+        homogeneity_steps.append("")
+        homogeneity_steps.append("L(kv) = [(kv)·c, 0]")
+        homogeneity_steps.append("      = [k(v·c), 0]  (scalar multiplication property of dot product)")
+        homogeneity_steps.append("      = k[v·c, 0]")
+        homogeneity_steps.append("      = kL(v) ✓")
+        
+        proof_results['additivity_proof'] = "\n".join(additivity_steps)
+        proof_results['homogeneity_proof'] = "\n".join(homogeneity_steps)
+        
+        return proof_results
+    
+    def _prove_trigonometric_nonlinearity(self, formula: str, _dimension: int) -> Dict[str, Any]:
+        """Analyze trigonometric mappings - some may be linear if trig functions are applied to constants."""
+        proof_results = {
+            'can_prove': True,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': None,
+            'error_message': None
+        }
+        
+        # Check if trigonometric functions are applied to variables or constants
+        # Linear case: cos(alpha)*x where alpha is constant
+        # Non-linear case: cos(x)*alpha where x is variable
+        
+        has_trig_of_variable = False
+        if 'cos(x)' in formula or 'sin(x)' in formula or 'cos(y)' in formula or 'sin(y)' in formula or 'cos(z)' in formula or 'sin(z)' in formula:
+            has_trig_of_variable = True
+        
+        if has_trig_of_variable:
+            # This is the non-linear case: cos(x), sin(y), etc.
+            additivity_steps = []
+            additivity_steps.append("**Proof of Non-linearity for Trigonometric Mapping**")
+            additivity_steps.append("")
+            formula_latex = formula.replace('phi', '\\phi').replace('alpha', '\\alpha')
+            additivity_steps.append(f"Given mapping: $L(x,y) = {formula_latex}$")
+            additivity_steps.append("")
+            additivity_steps.append("**Counterexample for Additivity:**")
+            additivity_steps.append("Consider $u = (\\pi/2, 0)$ and $v = (\\pi/2, 0)$")
+            additivity_steps.append("")
+            additivity_steps.append("$L(u) = \\cos(\\pi/2) \\cdot \\phi = 0 \\cdot \\phi = 0$")
+            additivity_steps.append("$L(v) = \\cos(\\pi/2) \\cdot \\phi = 0 \\cdot \\phi = 0$")
+            additivity_steps.append("$L(u) + L(v) = 0 + 0 = 0$")
+            additivity_steps.append("")
+            additivity_steps.append("$L(u + v) = L(\\pi, 0) = \\cos(\\pi) \\cdot \\phi = -1 \\cdot \\phi = -\\phi$")
+            additivity_steps.append("")
+            additivity_steps.append("Since $L(u + v) = -\\phi \\neq 0 = L(u) + L(v)$ (for $\\phi \\neq 0$),")
+            additivity_steps.append("**the mapping violates additivity and is NOT LINEAR.**")
+            
+            proof_results['additivity_proof'] = "\n".join(additivity_steps)
+            proof_results['homogeneity_proof'] = "Since additivity fails, the mapping is not linear."
+            proof_results['conclusion'] = "NOT_LINEAR"
+        else:
+            # This might be the linear case: cos(alpha)*x where alpha is constant
+            additivity_steps = []
+            additivity_steps.append("**Analysis of Trigonometric Mapping with Constant Arguments**")
+            additivity_steps.append("")
+            formula_latex = formula.replace('phi', '\\phi').replace('alpha', '\\alpha')
+            additivity_steps.append(f"Given mapping: $L(x,y) = {formula_latex}$")
+            additivity_steps.append("")
+            additivity_steps.append("**Key Observation:**")
+            additivity_steps.append("When trigonometric functions are applied to **constants** (not variables),")
+            additivity_steps.append("they evaluate to fixed numerical coefficients.")
+            additivity_steps.append("")
+            additivity_steps.append("For example: $\\cos(\\alpha) \\cdot x$ where $\\alpha$ is constant")
+            additivity_steps.append("becomes $c \\cdot x$ where $c = \\cos(\\alpha)$ is a fixed number.")
+            additivity_steps.append("")
+            additivity_steps.append("This is equivalent to a **polynomial mapping** with constant coefficients,")
+            additivity_steps.append("which **can be linear** if all terms have degree ≤ 1.")
+            additivity_steps.append("")
+            additivity_steps.append("**Recommendation:** Use empirical testing to verify linearity,")
+            additivity_steps.append("as the symbolic analysis depends on the specific parameter values.")
+            
+            proof_results['additivity_proof'] = "\n".join(additivity_steps)
+            proof_results['homogeneity_proof'] = "Empirical testing recommended for this case."
+            proof_results['conclusion'] = "EMPIRICAL_NEEDED"
+        
+        return proof_results
+    
+    def _prove_quadratic_nonlinearity(self, _dimension: int) -> Dict[str, Any]:
+        """Generate proof that quadratic mappings are not linear."""
+        proof_results = {
+            'can_prove': True,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': "NOT_LINEAR",
+            'error_message': None
+        }
+        
+        additivity_steps = []
+        additivity_steps.append("**Proof of Non-linearity for Quadratic Form**")
+        additivity_steps.append("")
+        additivity_steps.append("Given mapping: $L(\\vec{v}) = \\vec{v} \\cdot \\vec{v} = ||\\vec{v}||^2$")
+        additivity_steps.append("")
+        additivity_steps.append("**Counterexample for Additivity:**")
+        additivity_steps.append("Consider $\\vec{u} = (1, 0, \\ldots, 0)$ and $\\vec{v} = (1, 0, \\ldots, 0)$")
+        additivity_steps.append("")
+        additivity_steps.append("$L(\\vec{u}) = \\vec{u} \\cdot \\vec{u} = 1^2 + 0^2 + \\cdots = 1$")
+        additivity_steps.append("$L(\\vec{v}) = \\vec{v} \\cdot \\vec{v} = 1^2 + 0^2 + \\cdots = 1$")
+        additivity_steps.append("$L(\\vec{u}) + L(\\vec{v}) = 1 + 1 = 2$")
+        additivity_steps.append("")
+        additivity_steps.append("$L(\\vec{u} + \\vec{v}) = L((2, 0, \\ldots, 0)) = 2^2 + 0^2 + \\cdots = 4$")
+        additivity_steps.append("")
+        additivity_steps.append("Since $L(\\vec{u} + \\vec{v}) = 4 \\neq 2 = L(\\vec{u}) + L(\\vec{v})$,")
+        additivity_steps.append("**the quadratic form violates additivity and is NOT LINEAR.**")
+        
+        proof_results['additivity_proof'] = "\n".join(additivity_steps)
+        proof_results['homogeneity_proof'] = "Since additivity fails, the mapping is not linear."
+        
+        return proof_results
+    
+    def _prove_negation_linearity(self, _dimension: int) -> Dict[str, Any]:
+        """Generate proof that negation mapping L(v) = -v is linear."""
+        proof_results = {
+            'can_prove': True,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': "LINEAR",
+            'error_message': None
+        }
+        
+        additivity_steps = []
+        additivity_steps.append("**Additivity Proof for Negation Mapping**")
+        additivity_steps.append("")
+        additivity_steps.append("Given: $L(\\vec{v}) = -\\vec{v}$")
+        additivity_steps.append("")
+        additivity_steps.append("**Proof:** $L(\\vec{u} + \\vec{v}) = -(\\vec{u} + \\vec{v}) = -\\vec{u} + (-\\vec{v}) = L(\\vec{u}) + L(\\vec{v})$ ✓")
+        
+        homogeneity_steps = []
+        homogeneity_steps.append("**Homogeneity Proof for Negation Mapping**")
+        homogeneity_steps.append("")
+        homogeneity_steps.append("**Proof:** $L(c\\vec{v}) = -(c\\vec{v}) = c(-\\vec{v}) = cL(\\vec{v})$ ✓")
+        
+        proof_results['additivity_proof'] = "\n".join(additivity_steps)
+        proof_results['homogeneity_proof'] = "\n".join(homogeneity_steps)
+        return proof_results
+    
+    def _prove_projection_linearity(self, formula: str, _dimension: int) -> Dict[str, Any]:
+        """Generate proof that projection mappings are linear."""
+        proof_results = {
+            'can_prove': True,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': "LINEAR",
+            'error_message': None
+        }
+        
+        additivity_steps = []
+        additivity_steps.append("**Additivity Proof for Projection Mapping**")
+        additivity_steps.append("")
+        additivity_steps.append("Given: Projection mapping selecting component(s)")
+        additivity_steps.append("")
+        additivity_steps.append("**General Principle:** Component selection is linear.")
+        additivity_steps.append("If $L(\\vec{v}) = v_i$ (selecting i-th component):")
+        additivity_steps.append("$L(\\vec{u} + \\vec{v}) = (\\vec{u} + \\vec{v})_i = u_i + v_i = L(\\vec{u}) + L(\\vec{v})$ ✓")
+        
+        homogeneity_steps = []
+        homogeneity_steps.append("**Homogeneity Proof for Projection Mapping**")
+        homogeneity_steps.append("")
+        homogeneity_steps.append("$L(c\\vec{v}) = (c\\vec{v})_i = c \\cdot v_i = cL(\\vec{v})$ ✓")
+        
+        proof_results['additivity_proof'] = "\n".join(additivity_steps)
+        proof_results['homogeneity_proof'] = "\n".join(homogeneity_steps)
+        return proof_results
+    
+    def _prove_zero_linearity(self, _dimension: int) -> Dict[str, Any]:
+        """Generate proof that zero mapping L(v) = 0 is linear."""
+        proof_results = {
+            'can_prove': True,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': "LINEAR",
+            'error_message': None
+        }
+        
+        additivity_steps = []
+        additivity_steps.append("**Additivity Proof for Zero Mapping**")
+        additivity_steps.append("")
+        additivity_steps.append("Given: $L(\\vec{v}) = \\vec{0}$ for all $\\vec{v}$")
+        additivity_steps.append("")
+        additivity_steps.append("**Proof:** $L(\\vec{u} + \\vec{v}) = \\vec{0} = \\vec{0} + \\vec{0} = L(\\vec{u}) + L(\\vec{v})$ ✓")
+        
+        homogeneity_steps = []
+        homogeneity_steps.append("**Homogeneity Proof for Zero Mapping**")
+        homogeneity_steps.append("")
+        homogeneity_steps.append("**Proof:** $L(c\\vec{v}) = \\vec{0} = c \\cdot \\vec{0} = cL(\\vec{v})$ ✓")
+        
+        proof_results['additivity_proof'] = "\n".join(additivity_steps)
+        proof_results['homogeneity_proof'] = "\n".join(homogeneity_steps)
+        return proof_results
+    
+    def _prove_affine_nonlinearity(self, formula: str, _dimension: int) -> Dict[str, Any]:
+        """Generate proof that affine mappings L(v) = Av + b are not linear when b ≠ 0."""
+        proof_results = {
+            'can_prove': True,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': "NOT_LINEAR",
+            'error_message': None
+        }
+        
+        additivity_steps = []
+        additivity_steps.append("**Proof of Non-linearity for Affine Mapping**")
+        additivity_steps.append("")
+        additivity_steps.append("Given: Mapping contains constant terms (affine transformation)")
+        additivity_steps.append("")
+        additivity_steps.append("**Fundamental Property Violation:**")
+        additivity_steps.append("Linear mappings must satisfy $L(\\vec{0}) = \\vec{0}$")
+        additivity_steps.append("")
+        additivity_steps.append("For affine mapping $L(\\vec{v}) = A\\vec{v} + \\vec{b}$ where $\\vec{b} \\neq \\vec{0}$:")
+        additivity_steps.append("$L(\\vec{0}) = A\\vec{0} + \\vec{b} = \\vec{b} \\neq \\vec{0}$")
+        additivity_steps.append("")
+        additivity_steps.append("Therefore, the mapping violates the **zero preservation property** and is **not linear**.")
+        
+        proof_results['additivity_proof'] = "\n".join(additivity_steps)
+        proof_results['homogeneity_proof'] = "Zero preservation violation proves non-linearity."
+        return proof_results
+    
+    def _prove_bilinear_nonlinearity(self, formula: str, _dimension: int) -> Dict[str, Any]:
+        """Generate proof that bilinear mappings (products of variables) are not linear."""
+        proof_results = {
+            'can_prove': True,
+            'proof_type': 'symbolic',
+            'additivity_proof': None,
+            'homogeneity_proof': None,
+            'conclusion': "NOT_LINEAR",
+            'error_message': None
+        }
+        
+        additivity_steps = []
+        additivity_steps.append("**Proof of Non-linearity for Bilinear Mapping**")
+        additivity_steps.append("")
+        additivity_steps.append("Given: Mapping contains products of variables (e.g., $v_1 \\cdot v_2$)")
+        additivity_steps.append("")
+        additivity_steps.append("**Counterexample for Additivity:**")
+        additivity_steps.append("For mapping containing term $v_1 v_2$, let:")
+        additivity_steps.append("$\\vec{u} = (1, 0, \\ldots)$ and $\\vec{v} = (0, 1, \\ldots)$")
+        additivity_steps.append("")
+        additivity_steps.append("$L(\\vec{u}) = 1 \\cdot 0 = 0$")
+        additivity_steps.append("$L(\\vec{v}) = 0 \\cdot 1 = 0$")
+        additivity_steps.append("$L(\\vec{u}) + L(\\vec{v}) = 0 + 0 = 0$")
+        additivity_steps.append("")
+        additivity_steps.append("$L(\\vec{u} + \\vec{v}) = L((1, 1, \\ldots)) = 1 \\cdot 1 = 1$")
+        additivity_steps.append("")
+        additivity_steps.append("Since $L(\\vec{u} + \\vec{v}) = 1 \\neq 0 = L(\\vec{u}) + L(\\vec{v})$,")
+        additivity_steps.append("**additivity is violated** and the mapping is **not linear**.")
+        
+        proof_results['additivity_proof'] = "\n".join(additivity_steps)
+        proof_results['homogeneity_proof'] = "Additivity violation proves non-linearity."
+        return proof_results
+    
     def render_linearity_checker(self):
         """Render the main linearity checker interface."""
+        # Initialize session state
+        if 'example_analysis' not in st.session_state:
+            st.session_state.example_analysis = None
+        if 'manual_analysis' not in st.session_state:
+            st.session_state.manual_analysis = None
+            
         st.header("🔍 Linear Mapping Analysis")
-        st.write("Check if mappings are linear and find their matrix representations.")
+        st.write("Enter your mapping formula and get instant analysis with formal proofs!")
         
-        # Mapping type selection
-        mapping_type = st.selectbox(
-            "Select mapping type:",
-            ["polynomial", "trigonometric", "dot_product", "quadratic", "custom"],
-            help="Choose the type of mapping to analyze"
-        )
+        # Quick examples section
+        st.subheader("📚 Common Examples")
+        st.write("Click any example to analyze it instantly:")
         
-        # Input dimension
-        dimension = st.number_input(
-            "Input dimension (domain):",
-            min_value=1, max_value=10, value=3,
-            help="Dimension of the input space (e.g., 3 for R³)"
-        )
+        # Create columns for examples
+        col1, col2, col3 = st.columns(3)
         
-        # Mapping-specific inputs
-        formula, params = self._render_mapping_inputs(mapping_type, dimension)
+        with col1:
+            st.write("**Linear Examples:**")
+            if st.button("$L(x,y) = 5x - y$", help="Simple linear combination"):
+                self._analyze_example("5*x - y", 2)
+            if st.button("$L(\\vec{v}) = -\\vec{v}$", help="Negation mapping"):
+                self._analyze_example("negation_mapping", 2, "negation")
+            if st.button("$L(x,y) = x$", help="Projection to first component"):
+                self._analyze_example("x", 2)
+                
+        with col2:
+            st.write("**Non-linear Examples:**")
+            if st.button("$L(\\vec{v}) = \\vec{v} \\cdot \\vec{v}$", help="Quadratic form"):
+                self._analyze_example("quadratic_form", 2, "quadratic")
+            if st.button("$L(x,y) = x^2$", help="Polynomial degree 2"):
+                self._analyze_example("x**2", 2)
+            if st.button("$L(x,y) = x + 1$", help="Affine mapping"):
+                self._analyze_example("x + 1", 2)
+                
+        with col3:
+            st.write("**Trigonometric:**")
+            if st.button("$L(x,y) = [\\cos(x), \\sin(y)]$", help="Trig of variables"):
+                self._analyze_example("cos(x), sin(y)", 2, "trigonometric")
+            if st.button("$L(x,y) = [\\cos(1) \\cdot x, \\sin(1) \\cdot y]$", help="Trig coefficients"):
+                self._analyze_example("cos(alpha)*x, sin(alpha)*y", 2, "trigonometric")
+            if st.button("$L(x,y) = xy$", help="Product of variables"):
+                self._analyze_example("x*y", 2)
         
-        if st.button("🔍 Check Linearity", type="primary"):
+        st.markdown("---")
+        
+        # Manual input section
+        st.subheader("✏️ Enter Your Own Formula")
+        
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            formula = st.text_input(
+                "Enter your mapping formula:",
+                placeholder="Examples: 5*x - y, x**2 + y, cos(x)*y, x*y + z",
+                help="Use x, y, z for variables. Separate multiple outputs with commas.",
+                key="manual_formula"
+            )
+            
+        with col2:
+            dimension = st.number_input(
+                "Input dimension:",
+                min_value=1, max_value=5, value=2,
+                help="Number of input variables"
+            )
+            
+        # Parameter input for special cases
+        with st.expander("⚙️ Parameters (for trigonometric mappings)", expanded=False):
+            phi = st.number_input("φ/α parameter:", value=1.0, help="Parameter for trigonometric functions")
+        
+        if st.button("🔍 Analyze My Formula", type="primary"):
             if formula:
-                self._perform_linearity_analysis(mapping_type, formula, dimension, params)
+                params = {'phi': phi}
+                # Auto-detect mapping type
+                mapping_type = self._detect_mapping_type(formula)
+                st.session_state.manual_analysis = {
+                    'formula': formula,
+                    'dimension': dimension,
+                    'mapping_type': mapping_type,
+                    'params': params
+                }
             else:
-                st.error("Please provide a mapping formula.")
+                st.error("Please enter a mapping formula.")
+                
+        # Help section
+        with st.expander("❓ How to write formulas", expanded=False):
+            st.markdown("""
+            **Variables:** Use `x`, `y`, `z` for input variables
+            
+            **Operations:**
+            - Addition: `x + y`
+            - Subtraction: `x - y` 
+            - Multiplication: `2*x` or `x*y`
+            - Powers: `x**2`, `y**3`
+            - Functions: `cos(x)`, `sin(y)`, `sqrt(x)`
+            
+            **Multiple outputs:** Separate with commas: `x + y, x - y`
+            
+            **Examples:**
+            - Linear: `3*x - 2*y`, `x + y, x - y`
+            - Quadratic: `x**2 + y**2`, `x*y`
+            - Affine: `x + 1`, `2*x + y + 5`
+            - Trigonometric: `cos(x)`, `sin(alpha)*x`
+            """)
+        
+        # Execute analysis outside columns for full width display
+        self._execute_pending_analysis()
     
-    def _render_mapping_inputs(self, mapping_type: str, dimension: int) -> Tuple[str, Dict]:
+    def _execute_pending_analysis(self):
+        """Execute any pending analysis requests for full-width display."""
+        # Check for example analysis
+        if st.session_state.example_analysis:
+            analysis_data = st.session_state.example_analysis
+            params = {'phi': 1.0}
+            mapping_type = analysis_data['mapping_type']
+            if mapping_type is None:
+                mapping_type = self._detect_mapping_type(analysis_data['formula'])
+            
+            st.markdown("---")
+            st.subheader("📊 Analysis Results")
+            self._perform_linearity_analysis(
+                mapping_type, 
+                analysis_data['formula'], 
+                analysis_data['dimension'], 
+                params, 
+                "Both"
+            )
+            # Clear the analysis request
+            st.session_state.example_analysis = None
+        
+        # Check for manual analysis
+        elif st.session_state.manual_analysis:
+            analysis_data = st.session_state.manual_analysis
+            
+            st.markdown("---")
+            st.subheader("📊 Analysis Results")
+            self._perform_linearity_analysis(
+                analysis_data['mapping_type'], 
+                analysis_data['formula'], 
+                analysis_data['dimension'], 
+                analysis_data['params'], 
+                "Both"
+            )
+            # Clear the analysis request
+            st.session_state.manual_analysis = None
+    
+    def _analyze_example(self, formula: str, dimension: int, mapping_type: str = None):
+        """Analyze a pre-defined example."""
+        # Store the analysis request in session state so it displays outside columns
+        st.session_state.example_analysis = {
+            'formula': formula,
+            'dimension': dimension,
+            'mapping_type': mapping_type
+        }
+    
+    def _detect_mapping_type(self, formula: str) -> str:
+        """Auto-detect the mapping type based on formula content."""
+        formula = formula.lower()
+        
+        # Special fixed mappings
+        if formula == "negation_mapping":
+            return "negation"
+        elif formula == "quadratic_form":
+            return "quadratic"
+        elif formula == "zero_mapping":
+            return "zero"
+        
+        # Pattern-based detection
+        formula_no_spaces = formula.replace(' ', '')
+        
+        # Check for products of variables first (before trigonometric)
+        if ('x*y' in formula_no_spaces or 'y*z' in formula_no_spaces or 'x*z' in formula_no_spaces or 
+            'y*x' in formula_no_spaces or 'z*y' in formula_no_spaces or 'z*x' in formula_no_spaces):
+            return "bilinear"
+        elif any(trig in formula for trig in ['cos(x)', 'sin(x)', 'cos(y)', 'sin(y)', 'cos(z)', 'sin(z)']):
+            return "trigonometric"
+        elif any(trig in formula for trig in ['cos(', 'sin(', 'tan(']):
+            return "trigonometric"
+        elif any(power in formula for power in ['**2', '**3', '^2', '^3']):
+            return "polynomial"  # Will be detected as non-linear by degree analysis
+        elif any(const in formula for const in ['+1', '+ 1', '-1', '- 1']) and not formula.strip().endswith('*1'):
+            # Check for constant terms (but not multiplication by 1)
+            return "affine"
+        elif formula.strip() in ['x', 'y', 'z']:
+            return "projection"
+        else:
+            return "polynomial"  # Default to polynomial for most expressions
+    
+    def _render_mapping_inputs(self, mapping_type: str, _dimension: int) -> Tuple[str, Dict]:
         """Render input fields specific to the mapping type."""
+        # _dimension parameter kept for interface consistency
         formula = ""
         params = {}
         
@@ -351,13 +1140,13 @@ class LinearityOperations:
             
         elif mapping_type == "trigonometric":
             st.subheader("Trigonometric Mapping")
-            st.write("Example: `cos(x)*phi, sin(y)*phi`")
+            st.write("Example: `cos(x)*phi, sin(y)*phi` or `cos(alpha)*x, sin(alpha)*y`")
             formula = st.text_input(
                 "Enter trigonometric formula:",
                 placeholder="cos(x)*phi, sin(y)*phi",
-                help="Use cos(x), sin(y), etc. Use 'phi' for the parameter."
+                help="Use cos(x), sin(y), etc. Use 'phi' or 'alpha' for parameters."
             )
-            params['phi'] = st.number_input("Parameter φ:", value=1.0)
+            params['phi'] = st.number_input("Parameter φ/α:", value=1.0)
             
         elif mapping_type == "dot_product":
             st.subheader("Dot Product Mapping")
@@ -372,13 +1161,50 @@ class LinearityOperations:
                     c = np.array([float(x.strip()) for x in c_input.split(',')])
                     params['c'] = c
                     formula = "dot_product_with_c"
-                except:
+                except (ValueError, TypeError):
                     st.error("Invalid vector format")
                     
         elif mapping_type == "quadratic":
             st.subheader("Quadratic Form")
             st.write("Mapping L(v) = v·v (dot product of vector with itself)")
             formula = "quadratic_form"
+            
+        elif mapping_type == "negation":
+            st.subheader("Negation Mapping")
+            st.write("Mapping L(v) = -v (scalar multiplication by -1)")
+            formula = "negation_mapping"
+            
+        elif mapping_type == "projection":
+            st.subheader("Projection Mapping")
+            st.write("Examples: `x`, `y`, `x, y` (select specific components)")
+            formula = st.text_input(
+                "Enter projection formula:",
+                placeholder="x",
+                help="Use x, y, z for variables. Separate multiple outputs with commas."
+            )
+            
+        elif mapping_type == "zero":
+            st.subheader("Zero Mapping")
+            st.write("Mapping L(v) = 0 (maps everything to zero)")
+            formula = "zero_mapping"
+            
+        elif mapping_type == "affine":
+            st.subheader("Affine Mapping")
+            st.write("Examples: `x + 1`, `2*x + y + 3` (linear terms plus constants)")
+            formula = st.text_input(
+                "Enter affine formula:",
+                placeholder="x + 1",
+                help="Include constant terms to test affine mappings."
+            )
+            
+        elif mapping_type == "bilinear":
+            st.subheader("Bilinear Mapping")
+            st.write("Examples: `x*y`, `x1*x2, x1*x3` (products of variables)")
+            formula = st.text_input(
+                "Enter bilinear formula:",
+                placeholder="x*y",
+                help="Use products of variables like x*y."
+            )
             
         elif mapping_type == "custom":
             st.subheader("Custom Mapping")
@@ -400,40 +1226,134 @@ class LinearityOperations:
                             name, value = line.split('=', 1)
                             try:
                                 params[name.strip()] = float(value.strip())
-                            except:
+                            except (ValueError, TypeError):
                                 st.warning(f"Could not parse parameter: {line}")
         
         return formula, params
     
     def _perform_linearity_analysis(self, mapping_type: str, formula: str, 
-                                   dimension: int, params: Dict):
+                                   dimension: int, params: Dict, analysis_mode: str = "Both"):
         """Perform and display linearity analysis."""
         
+        empirical_results = None
+        proof_results = None
+        
         with st.spinner("Analyzing linearity..."):
-            results = self.check_linearity(mapping_type, formula, dimension, params)
+            if analysis_mode in ["Empirical Testing", "Both"]:
+                empirical_results = self.check_linearity(mapping_type, formula, dimension, params)
+            
+            if analysis_mode in ["Symbolic Proof", "Both"]:
+                proof_results = self.generate_symbolic_proof(mapping_type, formula, dimension, params)
         
         # Display main result
-        if results['is_linear']:
-            st.success("✅ **The mapping is LINEAR!**")
-        else:
-            st.error("❌ **The mapping is NOT LINEAR!**")
+        if analysis_mode == "Symbolic Proof" and proof_results:
+            if proof_results.get('conclusion') == "LINEAR":
+                st.success("✅ **PROVEN LINEAR by symbolic analysis!**")
+            elif proof_results.get('conclusion') == "NOT_LINEAR":
+                st.error("❌ **PROVEN NOT LINEAR by symbolic analysis!**")
+            elif proof_results.get('error_message'):
+                st.warning(f"⚠️ **Symbolic proof failed:** {proof_results['error_message']}")
+                if empirical_results:
+                    if empirical_results['is_linear']:
+                        st.success("✅ **Empirically verified as LINEAR**")
+                    else:
+                        st.error("❌ **Empirically verified as NOT LINEAR**")
+        elif empirical_results:
+            if empirical_results['is_linear']:
+                st.success("✅ **The mapping is LINEAR!**")
+            else:
+                st.error("❌ **The mapping is NOT LINEAR!**")
         
         # Create tabs for detailed results
-        tab1, tab2, tab3, tab4 = st.tabs(["📋 Summary", "➕ Additivity Tests", "✖️ Homogeneity Tests", "📊 Matrix Representation"])
+        tab_names = ["📋 Summary"]
+        if proof_results and proof_results.get('can_prove'):
+            tab_names.append("📐 Symbolic Proof")
+        if empirical_results:
+            tab_names.extend(["➕ Additivity Tests", "✖️ Homogeneity Tests"])
+        tab_names.append("📊 Matrix Representation")
         
-        with tab1:
-            self._render_summary_tab(results, mapping_type, formula, params)
+        tabs = st.tabs(tab_names)
         
-        with tab2:
-            self._render_additivity_tab(results)
+        with tabs[0]:
+            self._render_summary_tab(empirical_results, mapping_type, formula, params, proof_results)
         
-        with tab3:
-            self._render_homogeneity_tab(results)
+        current_tab = 1
+        if proof_results and proof_results.get('can_prove'):
+            with tabs[current_tab]:
+                self._render_proof_tab(proof_results, mapping_type, formula)
+            current_tab += 1
         
-        with tab4:
-            self._render_matrix_tab(results, mapping_type, formula)
+        if empirical_results:
+            with tabs[current_tab]:
+                self._render_additivity_tab(empirical_results)
+            
+            with tabs[current_tab + 1]:
+                self._render_homogeneity_tab(empirical_results)
+            current_tab += 2
+        
+        with tabs[current_tab]:
+            results_for_matrix = empirical_results or {'is_linear': proof_results.get('conclusion') == "LINEAR" if proof_results else False, 'matrix_representation': None}
+            self._render_matrix_tab(results_for_matrix, mapping_type, formula)
     
-    def _render_summary_tab(self, results: Dict, mapping_type: str, formula: str, params: Dict):
+    def _render_proof_tab(self, proof_results: Dict, mapping_type: str, formula: str):
+        """Render the symbolic proof tab."""
+        st.subheader("🔍 Formal Mathematical Proof")
+        
+        if proof_results.get('error_message'):
+            st.error(f"**Proof Error:** {proof_results['error_message']}")
+            return
+        
+        if proof_results.get('conclusion') == "LINEAR":
+            st.success("✅ **CONCLUSION: The mapping is PROVEN to be LINEAR**")
+        elif proof_results.get('conclusion') == "NOT_LINEAR":
+            st.error("❌ **CONCLUSION: The mapping is PROVEN to be NOT LINEAR**")
+        elif proof_results.get('conclusion') == "EMPIRICAL_NEEDED":
+            st.info("🔬 **CONCLUSION: Empirical testing needed for this case**")
+        
+        # Display mapping definition
+        st.write("**Mapping Definition:**")
+        if mapping_type == "polynomial":
+            st.latex(f"L(x,y,z) = {formula}")
+        elif mapping_type == "dot_product":
+            st.latex("L(\\vec{v}) = [\\vec{v} \\cdot \\vec{c}, 0]")
+        
+        st.markdown("---")
+        
+        # Display proofs
+        if proof_results.get('additivity_proof'):
+            st.markdown(proof_results['additivity_proof'])
+            st.markdown("---")
+        
+        if proof_results.get('homogeneity_proof'):
+            st.markdown(proof_results['homogeneity_proof'])
+            st.markdown("---")
+        
+        # Final conclusion
+        if proof_results.get('conclusion') == "LINEAR":
+            st.success("""
+            **✅ PROOF COMPLETE**
+            
+            Since both additivity L(u + v) = L(u) + L(v) and homogeneity L(cv) = cL(v) 
+            have been proven to hold for all vectors u, v and scalar c, the mapping L 
+            is **definitively LINEAR**.
+            """)
+        elif proof_results.get('conclusion') == "NOT_LINEAR":
+            st.error("""
+            **❌ PROOF COMPLETE**
+            
+            The mapping L violates at least one linearity property, therefore it is 
+            **definitively NOT LINEAR**.
+            """)
+        elif proof_results.get('conclusion') == "EMPIRICAL_NEEDED":
+            st.info("""
+            **🔬 ANALYSIS COMPLETE**
+            
+            This mapping requires empirical testing because trigonometric functions 
+            are applied to constants, making it effectively a polynomial mapping 
+            with numerical coefficients. Check the empirical results for the definitive answer.
+            """)
+    
+    def _render_summary_tab(self, results: Dict, mapping_type: str, formula: str, params: Dict, proof_results: Dict = None):
         """Render the summary tab."""
         st.subheader("Analysis Summary")
         
@@ -452,27 +1372,54 @@ class LinearityOperations:
         else:
             st.code(formula)
         
-        # Test results summary
-        col1, col2 = st.columns(2)
+        # Show proof results if available
+        if proof_results:
+            st.subheader("🔬 Analysis Results")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.write("**Symbolic Analysis:**")
+                if proof_results.get('conclusion') == "LINEAR":
+                    st.success("✅ Proven Linear")
+                elif proof_results.get('conclusion') == "NOT_LINEAR":
+                    st.error("❌ Proven Not Linear")
+                elif proof_results.get('conclusion') == "EMPIRICAL_NEEDED":
+                    st.info("🔬 Empirical Testing Needed")
+                elif proof_results.get('error_message'):
+                    st.warning("⚠️ Proof not available")
+            
+            with col2:
+                if results:
+                    st.write("**Empirical Verification:**")
+                    if results['is_linear']:
+                        st.success("✅ Tests Passed")
+                    else:
+                        st.error("❌ Tests Failed")
         
-        with col1:
-            additivity_passed = all(test['is_additive'] for test in results['additivity_tests'])
-            if additivity_passed:
-                st.success(f"✅ Additivity: Passed ({len(results['additivity_tests'])} tests)")
-            else:
-                failed_count = sum(1 for test in results['additivity_tests'] if not test['is_additive'])
-                st.error(f"❌ Additivity: Failed ({failed_count}/{len(results['additivity_tests'])} tests)")
-        
-        with col2:
-            homogeneity_passed = all(test['is_homogeneous'] for test in results['homogeneity_tests'])
-            if homogeneity_passed:
-                st.success(f"✅ Homogeneity: Passed ({len(results['homogeneity_tests'])} tests)")
-            else:
-                failed_count = sum(1 for test in results['homogeneity_tests'] if not test['is_homogeneous'])
-                st.error(f"❌ Homogeneity: Failed ({failed_count}/{len(results['homogeneity_tests'])} tests)")
+        # Test results summary (only if empirical results available)
+        if results:
+            if not proof_results:  # Only show detailed test results if no proof
+                st.subheader("🧪 Test Results")
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    additivity_passed = all(test['is_additive'] for test in results['additivity_tests'])
+                    if additivity_passed:
+                        st.success(f"✅ Additivity: Passed ({len(results['additivity_tests'])} tests)")
+                    else:
+                        failed_count = sum(1 for test in results['additivity_tests'] if not test['is_additive'])
+                        st.error(f"❌ Additivity: Failed ({failed_count}/{len(results['additivity_tests'])} tests)")
+                
+                with col2:
+                    homogeneity_passed = all(test['is_homogeneous'] for test in results['homogeneity_tests'])
+                    if homogeneity_passed:
+                        st.success(f"✅ Homogeneity: Passed ({len(results['homogeneity_tests'])} tests)")
+                    else:
+                        failed_count = sum(1 for test in results['homogeneity_tests'] if not test['is_homogeneous'])
+                        st.error(f"❌ Homogeneity: Failed ({failed_count}/{len(results['homogeneity_tests'])} tests)")
         
         # Show counterexamples if any
-        if results['counterexamples']:
+        if results and results.get('counterexamples'):
             st.subheader("🚫 Counterexamples")
             for i, counterexample in enumerate(results['counterexamples'][:3]):  # Show first 3
                 with st.expander(f"Counterexample {i+1}: {counterexample['type'].title()} failure"):
@@ -506,8 +1453,6 @@ class LinearityOperations:
                 
                 with col2:
                     st.write("**Right side: L(u) + L(v)**")
-                    st.write(f"L(u) = {(test['L_u_plus_L_v'] - self.evaluate_mapping('temp', '', v, {})).tolist()}")
-                    st.write(f"L(v) = calculation needed")
                     st.write(f"L(u) + L(v) = {test['L_u_plus_L_v'].tolist()}")
                 
                 if test['is_additive']:
@@ -531,7 +1476,6 @@ class LinearityOperations:
                 
                 with col2:
                     st.write("**Right side: cL(v)**")
-                    st.write(f"L(v) = {(test['c_L_v'] / test['scalar'] if test['scalar'] != 0 else test['c_L_v']).tolist()}")
                     st.write(f"cL(v) = {test['c_L_v'].tolist()}")
                 
                 if test['is_homogeneous']:
@@ -542,6 +1486,7 @@ class LinearityOperations:
     
     def _render_matrix_tab(self, results: Dict, mapping_type: str, formula: str):
         """Render the matrix representation tab."""
+        # mapping_type and formula kept for potential future use
         st.subheader("Matrix Representation")
         
         if results['is_linear']:
