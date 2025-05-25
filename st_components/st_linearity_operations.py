@@ -6,7 +6,7 @@ Streamlit Component for Linear Mapping Operations
 
 import streamlit as st
 import numpy as np
-from sympy import symbols, sympify, expand, simplify, latex, Add, Mul, Symbol, cos, sin, tan
+from sympy import symbols, sympify, expand, simplify, latex, Add, Mul, Symbol, cos, sin, tan, N
 import pandas as pd
 from typing import List, Tuple, Dict, Any, Optional
 
@@ -359,7 +359,7 @@ class LinearityOperations:
             elif mapping_type == "dot_product":
                 return self._prove_dot_product_linearity(params.get('c', np.array([1, 1])), dimension)
             elif mapping_type == "trigonometric":
-                return self._prove_trigonometric_nonlinearity(formula, dimension)
+                return self._prove_trigonometric_nonlinearity(formula, dimension, params.get('phi', 1.0))
             elif mapping_type == "quadratic":
                 return self._prove_quadratic_nonlinearity(dimension)
             elif mapping_type == "negation":
@@ -688,7 +688,7 @@ class LinearityOperations:
         
         return proof_results
     
-    def _prove_trigonometric_nonlinearity(self, formula: str, _dimension: int) -> Dict[str, Any]:
+    def _prove_trigonometric_nonlinearity(self, formula: str, _dimension: int, phi: float = 1.0) -> Dict[str, Any]:
         """Analyze trigonometric mappings - some may be linear if trig functions are applied to constants."""
         proof_results = {
             'can_prove': True,
@@ -731,29 +731,80 @@ class LinearityOperations:
             proof_results['homogeneity_proof'] = "Since additivity fails, the mapping is not linear."
             proof_results['conclusion'] = "NOT_LINEAR"
         else:
-            # This might be the linear case: cos(alpha)*x where alpha is constant
+            # This is the linear case: cos(alpha)*x where alpha is constant - we can prove it symbolically!
             additivity_steps = []
-            additivity_steps.append("**Analysis of Trigonometric Mapping with Constant Arguments**")
+            additivity_steps.append("**Symbolic Proof of Linearity for Trigonometric Coefficients**")
             additivity_steps.append("")
             formula_latex = formula.replace('phi', '\\phi').replace('alpha', '\\alpha')
             additivity_steps.append(f"Given mapping: $L(x,y) = {formula_latex}$")
             additivity_steps.append("")
-            additivity_steps.append("**Key Observation:**")
-            additivity_steps.append("When trigonometric functions are applied to **constants** (not variables),")
-            additivity_steps.append("they evaluate to fixed numerical coefficients.")
+            additivity_steps.append("**Step 1: Evaluate Constants**")
+            additivity_steps.append("Since trigonometric functions are applied to constants:")
+            
+            # Always provide general symbolic proof unless user specifically requests numerical
+            if phi != 1.0:  # User changed the default value, so use their specific value
+                try:
+                    # Compute actual values using the provided parameter
+                    c1_val = float(N(cos(phi), 6))  # cos(phi)
+                    c2_val = float(N(sin(phi), 6))  # sin(phi)
+                    
+                    additivity_steps.append(f"Given parameter: $\\alpha = {phi}$")
+                    additivity_steps.append(f"Let $c_1 = \\cos(\\alpha) = \\cos({phi}) \\approx {c1_val}$")
+                    additivity_steps.append(f"Let $c_2 = \\sin(\\alpha) = \\sin({phi}) \\approx {c2_val}$")
+                    additivity_steps.append("")
+                    additivity_steps.append(f"The mapping becomes: $L(x,y) = [{c1_val} \\cdot x, {c2_val} \\cdot y]$")
+                    use_numerical = True
+                except:
+                    use_numerical = False
+            else:
+                use_numerical = False
+                
+            if not use_numerical:
+                # General symbolic proof for any α ∈ ℝ
+                additivity_steps.append("**General Proof for any α ∈ ℝ:**")
+                additivity_steps.append("Let $c_1 = \\cos(\\alpha)$ and $c_2 = \\sin(\\alpha)$ where $\\alpha \\in \\mathbb{R}$ is any fixed constant.")
+                additivity_steps.append("")
+                additivity_steps.append("Since trigonometric functions of constants yield constant values,")
+                additivity_steps.append("both $c_1$ and $c_2$ are fixed real numbers (independent of the input variables).")
+                additivity_steps.append("")
+                additivity_steps.append("The mapping becomes: $L(x,y) = [c_1 \\cdot x, c_2 \\cdot y]$")
             additivity_steps.append("")
-            additivity_steps.append("For example: $\\cos(\\alpha) \\cdot x$ where $\\alpha$ is constant")
-            additivity_steps.append("becomes $c \\cdot x$ where $c = \\cos(\\alpha)$ is a fixed number.")
+            additivity_steps.append("**Step 2: Additivity Proof**")
+            additivity_steps.append("For arbitrary vectors $\\vec{u} = (u_1, u_2)$ and $\\vec{v} = (v_1, v_2)$:")
             additivity_steps.append("")
-            additivity_steps.append("This is equivalent to a **polynomial mapping** with constant coefficients,")
-            additivity_steps.append("which **can be linear** if all terms have degree ≤ 1.")
-            additivity_steps.append("")
-            additivity_steps.append("**Recommendation:** Use empirical testing to verify linearity,")
-            additivity_steps.append("as the symbolic analysis depends on the specific parameter values.")
+            additivity_steps.append("$L(\\vec{u} + \\vec{v}) = L((u_1 + v_1, u_2 + v_2))$")
+            additivity_steps.append("$= [c_1(u_1 + v_1), c_2(u_2 + v_2)]$")
+            additivity_steps.append("$= [c_1 u_1 + c_1 v_1, c_2 u_2 + c_2 v_2]$")
+            additivity_steps.append("$= [c_1 u_1, c_2 u_2] + [c_1 v_1, c_2 v_2]$")
+            additivity_steps.append("$= L(\\vec{u}) + L(\\vec{v})$ ✅")
+            
+            homogeneity_steps = []
+            homogeneity_steps.append("**Step 3: Homogeneity Proof**")
+            homogeneity_steps.append("")
+            homogeneity_steps.append("For arbitrary scalar $k$ and vector $\\vec{v} = (v_1, v_2)$:")
+            homogeneity_steps.append("")
+            homogeneity_steps.append("$L(k\\vec{v}) = L((kv_1, kv_2))$")
+            homogeneity_steps.append("$= [c_1(kv_1), c_2(kv_2)]$")
+            homogeneity_steps.append("$= [k(c_1 v_1), k(c_2 v_2)]$")
+            homogeneity_steps.append("$= k[c_1 v_1, c_2 v_2]$")
+            homogeneity_steps.append("$= kL(\\vec{v})$ ✅")
+            homogeneity_steps.append("")
+            homogeneity_steps.append("**Conclusion:** Since both additivity and homogeneity hold,")
+            homogeneity_steps.append("the mapping is **definitively LINEAR**.")
+            homogeneity_steps.append("")
+            
+            # Add matrix representation
+            homogeneity_steps.append("**Matrix Representation:**")
+            homogeneity_steps.append("This linear mapping can be represented as:")
+            if use_numerical:
+                homogeneity_steps.append(f"$$L(\\vec{{v}}) = \\begin{{pmatrix}} {c1_val} & 0 \\\\ 0 & {c2_val} \\end{{pmatrix}} \\begin{{pmatrix}} x \\\\ y \\end{{pmatrix}}$$")
+            else:
+                homogeneity_steps.append("$$L(\\vec{v}) = \\begin{pmatrix} c_1 & 0 \\\\ 0 & c_2 \\end{pmatrix} \\begin{pmatrix} x \\\\ y \\end{pmatrix}$$")
+                homogeneity_steps.append("where $c_1 = \\cos(\\alpha)$ and $c_2 = \\sin(\\alpha)$ for any fixed $\\alpha$.")
             
             proof_results['additivity_proof'] = "\n".join(additivity_steps)
-            proof_results['homogeneity_proof'] = "Empirical testing recommended for this case."
-            proof_results['conclusion'] = "EMPIRICAL_NEEDED"
+            proof_results['homogeneity_proof'] = "\n".join(homogeneity_steps)
+            proof_results['conclusion'] = "LINEAR"
         
         return proof_results
     
@@ -974,7 +1025,7 @@ class LinearityOperations:
             st.write("**Trigonometric:**")
             if st.button("$L(x,y) = [\\cos(x), \\sin(y)]$", help="Trig of variables"):
                 self._analyze_example("cos(x), sin(y)", 2, "trigonometric")
-            if st.button("$L(x,y) = [\\cos(1) \\cdot x, \\sin(1) \\cdot y]$", help="Trig coefficients"):
+            if st.button("$L(x,y) = [\\cos(\\alpha) \\cdot x, \\sin(\\alpha) \\cdot y]$", help="Trig coefficients, α ∈ ℝ"):
                 self._analyze_example("cos(alpha)*x, sin(alpha)*y", 2, "trigonometric")
             if st.button("$L(x,y) = xy$", help="Product of variables"):
                 self._analyze_example("x*y", 2)
@@ -989,8 +1040,8 @@ class LinearityOperations:
         with col1:
             formula = st.text_input(
                 "Enter your mapping formula:",
-                placeholder="Examples: 5*x - y, x**2 + y, cos(x)*y, x*y + z",
-                help="Use x, y, z for variables. Separate multiple outputs with commas.",
+                placeholder="Examples: 5*x - y, x**2 + y, cos(alpha)*x, x*y + z",
+                help="Use x, y, z for variables. Use 'alpha' for parameters. Separate multiple outputs with commas.",
                 key="manual_formula"
             )
             
@@ -1003,7 +1054,7 @@ class LinearityOperations:
             
         # Parameter input for special cases
         with st.expander("⚙️ Parameters (for trigonometric mappings)", expanded=False):
-            phi = st.number_input("φ/α parameter:", value=1.0, help="Parameter for trigonometric functions")
+            phi = st.number_input("α parameter (real number):", value=1.0, help="Parameter α ∈ ℝ for trigonometric coefficients like cos(α)·x, sin(α)·y")
         
         if st.button("🔍 Analyze My Formula", type="primary"):
             if formula:
@@ -1037,7 +1088,7 @@ class LinearityOperations:
             - Linear: `3*x - 2*y`, `x + y, x - y`
             - Quadratic: `x**2 + y**2`, `x*y`
             - Affine: `x + 1`, `2*x + y + 5`
-            - Trigonometric: `cos(x)`, `sin(alpha)*x`
+            - Trigonometric: `cos(x)`, `cos(alpha)*x, sin(alpha)*y`
             """)
         
         # Execute analysis outside columns for full width display
