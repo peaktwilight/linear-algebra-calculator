@@ -434,9 +434,6 @@ class MatrixOperationsMixin:
                         solution_latex = "$$\\mathbf{x} = \\begin{pmatrix}" + " \\\\ ".join(solution_components) + "\\end{pmatrix}$$"
                         st.markdown(solution_latex)
                         
-                        # Show particular and homogeneous solutions
-                        st.markdown("**In standard form:** $\\mathbf{x} = \\mathbf{x}_p + $ linear combination of null space vectors")
-                        
                         # Calculate particular solution (set all free variables to 0)
                         particular_solution = np.zeros(n)
                         for var_idx in range(n):
@@ -445,9 +442,6 @@ class MatrixOperationsMixin:
                                 pivot_row = pivot_rows[pivot_row_idx]
                                 if pivot_row < augmented_rref.shape[0]:
                                     particular_solution[var_idx] = augmented_rref[pivot_row, -1] / augmented_rref[pivot_row, var_idx]
-                        
-                        particular_latex = "$$\\mathbf{x}_p = " + self._vector_to_latex(particular_solution) + "$$"
-                        st.markdown(particular_latex)
                         
                         # Calculate null space vectors (one for each free variable)
                         if len(free_vars) == 1:
@@ -461,9 +455,70 @@ class MatrixOperationsMixin:
                                     pivot_row = pivot_rows[pivot_row_idx]
                                     if pivot_row < augmented_rref.shape[0]:
                                         null_vector[var_idx] = -augmented_rref[pivot_row, free_var] / augmented_rref[pivot_row, var_idx]
-                            
+                        
+                        # Show both standard forms
+                        st.markdown("---")
+                        st.markdown("**Solution in Standard Form:**")
+                        
+                        if len(free_vars) == 1:
+                            # Standard mathematical form: x = x_p + t * x_h
+                            particular_latex = "$$\\mathbf{x}_p = " + self._vector_to_latex(particular_solution) + "$$"
                             null_latex = "$$\\mathbf{x}_h = " + self._vector_to_latex(null_vector) + "$$"
+                            
+                            st.markdown(particular_latex)
                             st.markdown(null_latex)
+                            
+                            # Combined standard form
+                            standard_form_latex = "$$\\mathbf{x} = \\mathbf{x}_p + t \\cdot \\mathbf{x}_h = " + \
+                                                 self._vector_to_latex(particular_solution) + " + t \\cdot " + \
+                                                 self._vector_to_latex(null_vector) + "$$"
+                            st.markdown(standard_form_latex)
+                            
+                            # Alternative expanded form
+                            st.markdown("**Alternative Form (fully expanded):**")
+                            expanded_components = []
+                            for i in range(n):
+                                if abs(particular_solution[i]) < 1e-10 and abs(null_vector[i]) < 1e-10:
+                                    expanded_components.append("0")
+                                elif abs(particular_solution[i]) < 1e-10:
+                                    coeff = null_vector[i]
+                                    if abs(coeff - 1) < 1e-10:
+                                        expanded_components.append("t")
+                                    elif abs(coeff + 1) < 1e-10:
+                                        expanded_components.append("-t")
+                                    else:
+                                        expanded_components.append(f"{coeff:.4f}".rstrip('0').rstrip('.') + "t")
+                                elif abs(null_vector[i]) < 1e-10:
+                                    const = particular_solution[i]
+                                    expanded_components.append(f"{const:.4f}".rstrip('0').rstrip('.'))
+                                else:
+                                    const = particular_solution[i]
+                                    coeff = null_vector[i]
+                                    const_str = f"{const:.4f}".rstrip('0').rstrip('.')
+                                    
+                                    if abs(coeff - 1) < 1e-10:
+                                        if const >= 0:
+                                            expanded_components.append(f"{const_str} + t")
+                                        else:
+                                            expanded_components.append(f"{const_str} + t")
+                                    elif abs(coeff + 1) < 1e-10:
+                                        expanded_components.append(f"{const_str} - t")
+                                    else:
+                                        coeff_str = f"{coeff:.4f}".rstrip('0').rstrip('.')
+                                        if coeff >= 0:
+                                            expanded_components.append(f"{const_str} + {coeff_str}t")
+                                        else:
+                                            expanded_components.append(f"{const_str} {coeff_str}t")
+                            
+                            expanded_latex = "$$\\mathbf{x} = \\begin{pmatrix}" + " \\\\ ".join(expanded_components) + "\\end{pmatrix}$$"
+                            st.markdown(expanded_latex)
+                            
+                            # Mathematical explanation
+                            st.markdown("**Mathematical Interpretation:**")
+                            st.markdown(f"- $\\mathbf{{x}}_p$ is a **particular solution** (when $t = 0$)")
+                            st.markdown(f"- $\\mathbf{{x}}_h$ is a **homogeneous solution** (satisfies $A\\mathbf{{x}}_h = \\mathbf{{0}}$)")
+                            st.markdown(f"- $t \\in \\mathbb{{R}}$ is a **free parameter** corresponding to variable $x_{free_vars[0]+1}$")
+                            st.markdown(f"- **All solutions** have the form $\\mathbf{{x}} = \\mathbf{{x}}_p + t \\cdot \\mathbf{{x}}_h$")
                     
                 elif solution_type == "unique" and solution is not None:
                     st.success("The system has a unique solution:")
