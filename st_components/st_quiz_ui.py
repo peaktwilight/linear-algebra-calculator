@@ -6,10 +6,6 @@ Streamlit Component for the Linear Algebra Quiz
 
 import streamlit as st
 import numpy as np # Used for checking answers, e.g. vector normalization
-# import pandas as pd # Not used in QuizComponent
-# import matplotlib.pyplot as plt # Not used in QuizComponent
-# import plotly.express as px # Not used in QuizComponent
-# import plotly.graph_objects as go # Not used in QuizComponent
 
 # Import self-sufficient utilities
 from .st_math_utils import MathUtils
