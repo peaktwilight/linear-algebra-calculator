@@ -6,13 +6,9 @@ Streamlit Component for Matrix Operations Mixin
 
 import streamlit as st
 import numpy as np
-import pandas as pd # Keep for potential future use with matrix display
-import plotly.express as px # Keep for potential future use
 import plotly.graph_objects as go # Used for visualizations
-import scipy.linalg as sp
 from given_reference.core import mrref # For displaying RREF steps
 from .st_visualization_utils import display_matrix_heatmap
-from .st_utils import StreamOutput
 from .st_math_utils import MathUtils
 
 class MatrixOperationsMixin:
