@@ -4,6 +4,7 @@
 ## Features
 
 -   🔢 **Comprehensive Calculators:** Vectors, matrices, systems of linear equations, and series/summations.
+-   📐 **3D Geometry Operations:** Planes, lines, intersections, and distance calculations in 3D space.
 -   🧮 **Batch Matrix Operations:** Automatically evaluate multiple matrix expressions from exercise lists.
 -   🔍 **Linear Mapping Analysis:** Test if mappings are linear and generate matrix representations.
 -   📊 **Series & Pattern Recognition:** Analyze sequences, calculate geometric/arithmetic series, and solve summation exercises.
