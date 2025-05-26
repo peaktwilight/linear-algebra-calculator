@@ -15,8 +15,9 @@ from .st_math_utils import MathUtils
 # Import Mixins
 from .st_vector_operations_mixin import VectorOperationsMixin
 from .st_matrix_operations_mixin import MatrixOperationsMixin
+from .st_plane_operations_mixin import PlaneOperationsMixin
 
-class LinAlgCalculator(VectorOperationsMixin, MatrixOperationsMixin):
+class LinAlgCalculator(VectorOperationsMixin, MatrixOperationsMixin, PlaneOperationsMixin):
     def __init__(self):
         super().__init__() # Initialize mixins if they have their own __init__ (optional)
         self.math_utils = MathUtils()

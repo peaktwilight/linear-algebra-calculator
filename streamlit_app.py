@@ -184,7 +184,7 @@ def main():
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;" stroke="#f0f2f6" stroke-width="2">
                 <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
-            <span class="rainbow-text">GitHub v1.8.5</span>
+            <span class="rainbow-text">GitHub v1.9.0</span>
         </a>
     </div>
     ''', unsafe_allow_html=True)
@@ -193,6 +193,7 @@ def main():
     all_operations = {
         "Vector Operations": ["Vector Normalization", "Vector Projection/Shadow", "Vector Angle", "Cross Product", 
                              "Triangle Area", "Point-Line Distance", "Check Collinear"],
+        "Lines and Planes": ["Plane from 3 Points", "Point-to-Plane Distance", "Line-Plane Intersection", "Plane Equation"],
         "Matrix Operations": ["Batch Expression Calculator", "Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
                              "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", 
                              "Eigenvalues and Eigenvectors"],
@@ -240,7 +241,7 @@ def main():
             st.sidebar.markdown("---")
             category = st.sidebar.selectbox(
                 "Select Operation Category",
-                ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Series & Summations", "Quiz Mode", "Learning Resources"]
+                ["Vector Operations", "Lines and Planes", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Series & Summations", "Quiz Mode", "Learning Resources"]
             )
     else:
         selected_operation_from_search = None
@@ -248,7 +249,7 @@ def main():
         # Default categories selection if no search
         category = st.sidebar.selectbox(
             "Select Operation Category",
-            ["Vector Operations", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Series & Summations", "Quiz Mode", "Learning Resources"]
+            ["Vector Operations", "Lines and Planes", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Series & Summations", "Quiz Mode", "Learning Resources"]
         )
     
     if category == "Vector Operations":
@@ -526,6 +527,228 @@ def main():
                     calculator.check_collinear(args)
                 else:
                     st.error("Please enter all vectors.")
+    
+    elif category == "Lines and Planes":
+        plane_operations = ["Plane from 3 Points", "Point-to-Plane Distance", "Line-Plane Intersection", "Plane Equation"]
+        
+        # Auto-select operation if it came from search
+        default_index = 0
+        if selected_operation_from_search:
+            for i, op in enumerate(plane_operations):
+                if selected_operation_from_search in op or op in selected_operation_from_search:
+                    default_index = i
+                    break
+        
+        operation = st.selectbox(
+            "Select Operation:",
+            plane_operations,
+            index=default_index
+        )
+        
+        if operation == "Plane from 3 Points":
+            st.write("This operation calculates the plane equation from three non-collinear points.")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                point_A = st.text_input(
+                    "Enter Point A (x, y, z):",
+                    value="3, 1, -2",
+                    help="Enter coordinates separated by commas"
+                )
+            with col2:
+                point_B = st.text_input(
+                    "Enter Point B (x, y, z):",
+                    value="4, 1, -1",
+                    help="Enter coordinates separated by commas"
+                )
+            with col3:
+                point_C = st.text_input(
+                    "Enter Point C (x, y, z):",
+                    value="-4, 5, -2",
+                    help="Enter coordinates separated by commas"
+                )
+            
+            with st.expander("Help: Plane from 3 Points Information"):
+                st.write("""
+                This calculation finds the plane equation passing through three given points.
+                
+                **Method:**
+                1. Calculate two vectors in the plane: AB = B - A and AC = C - A
+                2. Find the normal vector: n = AB × AC (cross product)
+                3. Use point A to find the constant: k = n · A
+                4. The plane equation is: n₁x + n₂y + n₃z = k
+                
+                **Requirements:**
+                - Points must be 3-dimensional (x, y, z)
+                - Points must not be collinear (not all on the same line)
+                """)
+            
+            if st.button("Calculate Plane Equation"):
+                if point_A and point_B and point_C:
+                    calculator.plane_from_three_points(point_A, point_B, point_C)
+                else:
+                    st.error("Please enter all three points.")
+        
+        elif operation == "Point-to-Plane Distance":
+            st.write("This operation calculates the shortest distance from a point to a plane.")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                point_D = st.text_input(
+                    "Enter Point (x, y, z):",
+                    value="-3, 21, -10",
+                    help="Point to find distance from"
+                )
+                plane_normal = st.text_input(
+                    "Enter Plane Normal Vector (nx, ny, nz):",
+                    value="8, -4, 0",
+                    help="Normal vector to the plane"
+                )
+            with col2:
+                plane_constant = st.text_input(
+                    "Enter Plane Constant (k):",
+                    value="18",
+                    help="Constant in plane equation nx + ny + nz = k"
+                )
+                
+                st.markdown("**Alternative: Use Plane from 3 Points**")
+                st.info("💡 Tip: First use 'Plane from 3 Points' to get the normal vector and constant, then use those values here!")
+            
+            with st.expander("Help: Point-to-Plane Distance Information"):
+                st.write("""
+                This calculation finds the shortest distance from a point to a plane.
+                
+                **Formula:** d = |n · p - k| / ||n||
+                
+                Where:
+                - n is the normal vector to the plane
+                - p is the point
+                - k is the constant in the plane equation nx + ny + nz = k
+                - ||n|| is the magnitude of the normal vector
+                
+                **Input Format:**
+                - Point: x, y, z coordinates
+                - Normal vector: nx, ny, nz components
+                - Constant: single number k
+                """)
+            
+            if st.button("Calculate Distance"):
+                if point_D and plane_normal and plane_constant:
+                    calculator.point_to_plane_distance(point_D, plane_normal, plane_constant)
+                else:
+                    st.error("Please enter the point, normal vector, and constant.")
+        
+        elif operation == "Line-Plane Intersection":
+            st.write("This operation finds the intersection point of a line and a plane.")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                line_point = st.text_input(
+                    "Enter Line Point (x, y, z):",
+                    value="1, 0, 0",
+                    help="A point on the line"
+                )
+                line_direction = st.text_input(
+                    "Enter Line Direction (dx, dy, dz):",
+                    value="1, 1, 1", 
+                    help="Direction vector of the line"
+                )
+            with col2:
+                plane_normal_int = st.text_input(
+                    "Enter Plane Normal (nx, ny, nz):",
+                    value="8, -4, 0",
+                    help="Normal vector to the plane"
+                )
+                plane_constant_int = st.text_input(
+                    "Enter Plane Constant (k):",
+                    value="18",
+                    help="Constant in plane equation nx + ny + nz = k"
+                )
+            
+            with st.expander("Help: Line-Plane Intersection Information"):
+                st.write("""
+                This calculation finds where a line intersects a plane in 3D space.
+                
+                **Method:**
+                1. Line equation: P(t) = P₀ + t·d
+                2. Plane equation: n·r = k
+                3. Substitute line into plane: n·(P₀ + t·d) = k
+                4. Solve for parameter t: t = (k - n·P₀)/(n·d)
+                5. Calculate intersection: P(t)
+                
+                **Special Cases:**
+                - If n·d = 0: Line is parallel to plane (no intersection or line lies in plane)
+                - If n·d ≠ 0: Unique intersection point exists
+                
+                **Input Format:**
+                - Line point: x, y, z coordinates of any point on the line
+                - Line direction: dx, dy, dz components of direction vector
+                - Plane normal: nx, ny, nz components of normal vector
+                - Plane constant: single number k from equation nx + ny + nz = k
+                """)
+            
+            if st.button("Find Intersection"):
+                if line_point and line_direction and plane_normal_int and plane_constant_int:
+                    calculator.line_plane_intersection(line_point, line_direction, plane_normal_int, plane_constant_int)
+                else:
+                    st.error("Please enter all required values.")
+        
+        elif operation == "Plane Equation":
+            st.write("This operation converts between different representations of plane equations.")
+            
+            input_type = st.selectbox(
+                "Select input format:",
+                ["Three Points", "Normal Vector + Point", "Coordinate Form"]
+            )
+            
+            if input_type == "Three Points":
+                equation_input = st.text_input(
+                    "Enter three points (format: x1,y1,z1 ; x2,y2,z2 ; x3,y3,z3):",
+                    value="3,1,-2 ; 4,1,-1 ; -4,5,-2",
+                    help="Three points separated by semicolons"
+                )
+                st.info("💡 Example: 3,1,-2 ; 4,1,-1 ; -4,5,-2")
+                
+            elif input_type == "Normal Vector + Point":
+                equation_input = st.text_input(
+                    "Enter normal vector and point (format: nx,ny,nz ; px,py,pz):",
+                    value="1,2,-1 ; 3,0,5",
+                    help="Normal vector and point separated by semicolon"
+                )
+                st.info("💡 Example: 1,2,-1 ; 3,0,5")
+                
+            elif input_type == "Coordinate Form":
+                equation_input = st.text_input(
+                    "Enter plane equation (format: ax + by + cz = d):",
+                    value="2x - 3y + z = 5",
+                    help="Standard coordinate form of plane equation"
+                )
+                st.info("💡 Example: 2x - 3y + z = 5")
+            
+            with st.expander("Help: Plane Equation Formats"):
+                st.write("""
+                This tool converts between different ways to represent a plane:
+                
+                **1. Three Points:** Three non-collinear points that lie on the plane
+                - Input: x1,y1,z1 ; x2,y2,z2 ; x3,y3,z3
+                - Method: Calculate normal vector using cross product
+                
+                **2. Normal Vector + Point:** Normal vector and any point on the plane
+                - Input: nx,ny,nz ; px,py,pz  
+                - Method: Use n·(r-p) = 0 to get n·r = n·p
+                
+                **3. Coordinate Form:** Standard algebraic equation
+                - Input: ax + by + cz = d
+                - Method: Extract coefficients (a,b,c) as normal vector
+                
+                **Output:** All three equivalent representations plus parametric form
+                """)
+            
+            if st.button("Convert Plane Equation"):
+                if equation_input:
+                    calculator.plane_equation_converter(input_type, equation_input)
+                else:
+                    st.error("Please enter the plane information.")
     
     elif category == "Matrix Operations":
         matrix_operations = ["Batch Expression Calculator", "Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
