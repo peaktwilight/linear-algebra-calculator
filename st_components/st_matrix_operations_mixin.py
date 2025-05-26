@@ -141,16 +141,33 @@ class MatrixOperationsMixin:
             A = augmented_matrix[:, :-1]
             b = augmented_matrix[:, -1]
             
-            # Try to solve the system
-            try:
-                solution = np.linalg.solve(A, b)
-            except np.linalg.LinAlgError:
-                # System might be singular or inconsistent
-                # Use least squares as fallback
+            # Analyze system type and solve appropriately
+            m, n = A.shape  # m equations, n unknowns
+            
+            
+            # Compute the reduced row echelon form to analyze the system
+            augmented_rref = mrref(np.copy(augmented_matrix))
+            A_rref = augmented_rref[:, :-1]
+            b_rref = augmented_rref[:, -1]
+            
+            # Count number of non-zero rows
+            rank_A = np.linalg.matrix_rank(A)
+            rank_augmented = np.linalg.matrix_rank(augmented_matrix)
+            
+            solution = None
+            solution_type = None
+            
+            if rank_A != rank_augmented:
+                solution_type = "inconsistent"  # No solution
+            elif rank_A == n:
+                solution_type = "unique"  # Unique solution
                 try:
+                    solution = np.linalg.solve(A, b)
+                except np.linalg.LinAlgError:
+                    # Try least squares as fallback
                     solution = np.linalg.lstsq(A, b, rcond=None)[0]
-                except:
-                    solution = None
+            else:
+                solution_type = "infinite"  # Infinitely many solutions (underdetermined)
 
             col1, col2 = st.columns([1, 1])
 
@@ -181,34 +198,34 @@ class MatrixOperationsMixin:
                 reduced_matrix = mrref(np.copy(augmented_matrix))  # Use a copy
                 
                 # Create step-by-step explanation with LaTeX
-                m, n = augmented_matrix.shape
-                A = augmented_matrix.copy()
+                step_m, step_n = augmented_matrix.shape
+                step_A = augmented_matrix.copy()
                 steps_markdown = []
                 
                 # Perform step-by-step elimination to show the process
-                for i in range(min(m, n-1)):  # For each pivot position
+                for i in range(min(step_m, step_n-1)):  # For each pivot position
                     # Find maximum element in column i
                     pivot_row = i
-                    for k in range(i+1, m):
-                        if abs(A[k, i]) > abs(A[pivot_row, i]):
+                    for k in range(i+1, step_m):
+                        if abs(step_A[k, i]) > abs(step_A[pivot_row, i]):
                             pivot_row = k
                     
                     # If needed, swap rows
                     if pivot_row != i:
-                        A[[i, pivot_row]] = A[[pivot_row, i]]
+                        step_A[[i, pivot_row]] = step_A[[pivot_row, i]]
                         steps_markdown.append(f"**Step {len(steps_markdown)+1}: Swap rows {i+1} and {pivot_row+1}**")
-                        steps_markdown.append(f"$${self._matrix_to_latex(A)}$$")
+                        steps_markdown.append(f"$${self._matrix_to_latex(step_A)}$$")
                     
                     # Skip if pivot is zero (column already eliminated)
-                    if abs(A[i, i]) < 1e-10:
+                    if abs(step_A[i, i]) < 1e-10:
                         continue
                     
                     # Eliminate below pivot
-                    for j in range(i+1, m):
-                        if abs(A[j, i]) < 1e-10:  # Skip if element is already zero
+                    for j in range(i+1, step_m):
+                        if abs(step_A[j, i]) < 1e-10:  # Skip if element is already zero
                             continue
                             
-                        factor = A[j, i] / A[i, i]
+                        factor = step_A[j, i] / step_A[i, i]
                         # Format factor to be cleaner
                         factor_formatted = str(factor)
                         if np.isclose(factor, round(factor), atol=1e-10):
@@ -217,85 +234,85 @@ class MatrixOperationsMixin:
                             factor_formatted = f"{factor:.4f}"
                             
                         elimination_step = f"**Step {len(steps_markdown)+1}: Replace $R_{j+1} \\leftarrow R_{j+1} - ({factor_formatted}) \\cdot R_{i+1}$**"
-                        A[j] = A[j] - factor * A[i]
+                        step_A[j] = step_A[j] - factor * step_A[i]
                         steps_markdown.append(elimination_step)
-                        steps_markdown.append(f"$${self._matrix_to_latex(A)}$$")
+                        steps_markdown.append(f"$${self._matrix_to_latex(step_A)}$$")
                 
                 # Display back-substitution if we have triangular form
                 steps_markdown.append("**Back Substitution to find solution:**")
                 
                 # Show each back-substitution step in LaTeX format
                 is_triangular = True
-                for i in range(m):
+                for i in range(step_m):
                     for j in range(i):
-                        if abs(A[i,j]) > 1e-10:
+                        if abs(step_A[i,j]) > 1e-10:
                             is_triangular = False
                             break
                 
                 if is_triangular:
                     # Perform back-substitution
-                    x = np.zeros(n-1)
+                    x = np.zeros(step_n-1)
                     valid_solution = True
                     
-                    for i in range(m-1, -1, -1):  # Start from bottom row
+                    for i in range(step_m-1, -1, -1):  # Start from bottom row
                         # Find first non-zero element in row i (pivot)
                         pivot_col = -1
-                        for j in range(n-1):
-                            if abs(A[i, j]) > 1e-10:
+                        for j in range(step_n-1):
+                            if abs(step_A[i, j]) > 1e-10:
                                 pivot_col = j
                                 break
                         
                         if pivot_col == -1:  # No pivot in row
-                            if abs(A[i, -1]) > 1e-10:  # But has non-zero RHS
+                            if abs(step_A[i, -1]) > 1e-10:  # But has non-zero RHS
                                 # Format the right-hand side
-                                rhs_formatted = str(A[i, -1])
-                                if np.isclose(A[i, -1], round(A[i, -1]), atol=1e-10):
-                                    rhs_formatted = str(int(round(A[i, -1])))
+                                rhs_formatted = str(step_A[i, -1])
+                                if np.isclose(step_A[i, -1], round(step_A[i, -1]), atol=1e-10):
+                                    rhs_formatted = str(int(round(step_A[i, -1])))
                                 else:
-                                    rhs_formatted = f"{A[i, -1]:.4f}"
+                                    rhs_formatted = f"{step_A[i, -1]:.4f}"
                                     
                                 steps_markdown.append(f"$$0 = {rhs_formatted}$$ <span style='color:red;font-weight:bold;'>(inconsistent system)</span>")
                                 valid_solution = False
                                 break
                         else:  # Pivot exists
                             # Compute x_j = (b_i - sum(a_ik * x_k)) / a_ij
-                            rhs_value = A[i, -1]
-                            for j in range(pivot_col+1, n-1):
-                                if abs(A[i, j]) > 1e-10:  # Skip if coefficient is zero
-                                    rhs_value -= A[i, j] * x[j]
+                            rhs_value = step_A[i, -1]
+                            for j in range(pivot_col+1, step_n-1):
+                                if abs(step_A[i, j]) > 1e-10:  # Skip if coefficient is zero
+                                    rhs_value -= step_A[i, j] * x[j]
                             
-                            x[pivot_col] = rhs_value / A[i, pivot_col]
+                            x[pivot_col] = rhs_value / step_A[i, pivot_col]
                             eq_parts = []
                             # Check for close to zero or integer
-                            rhs_formatted = str(A[i, -1])
-                            if np.isclose(A[i, -1], 0, atol=1e-10):
+                            rhs_formatted = str(step_A[i, -1])
+                            if np.isclose(step_A[i, -1], 0, atol=1e-10):
                                 rhs_formatted = "0"
-                            elif np.isclose(A[i, -1], round(A[i, -1]), atol=1e-10):
-                                rhs_formatted = str(int(round(A[i, -1])))
+                            elif np.isclose(step_A[i, -1], round(step_A[i, -1]), atol=1e-10):
+                                rhs_formatted = str(int(round(step_A[i, -1])))
                             else:
-                                rhs_formatted = f"{A[i, -1]:.4f}"
+                                rhs_formatted = f"{step_A[i, -1]:.4f}"
                                 
                             eq_parts.append(f"x_{pivot_col+1} = \\frac{{{rhs_formatted}")
                             
-                            for j in range(pivot_col+1, n-1):
-                                if abs(A[i, j]) > 1e-10:  # Skip if coefficient is zero
+                            for j in range(pivot_col+1, step_n-1):
+                                if abs(step_A[i, j]) > 1e-10:  # Skip if coefficient is zero
                                     # Format coefficient
-                                    coef_formatted = str(A[i, j])
-                                    if np.isclose(A[i, j], 0, atol=1e-10):
+                                    coef_formatted = str(step_A[i, j])
+                                    if np.isclose(step_A[i, j], 0, atol=1e-10):
                                         continue  # Skip zeros
-                                    elif np.isclose(A[i, j], round(A[i, j]), atol=1e-10):
-                                        coef_formatted = str(int(round(A[i, j])))
+                                    elif np.isclose(step_A[i, j], round(step_A[i, j]), atol=1e-10):
+                                        coef_formatted = str(int(round(step_A[i, j])))
                                     else:
-                                        coef_formatted = f"{A[i, j]:.4f}"
+                                        coef_formatted = f"{step_A[i, j]:.4f}"
                                     
                                     eq_parts.append(f" - ({coef_formatted}) \\cdot x_{j+1}")
                             
                             # Format denominator
-                            denom_formatted = str(A[i, pivot_col])
-                            if np.isclose(A[i, pivot_col], round(A[i, pivot_col]), atol=1e-10):
-                                denom_formatted = str(int(round(A[i, pivot_col])))
+                            denom_formatted = str(step_A[i, pivot_col])
+                            if np.isclose(step_A[i, pivot_col], round(step_A[i, pivot_col]), atol=1e-10):
+                                denom_formatted = str(int(round(step_A[i, pivot_col])))
                             else:
-                                denom_formatted = f"{A[i, pivot_col]:.4f}"
+                                denom_formatted = f"{step_A[i, pivot_col]:.4f}"
                                 
                             # Format result
                             result_formatted = str(x[pivot_col])
@@ -322,37 +339,139 @@ class MatrixOperationsMixin:
                             st.markdown(step)
                 
                 st.markdown("**Solution:**")
-                if solution is None:
-                    st.warning("The system is inconsistent (no solution) or singular.")
-                elif isinstance(solution, dict) and "particular" in solution and "null_space" in solution:
-                    st.markdown("The system has infinitely many solutions.")
+                if solution_type == "inconsistent":
+                    st.error("The system is inconsistent (no solution exists).")
+                    st.markdown("This means the equations are contradictory.")
+                elif solution_type == "infinite":
+                    st.success("The system has infinitely many solutions.")
+                    st.markdown("This is an underdetermined system (more unknowns than independent equations).")
                     
-                    # Format particular solution for LaTeX
-                    particular = solution["particular"]
-                    null_space = solution["null_space"]
-                    
-                    # Format the particular solution part
-                    st.markdown("**Particular Solution:**")
-                    particular_latex = "$$\\mathbf{x}_p = " + self._vector_to_latex(particular) + "$$"
-                    st.markdown(particular_latex)
-                    
-                    # Format the null space part
-                    st.markdown("**Null Space (for general solution):**")
-                    null_space_latex = "$$\mathbf{x}_n = t \cdot " + self._vector_to_latex(null_space.flatten()) + "$$"
-                    st.markdown(null_space_latex)
-                    
-                    # Format the general solution
+                    # Use the RREF to construct the parametric solution
                     st.markdown("**General Solution:**")
-                    general_solution = "$$\mathbf{x} = \mathbf{x}_p + \mathbf{x}_n = " + self._vector_to_latex(particular) + " + t \cdot " + self._vector_to_latex(null_space.flatten()) + "$$"
-                    st.markdown(general_solution)
                     
-                elif isinstance(solution, np.ndarray):
-                    st.markdown("The system has a unique solution:")
+                    # Find pivot positions in RREF (only look at coefficient columns, not constants)
+                    # IMPORTANT: n is the number of variables (columns in A), NOT including constants
+                    pivot_cols = []
+                    pivot_rows = []
+                    
+                    for i in range(min(m, n)):  # Only look at rows up to min(equations, variables)
+                        if i < augmented_rref.shape[0]:
+                            # Find first non-zero entry in row i (ONLY in coefficient columns 0 to n-1)
+                            for j in range(n):  # n = number of variables (NOT including constants column)
+                                if abs(augmented_rref[i, j]) > 1e-10:
+                                    pivot_cols.append(j)
+                                    pivot_rows.append(i)
+                                    break
+                    
+                    # Free variables are columns (0 to n-1) not in pivot_cols
+                    free_vars = [j for j in range(n) if j not in pivot_cols]
+                    
+                    if len(free_vars) > 0:
+                        # Construct parametric solution
+                        free_var_names = [f"t_{i+1}" if len(free_vars) > 1 else "t" for i in range(len(free_vars))]
+                        
+                        if len(free_vars) == 1:
+                            st.markdown(f"Let $x_{free_vars[0]+1} = t$ where $t \\in \\mathbb{{R}}$ is a free parameter.")
+                        else:
+                            param_text = ", ".join([f"$x_{free_vars[i]+1} = {free_var_names[i]}$" for i in range(len(free_vars))])
+                            st.markdown(f"Let {param_text} where the parameters are free real numbers.")
+                        
+                        # Build the solution vector
+                        solution_components = []
+                        for var_idx in range(n):
+                            if var_idx in free_vars:
+                                # This is a free variable
+                                free_idx = free_vars.index(var_idx)
+                                if len(free_vars) == 1:
+                                    solution_components.append("t")
+                                else:
+                                    solution_components.append(f"t_{free_idx+1}")
+                            else:
+                                # This is a pivot variable - express in terms of free variables
+                                pivot_row_idx = pivot_cols.index(var_idx)
+                                pivot_row = pivot_rows[pivot_row_idx]
+                                
+                                if pivot_row < augmented_rref.shape[0]:
+                                    # Start with the constant term
+                                    constant = augmented_rref[pivot_row, -1] / augmented_rref[pivot_row, var_idx]
+                                    
+                                    # Collect coefficients of free variables
+                                    free_coeffs = []
+                                    for free_var in free_vars:
+                                        coeff = -augmented_rref[pivot_row, free_var] / augmented_rref[pivot_row, var_idx]
+                                        free_coeffs.append(coeff)
+                                    
+                                    # Build expression
+                                    expr_parts = []
+                                    if abs(constant) > 1e-10:
+                                        expr_parts.append(f"{constant:.4f}".rstrip('0').rstrip('.'))
+                                    
+                                    for i, coeff in enumerate(free_coeffs):
+                                        if abs(coeff) > 1e-10:
+                                            coeff_str = f"{coeff:.4f}".rstrip('0').rstrip('.')
+                                            param_name = "t" if len(free_vars) == 1 else f"t_{i+1}"
+                                            if coeff_str == "1":
+                                                expr_parts.append(f"+ {param_name}")
+                                            elif coeff_str == "-1":
+                                                expr_parts.append(f"- {param_name}")
+                                            elif coeff > 0:
+                                                expr_parts.append(f"+ {coeff_str}{param_name}")
+                                            else:
+                                                expr_parts.append(f"{coeff_str}{param_name}")
+                                    
+                                    if not expr_parts:
+                                        solution_components.append("0")
+                                    else:
+                                        expr = " ".join(expr_parts)
+                                        # Clean up the expression
+                                        if expr.startswith("+ "):
+                                            expr = expr[2:]
+                                        solution_components.append(expr)
+                                else:
+                                    solution_components.append("0")
+                        
+                        # Display the solution
+                        solution_latex = "$$\\mathbf{x} = \\begin{pmatrix}" + " \\\\ ".join(solution_components) + "\\end{pmatrix}$$"
+                        st.markdown(solution_latex)
+                        
+                        # Show particular and homogeneous solutions
+                        st.markdown("**In standard form:** $\\mathbf{x} = \\mathbf{x}_p + $ linear combination of null space vectors")
+                        
+                        # Calculate particular solution (set all free variables to 0)
+                        particular_solution = np.zeros(n)
+                        for var_idx in range(n):
+                            if var_idx in pivot_cols:
+                                pivot_row_idx = pivot_cols.index(var_idx)
+                                pivot_row = pivot_rows[pivot_row_idx]
+                                if pivot_row < augmented_rref.shape[0]:
+                                    particular_solution[var_idx] = augmented_rref[pivot_row, -1] / augmented_rref[pivot_row, var_idx]
+                        
+                        particular_latex = "$$\\mathbf{x}_p = " + self._vector_to_latex(particular_solution) + "$$"
+                        st.markdown(particular_latex)
+                        
+                        # Calculate null space vectors (one for each free variable)
+                        if len(free_vars) == 1:
+                            null_vector = np.zeros(n)
+                            free_var = free_vars[0]
+                            null_vector[free_var] = 1
+                            
+                            for var_idx in range(n):
+                                if var_idx in pivot_cols:
+                                    pivot_row_idx = pivot_cols.index(var_idx)
+                                    pivot_row = pivot_rows[pivot_row_idx]
+                                    if pivot_row < augmented_rref.shape[0]:
+                                        null_vector[var_idx] = -augmented_rref[pivot_row, free_var] / augmented_rref[pivot_row, var_idx]
+                            
+                            null_latex = "$$\\mathbf{x}_h = " + self._vector_to_latex(null_vector) + "$$"
+                            st.markdown(null_latex)
+                    
+                elif solution_type == "unique" and solution is not None:
+                    st.success("The system has a unique solution:")
                     # Format the solution vector for LaTeX display
-                    formatted_latex = "$$\mathbf{x} = " + self._vector_to_latex(solution) + "$$"
+                    formatted_latex = "$$\\mathbf{x} = " + self._vector_to_latex(solution) + "$$"
                     st.markdown(formatted_latex)
-                else: # Should not happen if framework.solve_gauss behaves as expected
-                    st.markdown(f"$$\\text{{Solution: }} {solution}$$")
+                else:
+                    st.warning("Unable to solve the system.")
 
             with col2:
                 st.markdown("### Visualizations")
