@@ -35,6 +35,12 @@ streamlit run streamlit_app.py
 - Cross Product, Triangle Area, Point-Line Distance
 - Collinearity Checking
 
+### 📐 **Lines and Planes**
+- **Plane from 3 Points** - Calculate plane equation from three non-collinear points
+- **Point-to-Plane Distance** - Find shortest distance from point to plane
+- **Line-Plane Intersection** - Calculate where lines intersect planes in 3D
+- **Plane Equation Converter** - Convert between coordinate, vector, and parametric forms
+
 ### 📊 **Matrix Operations**
 - Matrix Addition, Subtraction, Multiplication, Transpose
 - Determinant, Inverse, Eigenvalues & Eigenvectors
