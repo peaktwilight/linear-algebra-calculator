@@ -1011,6 +1011,10 @@ class LinearityOperations:
                 self._analyze_example("negation_mapping", 2, "negation")
             if st.button("$L(x,y) = x$", help="Projection to first component"):
                 self._analyze_example("x", 2)
+            if st.button("$L(x,y) = [3y, 2y]$", help="Exercise 12(a): L: ℝ² → ℝ²"):
+                self._analyze_example("3*y, 2*y", 2)
+            if st.button("$L(\\vec{v}) = 0$", help="Exercise 12(c): L: ℝ² → ℝ¹, zero mapping"):
+                self._analyze_example("0", 2)
                 
         with col2:
             st.write("**Non-linear Examples:**")
@@ -1020,6 +1024,8 @@ class LinearityOperations:
                 self._analyze_example("x**2", 2)
             if st.button("$L(x,y) = x + 1$", help="Affine mapping"):
                 self._analyze_example("x + 1", 2)
+            if st.button("$L(\\vec{v}) = 1 - v_2$", help="Exercise 12(b): L: ℝ² → ℝ¹ (affine)"):
+                self._analyze_example("1 - y", 2)
                 
         with col3:
             st.write("**Trigonometric:**")
