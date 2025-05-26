@@ -868,7 +868,7 @@ def main():
                 else:
                     st.error("Please enter the augmented matrix [A|b].")
                     
-        elif operation == "Free Parameter Analysis":
+        elif operation == "Free Variable / Pivot Analysis":
             st.write("This operation identifies free parameters and expresses the solution in parametric form.")
             if st.button("Analyze Free Parameters"):
                 if matrix_input:
