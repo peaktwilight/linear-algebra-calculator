@@ -34,9 +34,6 @@ primary_region = 'fra'
     method = "get"
     path = "/_stcore/health"
 
-[[mounts]]
-  source = 'linalgdata'
-  destination = '/data'
 
 [[vm]]
   size = 'shared-cpu-1x'
