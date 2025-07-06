@@ -1050,7 +1050,331 @@ Solution: `x = 1`, `y = 2`.""" )
         )
 
         st.markdown("---")
-    st.info("More topics and interactive examples will be added soon!")
+
+    # Week 18: Matrix Calculus and Geometric Meaning
+    with st.expander("Week 18: Matrix Calculus and Geometric Meaning", expanded=False):
+        st.header("Matrix Calculus and Geometric Meaning")
+        
+        st.subheader("Definition: Matrix Rows and Columns")
+        st.markdown("""
+        A matrix is a rectangular array of numbers arranged in rows and columns:
+        """)
+        st.latex(r"A = \begin{pmatrix} a_{11} & a_{12} & \cdots & a_{1n} \\ a_{21} & a_{22} & \cdots & a_{2n} \\ \vdots & \vdots & \ddots & \vdots \\ a_{m1} & a_{m2} & \cdots & a_{mn} \end{pmatrix}")
+        
+        st.markdown("""
+        **Example 9.1 (711244) & 9.2 (600133): Rows and Columns**
+        - Matrix dimensions: m×n (m rows, n columns)
+        - Element a_{ij} is in row i, column j
+        - Row vectors: horizontal arrangements
+        - Column vectors: vertical arrangements
+        """)
+        
+        st.subheader("Transposed Matrix")
+        st.markdown("""
+        The transpose of matrix A, denoted A^T, is obtained by swapping rows and columns:
+        """)
+        st.latex(r"(A^T)_{ij} = A_{ji}")
+        
+        st.markdown("""
+        **Example 9.3 (869494) & 9.4 (758383): Transpose Operations**
+        """)
+        st.latex(r"A = \begin{pmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{pmatrix} \Rightarrow A^T = \begin{pmatrix} 1 & 4 \\ 2 & 5 \\ 3 & 6 \end{pmatrix}")
+        
+        st.subheader("Symmetric and Antisymmetric Matrices")
+        st.markdown("""
+        - **Symmetric matrix**: A = A^T
+        - **Antisymmetric (skew-symmetric) matrix**: A = -A^T
+        - For antisymmetric matrices: diagonal elements must be zero
+        """)
+        
+        st.subheader("Matrix Operations")
+        st.markdown("""
+        **Addition and Scalar Multiplication (Examples 9.7 WEWKTK):**
+        - Matrices can be added if they have the same dimensions
+        - Scalar multiplication: multiply each element by the scalar
+        """)
+        st.latex(r"A + B = \begin{pmatrix} a_{11}+b_{11} & a_{12}+b_{12} \\ a_{21}+b_{21} & a_{22}+b_{22} \end{pmatrix}")
+        st.latex(r"kA = \begin{pmatrix} ka_{11} & ka_{12} \\ ka_{21} & ka_{22} \end{pmatrix}")
+        
+        st.subheader("Matrix Multiplication (Falk Schema)")
+        st.markdown("""
+        **Definition & Examples (9.8 AIX1U0, 9.9 CKZ2V1, 9.10 SY7RC5):**
+        
+        For matrices A (m×n) and B (n×p), the product AB is an m×p matrix where:
+        """)
+        st.latex(r"(AB)_{ij} = \sum_{k=1}^{n} a_{ik} \cdot b_{kj}")
+        
+        st.markdown("""
+        **Falk Schema**: Visual method for matrix multiplication
+        1. Write B above and A to the left
+        2. Each element is the dot product of corresponding row and column
+        """)
+        
+        st.subheader("Geometric Interpretation")
+        st.markdown("""
+        **Matrix-Vector Multiplication (Examples 9.22 LQF58M, 9.24 CNNZ8U):**
+        - Matrix A transforms vector x into vector Ax
+        - Linear combinations of columns of A
+        - Represents linear transformations in geometry
+        """)
+        
+        st.markdown("""
+        **Function Composition (Example 9.14 926268):**
+        - Matrix multiplication represents composition of linear transformations
+        - (BA)x = B(Ax): apply A first, then B
+        """)
+
+    # Week 20: Linear Mappings and Complex Numbers
+    with st.expander("Week 20: Linear Mappings and Complex Numbers", expanded=False):
+        st.header("Linear Mappings and Complex Numbers")
+        
+        st.subheader("Definition: Linear Mapping/Function")
+        st.markdown("""
+        A function f: V → W between vector spaces is **linear** if:
+        1. **Additivity**: f(u + v) = f(u) + f(v)
+        2. **Homogeneity**: f(cv) = cf(v) for scalar c
+        """)
+        
+        st.subheader("Examples of Linear Mappings")
+        st.markdown("""
+        **Example 10.1 (J2MVFF) & 10.2 (AP4X4W): Two Notations**
+        - Function notation: f(x) = 2x
+        - Mapping notation: L: ℝ → ℝ, L(x) = 2x
+        """)
+        
+        st.markdown("""
+        **Example 10.3 (IMSW1Y): Testing Linearity**
+        Test L(x,y) = (2x, 3y):
+        - L(u + v) = L((x₁,y₁) + (x₂,y₂)) = L(x₁+x₂, y₁+y₂) = (2(x₁+x₂), 3(y₁+y₂))
+        - L(u) + L(v) = (2x₁, 3y₁) + (2x₂, 3y₂) = (2(x₁+x₂), 3(y₁+y₂)) ✓
+        """)
+        
+        st.markdown("""
+        **Example 10.4 (RGK9W3): Image of Zero Vector**
+        For linear mappings: L(0) = 0 always
+        """)
+        
+        st.markdown("""
+        **Examples 10.5 (8AVYCE) & 10.6 (QKBUT2): Testing Linearity**
+        - 10.5: L(x,y) = (x+y, x-y) → Linear ✓
+        - 10.6: L(x) = mx + b → Linear only if b = 0
+        """)
+        
+        st.markdown("""
+        **Example 10.7 (591417): Matrix ⊙ Vector**
+        Matrix-vector multiplication is always linear!
+        """)
+        
+        st.subheader("Complex Numbers Introduction")
+        st.markdown("""
+        **Example 14.1: Solving Equations**
+        Equation x² + 1 = 0 has no real solutions, leading to complex numbers.
+        """)
+        
+        st.markdown("""
+        **Complex Number Definition:**
+        z = a + bi where a, b ∈ ℝ and i² = -1
+        - a: real part (Re(z))
+        - b: imaginary part (Im(z))
+        """)
+        
+        st.subheader("Complex Plane (Gaussian Plane)")
+        st.markdown("""
+        **Examples 14.2 (KICGBV) & 14.3 (KGX8MQ): Gaussian Plane**
+        - Horizontal axis: real part
+        - Vertical axis: imaginary part
+        - Point (a,b) represents complex number a + bi
+        """)
+        
+        st.subheader("Complex Number Operations")
+        st.markdown("""
+        **Example 14.4 (1EUM2V) & 14.5 (2FXNNA): Addition and Multiplication**
+        
+        **Addition:** (a + bi) + (c + di) = (a + c) + (b + d)i
+        
+        **Multiplication:** (a + bi)(c + di) = (ac - bd) + (ad + bc)i
+        """)
+
+    # Week 21: Determinants
+    with st.expander("Week 21: Determinants", expanded=False):
+        st.header("Determinants")
+        
+        st.subheader("Geometric Meaning: Area of Parallelogram")
+        st.markdown("""
+        **Example 12.1 (Q86D9C): Sticker Problem**
+        **Example 12.2 (N1ERF3): Parallelogram Area**
+        
+        For vectors u = (u₁, u₂) and v = (v₁, v₂), the area of the parallelogram is:
+        """)
+        st.latex(r"\text{Area} = |u_1 v_2 - u_2 v_1| = |\det \begin{pmatrix} u_1 & u_2 \\ v_1 & v_2 \end{pmatrix}|")
+        
+        st.subheader("2×2 Determinant")
+        st.markdown("""
+        **Examples 12.3 (UKQDY6) & 12.4 (SE7NDL): 2×2 Determinants**
+        """)
+        st.latex(r"\det \begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc")
+        
+        st.subheader("3×3 Determinant: Sarrus Rule")
+        st.markdown("""
+        **Example 12.7 (T8SRHO): Sarrus Rule**
+        """)
+        st.latex(r"\det \begin{pmatrix} a & b & c \\ d & e & f \\ g & h & i \end{pmatrix} = aei + bfg + cdh - ceg - afh - bdi")
+        
+        st.markdown("""
+        **Sarrus Rule Visualization:**
+        1. Copy first two columns to the right
+        2. Sum products of main diagonals (positive)
+        3. Sum products of anti-diagonals (negative)
+        4. Subtract: (positive sum) - (negative sum)
+        """)
+        
+        st.subheader("Linear Independence")
+        st.markdown("""
+        **Example 12.16 (468897): Linear Independence**
+        Vectors are linearly independent if and only if the determinant of the matrix formed by these vectors is non-zero.
+        """)
+
+    # Week 22: Cramer's Rule and Complex Numbers
+    with st.expander("Week 22: Cramer's Rule and Complex Numbers", expanded=False):
+        st.header("Cramer's Rule and Complex Numbers")
+        
+        st.subheader("Cramer's Rule")
+        st.markdown("""
+        **Theorem: Cramer's Rule**
+        For system Ax = b where A is n×n and det(A) ≠ 0:
+        """)
+        st.latex(r"x_i = \frac{\det(A_i)}{\det(A)}")
+        st.markdown("""
+        where A_i is matrix A with column i replaced by vector b.
+        """)
+        
+        st.markdown("""
+        **Example 12.20 (725615): Basic Cramer's Rule**
+        System: 2x₁ + x₂ = 5, x₁ + 3x₂ = 8
+        """)
+        st.latex(r"A = \begin{pmatrix} 2 & 1 \\ 1 & 3 \end{pmatrix}, \quad b = \begin{pmatrix} 5 \\ 8 \end{pmatrix}")
+        st.latex(r"x_1 = \frac{\det \begin{pmatrix} 5 & 1 \\ 8 & 3 \end{pmatrix}}{\det \begin{pmatrix} 2 & 1 \\ 1 & 3 \end{pmatrix}} = \frac{15-8}{6-1} = \frac{7}{5}")
+        
+        st.markdown("""
+        **Example 12.22 (911705): 3×3 System**
+        Apply Cramer's rule to larger systems using 3×3 determinants.
+        """)
+        
+        st.subheader("Complex Numbers: Division and Conjugate")
+        st.markdown("""
+        **Complex Conjugate Definition:**
+        For z = a + bi, the conjugate is z̄ = a - bi
+        """)
+        
+        st.markdown("""
+        **Example 14.6 (R3LX15): Division**
+        To divide complex numbers: multiply by conjugate of denominator
+        """)
+        st.latex(r"\frac{z_1}{z_2} = \frac{z_1 \cdot \overline{z_2}}{z_2 \cdot \overline{z_2}} = \frac{z_1 \cdot \overline{z_2}}{|z_2|^2}")
+        
+        st.markdown("""
+        **Examples:**
+        - 14.7 (1IDMNV): Addition and Multiplication
+        - 14.8 (9KJS56): Subtraction and Division  
+        - 14.9 (WEFYB9): Complex Conjugate
+        - 14.10 (5UF7TR): Real and Imaginary Parts
+        """)
+        
+        st.subheader("Polar Form of Complex Numbers")
+        st.markdown("""
+        **Examples 14.12 (GEH2DQ), 14.14 (246ZKY), 14.15 (Y4PQ8E):**
+        
+        Any complex number z = a + bi can be written as:
+        """)
+        st.latex(r"z = r(\cos \theta + i \sin \theta) = r \cdot e^{i\theta}")
+        st.markdown("""
+        where:
+        - r = |z| = √(a² + b²) (modulus/magnitude)
+        - θ = arg(z) = arctan(b/a) (argument/phase)
+        """)
+        
+        st.markdown("""
+        **Examples 14.16 (A2ELY3) & 14.17 (DWGXLH): Polar Form Conversions**
+        """)
+
+    # Week 23: Matrix Inverse and Complex Numbers
+    with st.expander("Week 23: Matrix Inverse and Complex Numbers", expanded=False):
+        st.header("Matrix Inverse and Complex Numbers")
+        
+        st.subheader("Matrix Inverse Definition")
+        st.markdown("""
+        Matrix A⁻¹ is the inverse of A if:
+        """)
+        st.latex(r"A \cdot A^{-1} = A^{-1} \cdot A = I")
+        st.markdown("""
+        where I is the identity matrix.
+        """)
+        
+        st.subheader("Regular Matrices and Linear Systems")
+        st.markdown("""
+        **Definition:** Matrix A is regular (invertible) if det(A) ≠ 0
+        
+        For regular matrices: Ax = b has unique solution x = A⁻¹b
+        """)
+        
+        st.subheader("Gauss-Jordan Method")
+        st.markdown("""
+        **Examples 13.1 (443930), 13.3 (VTDGZN), 13.4 (WSCFYM):**
+        
+        To find A⁻¹ using Gauss-Jordan:
+        1. Form augmented matrix [A|I]
+        2. Use row operations to get [I|A⁻¹]
+        3. The right side becomes A⁻¹
+        """)
+        
+        st.markdown("""
+        **Example 13.2 (332829): Finding the Inverse**
+        Step-by-step process of matrix inversion.
+        """)
+        
+        st.subheader("Solving Systems with Inverse")
+        st.markdown("""
+        **Examples 13.7 (786014) & 13.8: Solving with Inverse**
+        
+        If A⁻¹ exists, then Ax = b ⟹ x = A⁻¹b
+        """)
+        
+        st.subheader("Advanced Complex Numbers")
+        st.markdown("""
+        **Example 14.18 (2FG7T1): Advanced Polar Operations**
+        Operations in polar form:
+        - Multiplication: r₁e^(iθ₁) × r₂e^(iθ₂) = r₁r₂e^(i(θ₁+θ₂))
+        - Division: r₁e^(iθ₁) ÷ r₂e^(iθ₂) = (r₁/r₂)e^(i(θ₁-θ₂))
+        """)
+        
+        st.subheader("Powers and Roots")
+        st.markdown("""
+        **De Moivre's Formula (Example 14.21 JN82T5):**
+        """)
+        st.latex(r"z^n = r^n(\cos(n\theta) + i\sin(n\theta)) = r^n e^{in\theta}")
+        
+        st.markdown("""
+        **Example 14.22 (HCH7NG): Complex Roots**
+        The n-th roots of z = re^(iθ):
+        """)
+        st.latex(r"z_k = \sqrt[n]{r} \cdot e^{i(\theta + 2\pi k)/n}, \quad k = 0, 1, ..., n-1")
+        
+        st.subheader("Polynomial Equations")
+        st.markdown("""
+        **Fundamental Theorem of Algebra:**
+        Every polynomial of degree n has exactly n complex roots (counting multiplicity).
+        """)
+        
+        st.markdown("""
+        **Examples:**
+        - 14.23 (8AIP6W): n-th degree equations
+        - 14.24 (1TGWY4): Quadratic equations
+        - 14.25 (NANZ5I): 6th and 8th degree equations
+        - 14.26 (DJUTAZ): Finding zeros
+        - 14.27 (QP7Y08): Real and imaginary parts in fractions
+        """)
+
+    st.info("Comprehensive learning resources for Weeks 18-23 covering matrix calculus, linear mappings, determinants, Cramer's rule, matrix inverse, and complex numbers.")
 
 # Example of how this might be called in streamlit_app.py (for testing purposes)
 if __name__ == '__main__':
