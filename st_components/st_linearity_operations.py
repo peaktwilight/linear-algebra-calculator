@@ -167,7 +167,7 @@ class LinearityOperations:
     def _evaluate_dot_product_mapping(self, vector: np.ndarray, c: np.ndarray) -> np.ndarray:
         """Evaluate dot product mapping L(v) = [v·c, 0] or similar."""
         dot_product = np.dot(vector, c)
-        # Return [v·c, 0] as in the exercise
+        # Return [v·c, 0] as in the calculation
         return np.array([dot_product, 0])
     
     def _evaluate_quadratic_mapping(self, vector: np.ndarray) -> np.ndarray:
@@ -1011,9 +1011,9 @@ class LinearityOperations:
                 self._analyze_example("negation_mapping", 2, "negation")
             if st.button("$L(x,y) = x$", help="Projection to first component"):
                 self._analyze_example("x", 2)
-            if st.button("$L(x,y) = [3y, 2y]$", help="Exercise 12(a): L: ℝ² → ℝ²"):
+            if st.button("$L(x,y) = [3y, 2y]$", help="Linear mapping: L: ℝ² → ℝ²"):
                 self._analyze_example("3*y, 2*y", 2)
-            if st.button("$L(\\vec{v}) = 0$", help="Exercise 12(c): L: ℝ² → ℝ¹, zero mapping"):
+            if st.button("$L(\\vec{v}) = 0$", help="Zero mapping: L: ℝ² → ℝ¹"):
                 self._analyze_example("0", 2)
                 
         with col2:
@@ -1024,7 +1024,7 @@ class LinearityOperations:
                 self._analyze_example("x**2", 2)
             if st.button("$L(x,y) = x + 1$", help="Affine mapping"):
                 self._analyze_example("x + 1", 2)
-            if st.button("$L(\\vec{v}) = 1 - v_2$", help="Exercise 12(b): L: ℝ² → ℝ¹ (affine)"):
+            if st.button("$L(\\vec{v}) = 1 - v_2$", help="Affine mapping: L: ℝ² → ℝ¹"):
                 self._analyze_example("1 - y", 2)
                 
         with col3:

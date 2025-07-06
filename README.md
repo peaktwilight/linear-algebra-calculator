@@ -5,9 +5,9 @@
 
 -   🔢 **Comprehensive Calculators:** Vectors, matrices, systems of linear equations, and series/summations.
 -   📐 **3D Geometry Operations:** Planes, lines, intersections, and distance calculations in 3D space.
--   🧮 **Batch Matrix Operations:** Automatically evaluate multiple matrix expressions from exercise lists.
+-   🧮 **Batch Matrix Operations:** Automatically evaluate multiple matrix expressions from calculation lists.
 -   🔍 **Linear Mapping Analysis:** Test if mappings are linear and generate matrix representations.
--   📊 **Series & Pattern Recognition:** Analyze sequences, calculate geometric/arithmetic series, and solve summation exercises.
+-   📊 **Series & Pattern Recognition:** Analyze sequences, calculate geometric/arithmetic series, and solve summation problems.
 -   🎨 **Interactive Visualizations:** Understand concepts with dynamic graphical representations and LaTeX formatting.
 -   📚 **Step-by-Step Explanations:** Detailed walkthroughs with mathematical formulas and solution steps.
 -   🧠 **Practice & Learn:** Interactive quizzes and comprehensive learning resources.
@@ -55,7 +55,7 @@ streamlit run streamlit_app.py
 ### 📈 **Series & Summations**
 - Geometric and Arithmetic Series Calculation
 - Pattern Recognition in Sequences
-- Summation Exercise Solver with step-by-step solutions
+- Summation Problem Solver with step-by-step solutions
 
 ### 🔍 **Linear Mappings**
 - Linearity Testing for Various Function Types

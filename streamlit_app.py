@@ -216,7 +216,7 @@ def main():
         "Complex Numbers": ["Addition", "Multiplication", "Division", "Conjugate", "Polar Form", 
                            "Polar Arithmetic", "Powers & Roots", "Polynomial Equations",
                            "Gaussian Plane Visualization"],
-        "Series & Summations": ["General Summation", "Geometric Series", "Arithmetic Series", "Pattern Recognition", "Exercise Helper"]
+        "Series & Summations": ["General Summation", "Geometric Series", "Arithmetic Series", "Pattern Recognition"]
     }
     
     # Flatten list for searching
@@ -1213,7 +1213,7 @@ def main():
 
         elif operation == "Check Vector Solutions":
             st.write("This operation checks if given vectors are particular solutions, homogeneous solutions, or not solutions at all.")
-            st.info("💡 **For your exercise**: Use matrix `-5,2,0,-9; 3,0,3,0` and vectors `1,-2,-1`, `2,5,-2`, `3,3,-3`")
+            st.info("💡 **For this problem**: Use matrix `-5,2,0,-9; 3,0,3,0` and vectors `1,-2,-1`, `2,5,-2`, `3,3,-3`")
             
             col1, col2 = st.columns([1, 1])
             with col1:

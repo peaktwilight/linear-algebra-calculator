@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Streamlit Component for Batch Matrix Expression Calculator
-Automatically evaluates multiple matrix expressions from exercise lists
+Automatically evaluates multiple matrix expressions from calculation lists
 """
 
 import streamlit as st
@@ -154,7 +154,7 @@ class BatchMatrixCalculator:
         """Render the batch matrix calculator interface"""
         st.markdown('<h2 class="animate-subheader">Batch Matrix Expression Calculator</h2>', unsafe_allow_html=True)
         
-        st.write("Enter matrices and expressions to evaluate multiple calculations automatically, perfect for exercises!")
+        st.write("Enter matrices and expressions to evaluate multiple calculations automatically, perfect for multiple calculations!")
         
         # Matrix input section
         st.subheader("Define Matrices")
