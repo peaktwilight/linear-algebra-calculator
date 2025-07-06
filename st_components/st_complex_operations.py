@@ -277,7 +277,8 @@ class ComplexOperations:
         operation = st.selectbox(
             "Select Operation",
             ["Addition", "Subtraction", "Multiplication", "Division", "Conjugate", "Real & Imaginary Parts", 
-             "Magnitude & Argument", "Polar Form", "Gaussian Plane Visualization", "Exercise Examples"]
+             "Magnitude & Argument", "Polar Form", "Polar Arithmetic", "Powers & Roots", "Polynomial Equations",
+             "Gaussian Plane Visualization", "Exercise Examples"]
         )
         
         if operation == "Addition":
@@ -296,6 +297,12 @@ class ComplexOperations:
             self._render_magnitude_argument()
         elif operation == "Polar Form":
             self._render_polar_form()
+        elif operation == "Polar Arithmetic":
+            self._render_polar_arithmetic()
+        elif operation == "Powers & Roots":
+            self._render_powers_roots()
+        elif operation == "Polynomial Equations":
+            self._render_polynomial_equations()
         elif operation == "Gaussian Plane Visualization":
             self._render_gaussian_plane()
         elif operation == "Exercise Examples":
@@ -711,7 +718,7 @@ class ComplexOperations:
         """Render specific exercise examples from Weeks 20-22."""
         st.subheader("Complex Number Exercise Examples")
         
-        week = st.selectbox("Select Week:", ["Week 20 Examples", "Week 22 Examples"])
+        week = st.selectbox("Select Week:", ["Week 20 Examples", "Week 22 Examples", "Week 23 Examples"])
         
         if week == "Week 20 Examples":
             example = st.selectbox(
@@ -719,13 +726,21 @@ class ComplexOperations:
                 ["14.2 Complex Plane (KICGBV)", "14.3 Gaussian Plane (KGX8MQ)", 
                  "14.4 Addition & Multiplication (1EUM2V)", "14.5 Operations (2FXNNA)"]
             )
-        else:  # Week 22 Examples
+        elif week == "Week 22 Examples":
             example = st.selectbox(
                 "Select Example:",
                 ["14.6 Division (R3LX15)", "14.7 Addition & Multiplication (1IDMNV)", 
                  "14.8 Subtraction & Division (9KJS56)", "14.9 Conjugate (WEFYB9)",
                  "14.10 Real & Imaginary Parts (5UF7TR)", "14.14 Polar Form (246ZKY)",
                  "14.15 Polar from Cartesian (Y4PQ8E)", "14.16 Polar Form (A2ELY3)"]
+            )
+        else:  # Week 23 Examples
+            example = st.selectbox(
+                "Select Example:",
+                ["14.18 Polar Form (2FG7T1)", "14.21 Powers & Roots (JN82T5)", 
+                 "14.23 Polynomial Equations (8AIP6W)", "14.24 Quadratic Equations (1TGWY4)",
+                 "14.25 Higher Degree Equations (NANZ5I)", "14.26 Roots & Zeros (DJUTAZ)",
+                 "14.27 Complex Fractions (QP7Y08)", "14.3.3 Polar Arithmetic"]
             )
         
         if example == "14.2 Complex Plane (KICGBV)":
@@ -910,5 +925,1174 @@ class ComplexOperations:
                     st.latex(f"z = {self.format_complex_latex(z)}")
                     st.latex(f"|z| = \\sqrt{{({z.real:.4g})^2 + ({z.imag:.4g})^2}} = {r:.4g}")
                     st.latex(f"\\arg(z) = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
-                    st.latex(f"z = {r:.4g}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
+        
+        # Week 23 Examples
+        elif example == "14.18 Polar Form (2FG7T1)":
+            st.write("### Example 14.18: Polar Form Conversion and Operations")
+            
+            parts = st.selectbox("Select part:", ["Part a", "Part b", "Part g", "Part h", "Part i", "Part j", "Part o"])
+            
+            polar_examples = {
+                "Part a": ("2(cos(π/6) + i sin(π/6))", 2, np.pi/6),
+                "Part b": ("3(cos(π/4) + i sin(π/4))", 3, np.pi/4),
+                "Part g": ("√2(cos(3π/4) + i sin(3π/4))", np.sqrt(2), 3*np.pi/4),
+                "Part h": ("4(cos(π) + i sin(π))", 4, np.pi),
+                "Part i": ("5(cos(3π/2) + i sin(3π/2))", 5, 3*np.pi/2),
+                "Part j": ("1(cos(2π) + i sin(2π))", 1, 2*np.pi),
+                "Part o": ("6(cos(π/3) + i sin(π/3))", 6, np.pi/3)
+            }
+            
+            description, r, theta = polar_examples[parts]
+            z = self.polar_to_complex(r, theta)
+            
+            st.write(f"**Given:** {description}")
+            st.latex(f"r = {r:.4g}, \\theta = {theta:.4g} \\text{{ rad}} = {np.degrees(theta):.1f}°")
+            
+            st.write("**Convert to Rectangular Form:**")
+            st.latex(f"z = r(\\cos(\\theta) + i\\sin(\\theta))")
+            st.latex(f"z = {r:.4g}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
+            st.latex(f"z = {r:.4g} \\times {np.cos(theta):.4g} + i \\times {r:.4g} \\times {np.sin(theta):.4g}")
+            st.latex(f"z = {self.format_complex_latex(z)}")
+            
+            # Visualization
+            fig = self.create_gaussian_plane_plot([(z, f"z = {description}")], 
+                                                f"Example 14.18 {parts}")
+            st.plotly_chart(fig)
+        
+        elif example == "14.21 Powers & Roots (JN82T5)":
+            st.write("### Example 14.21: Complex Powers and Roots")
+            
+            operation = st.selectbox("Select operation:", ["Powers using De Moivre", "nth Roots", "Roots of Unity"])
+            
+            if operation == "Powers using De Moivre":
+                st.write("**Calculate powers using De Moivre's Theorem**")
+                
+                power_examples = [
+                    ("(1+i)^8", complex(1, 1), 8),
+                    ("(√3 + i)^6", complex(np.sqrt(3), 1), 6),
+                    ("(2i)^5", complex(0, 2), 5),
+                    ("(-1-i)^4", complex(-1, -1), 4)
+                ]
+                
+                selected = st.selectbox("Select example:", [ex[0] for ex in power_examples])
+                
+                for desc, z, n in power_examples:
+                    if desc == selected:
+                        if st.button(f"Calculate {desc}"):
+                            r, theta = self.complex_to_polar(z)
+                            result = z ** n
+                            
+                            st.write("### Solution:")
+                            st.latex(f"z = {self.format_complex_latex(z)} = {r:.4g}e^{{i{theta:.4g}}}")
+                            st.latex(f"z^{{{n}}} = ({r:.4g})^{{{n}}} e^{{i({n} \\times {theta:.4g})}}")
+                            st.latex(f"= {r**n:.4g} e^{{i{n*theta:.4g}}}")
+                            st.latex(f"= {self.format_complex_latex(result)}")
+            
+            elif operation == "nth Roots":
+                st.write("**Find all nth roots**")
+                
+                root_examples = [
+                    ("∛8", 8, 3),
+                    ("∜(-16)", -16, 4), 
+                    ("⁵√(-32)", -32, 5),
+                    ("∛(27i)", complex(0, 27), 3)
+                ]
+                
+                selected = st.selectbox("Select example:", [ex[0] for ex in root_examples])
+                
+                for desc, z_val, n in root_examples:
+                    if desc == selected:
+                        if st.button(f"Find all roots of {desc}"):
+                            z = complex(z_val) if not isinstance(z_val, complex) else z_val
+                            r, theta = self.complex_to_polar(z)
+                            
+                            st.write(f"### All {n} roots of {desc}:")
+                            
+                            for k in range(n):
+                                r_root = r ** (1/n)
+                                theta_root = (theta + 2*np.pi*k) / n
+                                root = self.polar_to_complex(r_root, theta_root)
+                                st.latex(f"z_{{{k}}} = {self.format_complex_latex(root)}")
+        
+        elif example == "14.23 Polynomial Equations (8AIP6W)":
+            st.write("### Example 14.23: nth Degree Equations")
+            
+            equation_examples = [
+                ("z³ - 8 = 0", [0, 0, 0, -8]),  # z³ - 8 = 0
+                ("z⁴ + 16 = 0", [0, 0, 0, 0, 16]),  # z⁴ + 16 = 0  
+                ("z⁶ - 1 = 0", [0, 0, 0, 0, 0, 0, -1]),  # z⁶ - 1 = 0
+                ("z⁵ + 32 = 0", [0, 0, 0, 0, 0, 32])  # z⁵ + 32 = 0
+            ]
+            
+            selected = st.selectbox("Select equation:", [ex[0] for ex in equation_examples])
+            
+            for desc, coeffs in equation_examples:
+                if desc == selected:
+                    if st.button(f"Solve {desc}"):
+                        # Extract the form z^n = c
+                        if "z³ - 8" in desc:
+                            st.write("### Solving z³ = 8")
+                            c = 8
+                            n = 3
+                        elif "z⁴ + 16" in desc:
+                            st.write("### Solving z⁴ = -16")
+                            c = -16
+                            n = 4
+                        elif "z⁶ - 1" in desc:
+                            st.write("### Solving z⁶ = 1")
+                            c = 1
+                            n = 6
+                        elif "z⁵ + 32" in desc:
+                            st.write("### Solving z⁵ = -32")
+                            c = -32
+                            n = 5
+                        
+                        # Find all nth roots of c
+                        c_complex = complex(c)
+                        r, theta = self.complex_to_polar(c_complex)
+                        
+                        solutions = []
+                        for k in range(n):
+                            r_sol = r ** (1/n)
+                            theta_sol = (theta + 2*np.pi*k) / n
+                            solution = self.polar_to_complex(r_sol, theta_sol)
+                            solutions.append(solution)
+                            st.latex(f"z_{{{k}}} = {self.format_complex_latex(solution)}")
+                        
+                        # Visualization
+                        solution_points = [(sol, f"z_{k}") for k, sol in enumerate(solutions)]
+                        fig = self.create_gaussian_plane_plot(solution_points, f"Solutions to {desc}")
+                        st.plotly_chart(fig)
+        
+        elif example == "14.24 Quadratic Equations (1TGWY4)":
+            st.write("### Example 14.24: Complex Quadratic Equations")
+            
+            parts = st.selectbox("Select part:", ["Part a", "Part b", "Part c", "Part d", "Part e", "Part f"])
+            
+            quadratic_examples = {
+                "Part a": ("z² + z + 1 = 0", complex(1), complex(1)),
+                "Part b": ("z² - 2z + 2 = 0", complex(-2), complex(2)), 
+                "Part c": ("z² + 4 = 0", complex(0), complex(4)),
+                "Part d": ("z² - 2iz - 1 = 0", complex(0, -2), complex(-1)),
+                "Part e": ("z² + (1+i)z + i = 0", complex(1, 1), complex(0, 1)),
+                "Part f": ("z² - (2-i)z + (1-i) = 0", complex(-2, 1), complex(1, -1))
+            }
+            
+            equation, p, q = quadratic_examples[parts]
+            
+            st.write(f"**Equation:** {equation}")
+            
+            if st.button(f"Solve {parts}"):
+                # Quadratic formula: z = (-p ± √(p² - 4q)) / 2
+                discriminant = p*p - 4*q
+                sqrt_discriminant = np.sqrt(discriminant)
+                
+                z1 = (-p + sqrt_discriminant) / 2
+                z2 = (-p - sqrt_discriminant) / 2
+                
+                st.write("### Solution using Quadratic Formula:")
+                st.latex(f"z = \\frac{{-p \\pm \\sqrt{{p^2 - 4q}}}}{{2}}")
+                
+                st.write("**Discriminant:**")
+                st.latex(f"\\Delta = p^2 - 4q = ({self.format_complex_latex(p)})^2 - 4({self.format_complex_latex(q)}) = {self.format_complex_latex(discriminant)}")
+                
+                st.write("**Solutions:**")
+                st.latex(f"z_1 = {self.format_complex_latex(z1)}")
+                st.latex(f"z_2 = {self.format_complex_latex(z2)}")
+                
+                # Verification
+                verification1 = z1*z1 + p*z1 + q
+                verification2 = z2*z2 + p*z2 + q
+                
+                st.write("**Verification:**")
+                if abs(verification1) < 1e-10:
+                    st.success(f"✅ z₁ verified: {self.format_complex_latex(verification1)}")
+                if abs(verification2) < 1e-10:
+                    st.success(f"✅ z₂ verified: {self.format_complex_latex(verification2)}")
+        
+        elif example == "14.25 Higher Degree Equations (NANZ5I)":
+            st.write("### Example 14.25: 6th and 8th Degree Equations")
+            
+            parts = st.selectbox("Select part:", ["Part a: 6th degree", "Part b: 8th degree"])
+            
+            if parts == "Part a: 6th degree":
+                st.write("**Solve z⁶ + 64 = 0**")
+                
+                if st.button("Solve z⁶ = -64"):
+                    c = -64
+                    n = 6
+                    
+                    c_complex = complex(c)
+                    r, theta = self.complex_to_polar(c_complex)
+                    
+                    st.write("### All 6 solutions:")
+                    solutions = []
+                    for k in range(n):
+                        r_sol = r ** (1/n)
+                        theta_sol = (theta + 2*np.pi*k) / n
+                        solution = self.polar_to_complex(r_sol, theta_sol)
+                        solutions.append(solution)
+                        
+                        st.latex(f"z_{{{k}}} = {r_sol:.4g} e^{{i{theta_sol:.4g}}} = {self.format_complex_latex(solution)}")
+                    
+                    # Show in exponential and rectangular forms
+                    st.write("### In exponential form:")
+                    for k, sol in enumerate(solutions):
+                        r_s, theta_s = self.complex_to_polar(sol)
+                        st.latex(f"z_{{{k}}} = {r_s:.4g} e^{{i{theta_s:.4g}}}")
+            
+            elif parts == "Part b: 8th degree":
+                st.write("**Solve z⁸ - 256 = 0**")
+                
+                if st.button("Solve z⁸ = 256"):
+                    c = 256
+                    n = 8
+                    
+                    c_complex = complex(c)
+                    r, theta = self.complex_to_polar(c_complex)
+                    
+                    st.write("### All 8 solutions:")
+                    solutions = []
+                    for k in range(n):
+                        r_sol = r ** (1/n)
+                        theta_sol = (theta + 2*np.pi*k) / n
+                        solution = self.polar_to_complex(r_sol, theta_sol)
+                        solutions.append(solution)
+                        
+                        st.latex(f"z_{{{k}}} = {r_sol:.4g} e^{{i{theta_sol:.4g}}} = {self.format_complex_latex(solution)}")
+        
+        elif example == "14.26 Roots & Zeros (DJUTAZ)":
+            st.write("### Example 14.26: Finding Zeros of Complex Functions")
+            
+            parts = st.selectbox("Select part:", ["Part a", "Part b", "Part c", "Part d"])
+            
+            zero_examples = {
+                "Part a": ("f(z) = z² + 2z + 5", complex(2), complex(5)),
+                "Part b": ("f(z) = z² - 4z + 5", complex(-4), complex(5)),
+                "Part c": ("f(z) = z³ - z² + z - 1", "factored"),
+                "Part d": ("f(z) = z⁴ + 4z² + 4", "biquadratic")
+            }
+            
+            if parts in ["Part a", "Part b"]:
+                equation, p, q = zero_examples[parts]
+                st.write(f"**Function:** {equation}")
+                
+                if st.button(f"Find zeros for {parts}"):
+                    # Solve z² + pz + q = 0
+                    discriminant = p*p - 4*q
+                    sqrt_discriminant = np.sqrt(discriminant)
+                    
+                    z1 = (-p + sqrt_discriminant) / 2
+                    z2 = (-p - sqrt_discriminant) / 2
+                    
+                    st.write("### Zeros:")
+                    st.latex(f"z_1 = {self.format_complex_latex(z1)}")
+                    st.latex(f"z_2 = {self.format_complex_latex(z2)}")
+        
+        elif example == "14.27 Complex Fractions (QP7Y08)":
+            st.write("### Example 14.27: Real and Imaginary Parts of Complex Fractions")
+            st.info("Note: In this example, 'j' is used instead of 'i' for the imaginary unit")
+            
+            parts = st.selectbox("Select part:", ["Part a", "Part d"])
+            
+            if parts == "Part a":
+                st.write("**Find Re and Im of (2+3j)/(1-j)**")
+                
+                if st.button("Calculate (2+3j)/(1-j)"):
+                    numerator = complex(2, 3)
+                    denominator = complex(1, -1)
+                    result = numerator / denominator
+                    
+                    st.write("### Step-by-Step Solution:")
+                    st.latex(f"\\frac{{2+3j}}{{1-j}} = \\frac{{(2+3j)(1+j)}}{{(1-j)(1+j)}}")
+                    
+                    # Multiply numerator
+                    num_expanded = numerator * denominator.conjugate()
+                    # Multiply denominator  
+                    den_expanded = denominator * denominator.conjugate()
+                    
+                    st.latex(f"= \\frac{{{self.format_complex_latex(num_expanded)}}}{{{den_expanded.real:.4g}}}")
+                    st.latex(f"= {self.format_complex_latex(result)}")
+                    
+                    st.write("### Result:")
+                    st.latex(f"\\text{{Re}}\\left(\\frac{{2+3j}}{{1-j}}\\right) = {result.real:.4g}")
+                    st.latex(f"\\text{{Im}}\\left(\\frac{{2+3j}}{{1-j}}\\right) = {result.imag:.4g}")
+            
+            elif parts == "Part d":
+                st.write("**Find Re and Im of (1+2j)/(2-3j)**")
+                
+                if st.button("Calculate (1+2j)/(2-3j)"):
+                    numerator = complex(1, 2)
+                    denominator = complex(2, -3)
+                    result = numerator / denominator
+                    
+                    st.write("### Step-by-Step Solution:")
+                    st.latex(f"\\frac{{1+2j}}{{2-3j}} = \\frac{{(1+2j)(2+3j)}}{{(2-3j)(2+3j)}}")
+                    
+                    # Calculate step by step
+                    conjugate = denominator.conjugate()
+                    num_expanded = numerator * conjugate
+                    den_expanded = denominator * conjugate
+                    
+                    st.latex(f"= \\frac{{{self.format_complex_latex(num_expanded)}}}{{{den_expanded.real:.4g}}}")
+                    st.latex(f"= {self.format_complex_latex(result)}")
+                    
+                    st.write("### Result:")
+                    st.latex(f"\\text{{Re}}\\left(\\frac{{1+2j}}{{2-3j}}\\right) = {result.real:.4g}")
+                    st.latex(f"\\text{{Im}}\\left(\\frac{{1+2j}}{{2-3j}}\\right) = {result.imag:.4g}")
+        
+        elif example == "14.3.3 Polar Arithmetic":
+            st.write("### Example 14.3.3: Polar Form Arithmetic Operations")
+            
+            operation = st.selectbox("Select operation:", ["Parts c-f: Multiplication/Division", "Parts k-n: Powers/Roots"])
+            
+            if operation == "Parts c-f: Multiplication/Division":
+                examples = [
+                    ("Part c", "2e^(iπ/6) × 3e^(iπ/4)", 2, np.pi/6, 3, np.pi/4, "multiply"),
+                    ("Part d", "4e^(iπ/3) ÷ 2e^(iπ/6)", 4, np.pi/3, 2, np.pi/6, "divide"),
+                    ("Part e", "√2 e^(i3π/4) × √2 e^(iπ/4)", np.sqrt(2), 3*np.pi/4, np.sqrt(2), np.pi/4, "multiply"),
+                    ("Part f", "6e^(iπ) ÷ 3e^(iπ/2)", 6, np.pi, 3, np.pi/2, "divide")
+                ]
+                
+                selected = st.selectbox("Select example:", [ex[0] + ": " + ex[1] for ex in examples])
+                
+                for part, desc, r1, theta1, r2, theta2, op in examples:
+                    if selected.startswith(part):
+                        if st.button(f"Calculate {part}"):
+                            z1 = self.polar_to_complex(r1, theta1)
+                            z2 = self.polar_to_complex(r2, theta2)
+                            
+                            st.write(f"### {desc}")
+                            
+                            if op == "multiply":
+                                r_result = r1 * r2
+                                theta_result = theta1 + theta2
+                                result = z1 * z2
+                                
+                                st.latex(f"{r1:.4g}e^{{i{theta1:.4g}}} \\times {r2:.4g}e^{{i{theta2:.4g}}}")
+                                st.latex(f"= ({r1:.4g} \\times {r2:.4g})e^{{i({theta1:.4g} + {theta2:.4g})}}")
+                                st.latex(f"= {r_result:.4g}e^{{i{theta_result:.4g}}}")
+                                
+                            else:  # divide
+                                r_result = r1 / r2
+                                theta_result = theta1 - theta2
+                                result = z1 / z2
+                                
+                                st.latex(f"\\frac{{{r1:.4g}e^{{i{theta1:.4g}}}}}{{{r2:.4g}e^{{i{theta2:.4g}}}}} = \\frac{{{r1:.4g}}}{{{r2:.4g}}}e^{{i({theta1:.4g} - {theta2:.4g})}}")
+                                st.latex(f"= {r_result:.4g}e^{{i{theta_result:.4g}}}")
+                            
+                            st.write("**Rectangular form:**")
+                            st.latex(f"= {self.format_complex_latex(result)}")
+            
+            elif operation == "Parts k-n: Powers/Roots":
+                examples = [
+                    ("Part k", "(2e^(iπ/3))^4", 2, np.pi/3, 4, "power"),
+                    ("Part l", "(e^(iπ/4))^8", 1, np.pi/4, 8, "power"),
+                    ("Part m", "∛(8e^(iπ))", 8, np.pi, 3, "root"),
+                    ("Part n", "∜(16e^(i2π/3))", 16, 2*np.pi/3, 4, "root")
+                ]
+                
+                selected = st.selectbox("Select example:", [ex[0] + ": " + ex[1] for ex in examples])
+                
+                for part, desc, r, theta, n, op in examples:
+                    if selected.startswith(part):
+                        if st.button(f"Calculate {part}"):
+                            z = self.polar_to_complex(r, theta)
+                            
+                            st.write(f"### {desc}")
+                            
+                            if op == "power":
+                                r_result = r ** n
+                                theta_result = n * theta
+                                result = z ** n
+                                
+                                st.latex(f"({r:.4g}e^{{i{theta:.4g}}})^{{{n}}} = {r:.4g}^{{{n}}} e^{{i({n} \\times {theta:.4g})}}")
+                                st.latex(f"= {r_result:.4g}e^{{i{theta_result:.4g}}}")
+                                st.latex(f"= {self.format_complex_latex(result)}")
+                                
+                            else:  # root
+                                st.write(f"**All {n} roots:**")
+                                for k in range(n):
+                                    r_root = r ** (1/n)
+                                    theta_root = (theta + 2*np.pi*k) / n
+                                    root = self.polar_to_complex(r_root, theta_root)
+                                    
+                                    st.latex(f"z_{{{k}}} = {r_root:.4g}e^{{i{theta_root:.4g}}} = {self.format_complex_latex(root)}")
+    
+    def _render_polar_arithmetic(self):
+        """Render polar form arithmetic operations."""
+        st.subheader("Polar Form Arithmetic Operations")
+        
+        with st.expander("ℹ️ About Polar Arithmetic", expanded=False):
+            st.markdown("""
+            **Polar Form Arithmetic Rules:**
+            
+            **Multiplication:** |z₁z₂| = |z₁||z₂|, arg(z₁z₂) = arg(z₁) + arg(z₂)
+            
+            **Division:** |z₁/z₂| = |z₁|/|z₂|, arg(z₁/z₂) = arg(z₁) - arg(z₂)
+            
+            **Powers:** |z^n| = |z|^n, arg(z^n) = n·arg(z)
+            
+            **Roots:** |z^(1/n)| = |z|^(1/n), arg(z^(1/n)) = (arg(z) + 2πk)/n
+            """)
+        
+        operation = st.selectbox("Select Polar Operation:", 
+                               ["Multiplication", "Division", "Power", "nth Root"])
+        
+        if operation == "Multiplication":
+            self._polar_multiplication()
+        elif operation == "Division":
+            self._polar_division()
+        elif operation == "Power":
+            self._polar_power()
+        elif operation == "nth Root":
+            self._polar_nth_root()
+    
+    def _polar_multiplication(self):
+        """Render polar multiplication interface."""
+        st.write("### Polar Form Multiplication")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            z1_input = st.text_input("First complex number z₁:", value="2+2i")
+        with col2:
+            z2_input = st.text_input("Second complex number z₂:", value="1+i")
+        
+        if st.button("Multiply in Polar Form"):
+            z1 = self.parse_complex_input(z1_input)
+            z2 = self.parse_complex_input(z2_input)
+            
+            if z1 is not None and z2 is not None:
+                # Convert to polar
+                r1, theta1 = self.complex_to_polar(z1)
+                r2, theta2 = self.complex_to_polar(z2)
+                
+                # Polar multiplication
+                r_result = r1 * r2
+                theta_result = theta1 + theta2
+                
+                # Convert back to rectangular
+                result = self.polar_to_complex(r_result, theta_result)
+                
+                st.write("### Step-by-Step Solution:")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**Rectangular Form:**")
+                    st.latex(f"z_1 = {self.format_complex_latex(z1)}")
+                    st.latex(f"z_2 = {self.format_complex_latex(z2)}")
+                    
+                    st.write("**Convert to Polar:**")
+                    st.latex(f"z_1 = {r1:.4g}e^{{i{theta1:.4g}}}")
+                    st.latex(f"z_2 = {r2:.4g}e^{{i{theta2:.4g}}}")
+                
+                with col2:
+                    st.write("**Polar Multiplication:**")
+                    st.latex(f"z_1 \\cdot z_2 = {r1:.4g}e^{{i{theta1:.4g}}} \\cdot {r2:.4g}e^{{i{theta2:.4g}}}")
+                    st.latex(f"= ({r1:.4g} \\cdot {r2:.4g})e^{{i({theta1:.4g} + {theta2:.4g})}}")
+                    st.latex(f"= {r_result:.4g}e^{{i{theta_result:.4g}}}")
+                    
+                    st.write("**Convert back to Rectangular:**")
+                    st.latex(f"= {self.format_complex_latex(result)}")
+                
+                # Verification with direct multiplication
+                direct_result = z1 * z2
+                st.write("### Verification:")
+                st.latex(f"\\text{{Direct multiplication: }} {self.format_complex_latex(direct_result)}")
+                
+                if np.allclose([result.real, result.imag], [direct_result.real, direct_result.imag]):
+                    st.success("✅ Results match!")
+                
+                # Visualization
+                fig = self.create_gaussian_plane_plot([
+                    (z1, "z₁"), (z2, "z₂"), (result, "z₁ × z₂")
+                ], title="Polar Multiplication Visualization")
+                st.plotly_chart(fig)
+    
+    def _polar_division(self):
+        """Render polar division interface."""
+        st.write("### Polar Form Division")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            z1_input = st.text_input("Numerator z₁:", value="4+4i")
+        with col2:
+            z2_input = st.text_input("Denominator z₂:", value="1+i")
+        
+        if st.button("Divide in Polar Form"):
+            z1 = self.parse_complex_input(z1_input)
+            z2 = self.parse_complex_input(z2_input)
+            
+            if z1 is not None and z2 is not None:
+                if abs(z2) < 1e-10:
+                    st.error("Cannot divide by zero!")
+                    return
+                
+                # Convert to polar
+                r1, theta1 = self.complex_to_polar(z1)
+                r2, theta2 = self.complex_to_polar(z2)
+                
+                # Polar division
+                r_result = r1 / r2
+                theta_result = theta1 - theta2
+                
+                # Convert back to rectangular
+                result = self.polar_to_complex(r_result, theta_result)
+                
+                st.write("### Step-by-Step Solution:")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**Rectangular Form:**")
+                    st.latex(f"\\frac{{z_1}}{{z_2}} = \\frac{{{self.format_complex_latex(z1)}}}{{{self.format_complex_latex(z2)}}}")
+                    
+                    st.write("**Convert to Polar:**")
+                    st.latex(f"z_1 = {r1:.4g}e^{{i{theta1:.4g}}}")
+                    st.latex(f"z_2 = {r2:.4g}e^{{i{theta2:.4g}}}")
+                
+                with col2:
+                    st.write("**Polar Division:**")
+                    st.latex(f"\\frac{{z_1}}{{z_2}} = \\frac{{{r1:.4g}e^{{i{theta1:.4g}}}}}{{{r2:.4g}e^{{i{theta2:.4g}}}}}")
+                    st.latex(f"= \\frac{{{r1:.4g}}}{{{r2:.4g}}}e^{{i({theta1:.4g} - {theta2:.4g})}}")
+                    st.latex(f"= {r_result:.4g}e^{{i{theta_result:.4g}}}")
+                    
+                    st.write("**Convert back to Rectangular:**")
+                    st.latex(f"= {self.format_complex_latex(result)}")
+                
+                # Verification
+                direct_result = z1 / z2
+                st.write("### Verification:")
+                st.latex(f"\\text{{Direct division: }} {self.format_complex_latex(direct_result)}")
+                
+                if np.allclose([result.real, result.imag], [direct_result.real, direct_result.imag]):
+                    st.success("✅ Results match!")
+    
+    def _polar_power(self):
+        """Render polar power interface."""
+        st.write("### Complex Powers using Polar Form")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            z_input = st.text_input("Complex number z:", value="1+i")
+        with col2:
+            n = st.number_input("Power n:", value=3, min_value=1, max_value=20)
+        
+        if st.button("Calculate Power"):
+            z = self.parse_complex_input(z_input)
+            
+            if z is not None:
+                # Convert to polar
+                r, theta = self.complex_to_polar(z)
+                
+                # Calculate power
+                r_result = r ** n
+                theta_result = n * theta
+                
+                # Convert back to rectangular
+                result = self.polar_to_complex(r_result, theta_result)
+                
+                st.write("### Step-by-Step Solution:")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**De Moivre's Theorem:**")
+                    st.latex(f"z^n = (re^{{i\\theta}})^n = r^n e^{{in\\theta}}")
+                    
+                    st.write("**Given:**")
+                    st.latex(f"z = {self.format_complex_latex(z)}")
+                    st.latex(f"n = {n}")
+                    
+                    st.write("**Polar Form:**")
                     st.latex(f"z = {r:.4g}e^{{i{theta:.4g}}}")
+                
+                with col2:
+                    st.write("**Apply De Moivre's Theorem:**")
+                    st.latex(f"z^{{{n}}} = ({r:.4g})^{{{n}}} e^{{i({n} \\cdot {theta:.4g})}}")
+                    st.latex(f"= {r_result:.4g} e^{{i{theta_result:.4g}}}")
+                    
+                    st.write("**Convert to Rectangular:**")
+                    st.latex(f"= {r_result:.4g}(\\cos({theta_result:.4g}) + i\\sin({theta_result:.4g}))")
+                    st.latex(f"= {self.format_complex_latex(result)}")
+                
+                # Verification
+                direct_result = z ** n
+                st.write("### Verification:")
+                st.latex(f"\\text{{Direct calculation: }} {self.format_complex_latex(direct_result)}")
+                
+                if np.allclose([result.real, result.imag], [direct_result.real, direct_result.imag]):
+                    st.success("✅ Results match!")
+                
+                # Show pattern for powers
+                if n <= 8:
+                    st.write("### Powers Pattern:")
+                    powers_data = []
+                    for i in range(1, n+1):
+                        power_result = z ** i
+                        powers_data.append({
+                            "Power": f"z^{i}",
+                            "Result": self.format_complex_latex(power_result),
+                            "Magnitude": f"{abs(power_result):.3f}",
+                            "Argument (deg)": f"{np.degrees(cmath.phase(power_result)):.1f}°"
+                        })
+                    df = pd.DataFrame(powers_data)
+                    st.dataframe(df)
+    
+    def _polar_nth_root(self):
+        """Render nth root interface."""
+        st.write("### Complex nth Roots using Polar Form")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            z_input = st.text_input("Complex number z:", value="8")
+        with col2:
+            n = st.number_input("Root index n:", value=3, min_value=2, max_value=12)
+        
+        if st.button("Calculate nth Roots"):
+            z = self.parse_complex_input(z_input)
+            
+            if z is not None:
+                # Convert to polar
+                r, theta = self.complex_to_polar(z)
+                
+                st.write("### All nth Roots:")
+                st.write(f"Finding all {n} roots of z = {self.format_complex_latex(z)}")
+                
+                # Calculate all n roots
+                roots = []
+                for k in range(n):
+                    r_root = r ** (1/n)
+                    theta_root = (theta + 2*np.pi*k) / n
+                    root = self.polar_to_complex(r_root, theta_root)
+                    roots.append(root)
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**Formula for nth Roots:**")
+                    st.latex(f"z^{{1/{n}}} = r^{{1/{n}}} e^{{i(\\theta + 2\\pi k)/{n}}}")
+                    st.latex(f"\\text{{where }} k = 0, 1, 2, ..., {n-1}")
+                    
+                    st.write("**Given:**")
+                    st.latex(f"z = {self.format_complex_latex(z)}")
+                    st.latex(f"r = |z| = {r:.4g}")
+                    st.latex(f"\\theta = \\arg(z) = {theta:.4g} \\text{{ rad}}")
+                
+                with col2:
+                    st.write("**All Roots:**")
+                    for k, root in enumerate(roots):
+                        theta_k = (theta + 2*np.pi*k) / n
+                        st.latex(f"z_{{{k}}} = {r**(1/n):.4g} e^{{i{theta_k:.4g}}} = {self.format_complex_latex(root)}")
+                
+                # Visualization
+                st.write("### Visualization:")
+                root_points = [(root, f"z_{k}") for k, root in enumerate(roots)]
+                root_points.append((z, "Original z"))
+                
+                fig = self.create_gaussian_plane_plot(root_points, f"All {n}th Roots")
+                st.plotly_chart(fig)
+                
+                # Show roots in table
+                st.write("### Roots Summary:")
+                roots_data = []
+                for k, root in enumerate(roots):
+                    r_root, theta_root = self.complex_to_polar(root)
+                    roots_data.append({
+                        "Root": f"z_{k}",
+                        "Rectangular": self.format_complex_latex(root),
+                        "Magnitude": f"{r_root:.4g}",
+                        "Argument (rad)": f"{theta_root:.4g}",
+                        "Argument (deg)": f"{np.degrees(theta_root):.1f}°"
+                    })
+                df = pd.DataFrame(roots_data)
+                st.dataframe(df)
+    
+    def _render_powers_roots(self):
+        """Render powers and roots calculator."""
+        st.subheader("Complex Powers & Roots")
+        
+        operation = st.selectbox("Select Operation:", ["Integer Powers", "Fractional Powers", "nth Roots", "Equation Solving"])
+        
+        if operation == "Integer Powers":
+            self._integer_powers()
+        elif operation == "Fractional Powers":
+            self._fractional_powers()
+        elif operation == "nth Roots":
+            self._general_nth_roots()
+        elif operation == "Equation Solving":
+            self._power_equation_solving()
+    
+    def _integer_powers(self):
+        """Handle integer powers of complex numbers."""
+        st.write("### Integer Powers of Complex Numbers")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            z_input = st.text_input("Complex number z:", value="1+i")
+        with col2:
+            n = st.number_input("Integer power n:", value=4, min_value=-20, max_value=20)
+        
+        if st.button("Calculate z^n"):
+            z = self.parse_complex_input(z_input)
+            
+            if z is not None:
+                if n < 0 and abs(z) < 1e-10:
+                    st.error("Cannot calculate negative power of zero!")
+                    return
+                
+                result = z ** n
+                
+                # Show both rectangular and polar methods
+                r, theta = self.complex_to_polar(z)
+                
+                st.write("### Solution using De Moivre's Theorem:")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**Rectangular Form:**")
+                    st.latex(f"z = {self.format_complex_latex(z)}")
+                    st.latex(f"z^{{{n}}} = {self.format_complex_latex(result)}")
+                    
+                    if n < 0:
+                        st.write("**Note:** Negative power means reciprocal")
+                        st.latex(f"z^{{{n}}} = \\frac{{1}}{{z^{{{abs(n)}}}}}")
+                
+                with col2:
+                    st.write("**Polar Form Method:**")
+                    st.latex(f"z = {r:.4g}e^{{i{theta:.4g}}}")
+                    st.latex(f"z^{{{n}}} = ({r:.4g})^{{{n}}} e^{{i({n} \\cdot {theta:.4g})}}")
+                    st.latex(f"= {r**n:.4g} e^{{i{n*theta:.4g}}}")
+                    
+                    # Convert back to verify
+                    polar_result = self.polar_to_complex(r**n, n*theta)
+                    st.latex(f"= {self.format_complex_latex(polar_result)}")
+                
+                # Show progression for small positive powers
+                if 1 <= n <= 6:
+                    st.write("### Power Progression:")
+                    progression_data = []
+                    for i in range(1, n+1):
+                        power_i = z ** i
+                        progression_data.append({
+                            "Power": f"z^{i}",
+                            "Result": self.format_complex_latex(power_i),
+                            "|z^i|": f"{abs(power_i):.4g}"
+                        })
+                    df = pd.DataFrame(progression_data)
+                    st.dataframe(df)
+    
+    def _fractional_powers(self):
+        """Handle fractional powers (principal values)."""
+        st.write("### Fractional Powers (Principal Values)")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            z_input = st.text_input("Complex number z:", value="4")
+        with col2:
+            p = st.number_input("Numerator p:", value=1, min_value=1)
+        with col3:
+            q = st.number_input("Denominator q:", value=2, min_value=2)
+        
+        if st.button(f"Calculate z^({p}/{q})"):
+            z = self.parse_complex_input(z_input)
+            
+            if z is not None:
+                if abs(z) < 1e-10:
+                    st.error("Cannot calculate fractional power of zero!")
+                    return
+                
+                # Calculate principal value
+                r, theta = self.complex_to_polar(z)
+                
+                # Principal value calculation
+                r_result = r ** (p/q)
+                theta_result = (p * theta) / q
+                
+                result = self.polar_to_complex(r_result, theta_result)
+                
+                st.write("### Principal Value Calculation:")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**Formula:**")
+                    st.latex(f"z^{{\\frac{{{p}}}{{{q}}}}} = r^{{\\frac{{{p}}}{{{q}}}}} e^{{i\\frac{{{p}\\theta}}{{{q}}}}}")
+                    
+                    st.write("**Given:**")
+                    st.latex(f"z = {self.format_complex_latex(z)}")
+                    st.latex(f"r = |z| = {r:.4g}")
+                    st.latex(f"\\theta = \\arg(z) = {theta:.4g}")
+                
+                with col2:
+                    st.write("**Calculation:**")
+                    st.latex(f"z^{{\\frac{{{p}}}{{{q}}}}} = {r:.4g}^{{\\frac{{{p}}}{{{q}}}}} e^{{i\\frac{{{p} \\cdot {theta:.4g}}}{{{q}}}}}")
+                    st.latex(f"= {r_result:.4g} e^{{i{theta_result:.4g}}}")
+                    st.latex(f"= {self.format_complex_latex(result)}")
+                
+                st.info(f"💡 This is the principal value. There are {q} total values for z^(1/{q})")
+                
+                # Show all values if reasonable
+                if q <= 8:
+                    st.write(f"### All {q} Values of z^(1/{q}):")
+                    all_roots = []
+                    for k in range(q):
+                        theta_k = (theta + 2*np.pi*k) / q
+                        root_k = self.polar_to_complex(r**(1/q), theta_k)
+                        all_roots.append(root_k)
+                        st.latex(f"z_{{{k}}} = {self.format_complex_latex(root_k)}")
+                    
+                    # Then raise to power p
+                    st.write(f"### All Values of z^({p}/{q}):")
+                    for k, root in enumerate(all_roots):
+                        final_value = root ** p
+                        st.latex(f"(z_{{{k}}})^{{{p}}} = {self.format_complex_latex(final_value)}")
+    
+    def _general_nth_roots(self):
+        """Handle general nth roots with all branches."""
+        st.write("### All nth Roots")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            z_input = st.text_input("Complex number z:", value="1")
+        with col2:
+            n = st.number_input("Root index n:", value=4, min_value=2, max_value=12)
+        
+        if st.button(f"Find all {n}th roots"):
+            z = self.parse_complex_input(z_input)
+            
+            if z is not None:
+                if abs(z) < 1e-10:
+                    st.success("All nth roots of 0 are 0")
+                    return
+                
+                # Calculate all nth roots
+                r, theta = self.complex_to_polar(z)
+                roots = []
+                
+                for k in range(n):
+                    r_root = r ** (1/n)
+                    theta_root = (theta + 2*np.pi*k) / n
+                    root = self.polar_to_complex(r_root, theta_root)
+                    roots.append((k, root, theta_root))
+                
+                st.write(f"### All {n} roots of z = {self.format_complex_latex(z)}:")
+                
+                # Display formula
+                st.latex(f"z_k = \\sqrt[{n}]{{r}} \\cdot e^{{i\\frac{{\\theta + 2\\pi k}}{{{n}}}}}, \\quad k = 0, 1, ..., {n-1}")
+                
+                # Show each root
+                for k, root, theta_k in roots:
+                    st.latex(f"z_{{{k}}} = {r**(1/n):.4g} e^{{i{theta_k:.4g}}} = {self.format_complex_latex(root)}")
+                
+                # Verification: check that each root^n = z
+                st.write("### Verification:")
+                for k, root, _ in roots:
+                    verification = root ** n
+                    st.write(f"z_{k}^{n} = {self.format_complex_latex(verification)}")
+                
+                # Geometric visualization
+                root_points = [(root, f"z_{k}") for k, root, _ in roots]
+                root_points.append((z, f"z (original)"))
+                
+                fig = self.create_gaussian_plane_plot(root_points, f"All {n}th Roots of z")
+                st.plotly_chart(fig)
+                
+                # Roots form regular polygon
+                st.info(f"💡 The {n} roots form a regular {n}-gon centered at the origin")
+    
+    def _power_equation_solving(self):
+        """Solve equations of the form z^n = w."""
+        st.write("### Solve z^n = w")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            w_input = st.text_input("Right side w:", value="1")
+        with col2:
+            n = st.number_input("Power n:", value=3, min_value=2, max_value=12)
+        
+        if st.button(f"Solve z^{n} = w"):
+            w = self.parse_complex_input(w_input)
+            
+            if w is not None:
+                if abs(w) < 1e-10:
+                    st.success(f"The only solution to z^{n} = 0 is z = 0")
+                    return
+                
+                # Solutions are nth roots of w
+                r, theta = self.complex_to_polar(w)
+                solutions = []
+                
+                for k in range(n):
+                    r_sol = r ** (1/n)
+                    theta_sol = (theta + 2*np.pi*k) / n
+                    solution = self.polar_to_complex(r_sol, theta_sol)
+                    solutions.append((k, solution))
+                
+                st.write(f"### Solutions to z^{n} = {self.format_complex_latex(w)}:")
+                
+                for k, solution in solutions:
+                    st.latex(f"z_{{{k}}} = {self.format_complex_latex(solution)}")
+                
+                # Verification
+                st.write("### Verification:")
+                all_correct = True
+                for k, solution in solutions:
+                    verification = solution ** n
+                    is_correct = np.allclose([verification.real, verification.imag], [w.real, w.imag])
+                    if is_correct:
+                        st.success(f"✅ z_{k}^{n} = {self.format_complex_latex(verification)}")
+                    else:
+                        st.error(f"❌ z_{k}^{n} = {self.format_complex_latex(verification)}")
+                        all_correct = False
+                
+                if all_correct:
+                    st.success("All solutions verified!")
+    
+    def _render_polynomial_equations(self):
+        """Render polynomial equation solver."""
+        st.subheader("Polynomial Equations with Complex Coefficients")
+        
+        with st.expander("ℹ️ Fundamental Theorem of Algebra", expanded=False):
+            st.markdown("""
+            **Fundamental Theorem of Algebra:**
+            Every polynomial of degree n ≥ 1 with complex coefficients has exactly n complex roots (counting multiplicities).
+            
+            **Examples:**
+            - z² + 1 = 0 has roots z = ±i
+            - z³ - 1 = 0 has roots z = 1, ω, ω² where ω = e^(2πi/3)
+            - z⁴ + 4 = 0 has 4 complex roots
+            """)
+        
+        equation_type = st.selectbox("Select Equation Type:", 
+                                   ["Quadratic (z² + pz + q = 0)", "Cubic Roots of Unity", "General z^n = c", "Custom Polynomial"])
+        
+        if equation_type == "Quadratic (z² + pz + q = 0)":
+            self._solve_quadratic()
+        elif equation_type == "Cubic Roots of Unity":
+            self._cubic_roots_unity()
+        elif equation_type == "General z^n = c":
+            self._general_equation()
+        elif equation_type == "Custom Polynomial":
+            self._custom_polynomial()
+    
+    def _solve_quadratic(self):
+        """Solve quadratic equations with complex coefficients."""
+        st.write("### Quadratic Equation: z² + pz + q = 0")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            p_input = st.text_input("Coefficient p:", value="0")
+        with col2:
+            q_input = st.text_input("Constant q:", value="1")
+        
+        if st.button("Solve Quadratic"):
+            p = self.parse_complex_input(p_input)
+            q = self.parse_complex_input(q_input)
+            
+            if p is not None and q is not None:
+                st.write(f"### Solving: z² + ({self.format_complex_latex(p)})z + ({self.format_complex_latex(q)}) = 0")
+                
+                # Quadratic formula: z = (-p ± √(p² - 4q)) / 2
+                discriminant = p*p - 4*q
+                sqrt_discriminant = np.sqrt(discriminant)
+                
+                z1 = (-p + sqrt_discriminant) / 2
+                z2 = (-p - sqrt_discriminant) / 2
+                
+                st.write("### Using Quadratic Formula:")
+                st.latex(f"z = \\frac{{-p \\pm \\sqrt{{p^2 - 4q}}}}{{2}}")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**Discriminant:**")
+                    st.latex(f"\\Delta = p^2 - 4q")
+                    st.latex(f"= ({self.format_complex_latex(p)})^2 - 4({self.format_complex_latex(q)})")
+                    st.latex(f"= {self.format_complex_latex(discriminant)}")
+                    
+                    st.write("**Square Root of Discriminant:**")
+                    st.latex(f"\\sqrt{{\\Delta}} = {self.format_complex_latex(sqrt_discriminant)}")
+                
+                with col2:
+                    st.write("**Solutions:**")
+                    st.latex(f"z_1 = \\frac{{-({self.format_complex_latex(p)}) + {self.format_complex_latex(sqrt_discriminant)}}}{{2}} = {self.format_complex_latex(z1)}")
+                    st.latex(f"z_2 = \\frac{{-({self.format_complex_latex(p)}) - {self.format_complex_latex(sqrt_discriminant)}}}{{2}} = {self.format_complex_latex(z2)}")
+                
+                # Verification
+                st.write("### Verification:")
+                for i, z in enumerate([z1, z2], 1):
+                    result = z*z + p*z + q
+                    st.latex(f"z_{i}^2 + pz_{i} + q = {self.format_complex_latex(result)}")
+                    if abs(result) < 1e-10:
+                        st.success(f"✅ z_{i} is correct")
+                    else:
+                        st.warning(f"⚠️ z_{i} has numerical error: {abs(result):.2e}")
+                
+                # Visualization
+                if abs(p) < 10 and abs(q) < 10:  # Only for reasonable values
+                    solutions_plot = [(z1, "z₁"), (z2, "z₂")]
+                    fig = self.create_gaussian_plane_plot(solutions_plot, "Quadratic Equation Solutions")
+                    st.plotly_chart(fig)
+    
+    def _cubic_roots_unity(self):
+        """Show cubic roots of unity and their properties."""
+        st.write("### Cubic Roots of Unity: z³ = 1")
+        
+        # Calculate the three cube roots of 1
+        roots = []
+        for k in range(3):
+            theta = 2 * np.pi * k / 3
+            root = complex(np.cos(theta), np.sin(theta))
+            roots.append((k, root, theta))
+        
+        st.write("### The three cube roots of unity:")
+        
+        for k, root, theta in roots:
+            if k == 0:
+                st.latex(f"\\omega_0 = 1")
+            else:
+                st.latex(f"\\omega_{k} = e^{{i\\frac{{2\\pi \\cdot {k}}}{{3}}}} = \\cos\\left(\\frac{{{k} \\cdot 2\\pi}}{{3}}\\right) + i\\sin\\left(\\frac{{{k} \\cdot 2\\pi}}{{3}}\\right) = {self.format_complex_latex(root)}")
+        
+        # Properties
+        st.write("### Properties:")
+        omega = roots[1][1]  # ω₁
+        omega2 = roots[2][1]  # ω₂
+        
+        st.latex(f"\\omega = {self.format_complex_latex(omega)}")
+        st.latex(f"\\omega^2 = {self.format_complex_latex(omega2)}")
+        st.latex(f"\\omega^3 = {self.format_complex_latex(omega**3)}")
+        st.latex(f"1 + \\omega + \\omega^2 = {self.format_complex_latex(1 + omega + omega2)}")
+        
+        # Geometric visualization
+        unity_roots = [(root, f"ω_{k}") for k, root, _ in roots]
+        fig = self.create_gaussian_plane_plot(unity_roots, "Cube Roots of Unity")
+        st.plotly_chart(fig)
+        
+        st.info("💡 The cube roots of unity form an equilateral triangle on the unit circle")
+    
+    def _general_equation(self):
+        """Solve general equations z^n = c."""
+        st.write("### General Equation: z^n = c")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            c_input = st.text_input("Constant c:", value="8")
+        with col2:
+            n = st.number_input("Power n:", value=3, min_value=2, max_value=12)
+        
+        if st.button(f"Solve z^{n} = c"):
+            c = self.parse_complex_input(c_input)
+            
+            if c is not None:
+                if abs(c) < 1e-10:
+                    st.success(f"z^{n} = 0 has only one solution: z = 0")
+                    return
+                
+                st.write(f"### Solving z^{n} = {self.format_complex_latex(c)}")
+                
+                # Find all nth roots of c
+                r, theta = self.complex_to_polar(c)
+                solutions = []
+                
+                for k in range(n):
+                    r_sol = r ** (1/n)
+                    theta_sol = (theta + 2*np.pi*k) / n
+                    solution = self.polar_to_complex(r_sol, theta_sol)
+                    solutions.append((k, solution, theta_sol))
+                
+                st.write(f"### All {n} solutions:")
+                
+                for k, solution, theta_k in solutions:
+                    st.latex(f"z_{k} = \\sqrt[{n}]{{|c|}} \\cdot e^{{i\\frac{{\\arg(c) + 2\\pi \\cdot {k}}}{{{n}}}}} = {self.format_complex_latex(solution)}")
+                
+                # Show in terms of roots of unity if c is real
+                if abs(c.imag) < 1e-10 and c.real > 0:
+                    principal_root = abs(c) ** (1/n)
+                    st.write("### In terms of nth roots of unity:")
+                    st.latex(f"z_k = {principal_root:.4g} \\cdot \\omega_k")
+                    st.write(f"where ω_k are the {n}th roots of unity")
+                
+                # Visualization
+                solution_points = [(sol, f"z_{k}") for k, sol, _ in solutions]
+                solution_points.append((c, "c"))
+                
+                fig = self.create_gaussian_plane_plot(solution_points, f"Solutions to z^{n} = c")
+                st.plotly_chart(fig)
+    
+    def _custom_polynomial(self):
+        """Handle custom polynomial equations."""
+        st.write("### Custom Polynomial Equation")
+        st.write("For higher-degree polynomials, numerical methods are used.")
+        
+        degree = st.number_input("Polynomial degree:", value=3, min_value=2, max_value=8)
+        
+        coefficients = []
+        st.write("Enter coefficients (from highest to lowest degree):")
+        
+        for i in range(degree + 1):
+            power = degree - i
+            if power == 0:
+                label = "Constant term:"
+            elif power == 1:
+                label = "z coefficient:"
+            else:
+                label = f"z^{power} coefficient:"
+            
+            coeff_input = st.text_input(label, value="1" if i == 0 else "0", key=f"coeff_{i}")
+            coeff = self.parse_complex_input(coeff_input)
+            if coeff is not None:
+                coefficients.append(coeff)
+        
+        if st.button("Find Polynomial Roots") and len(coefficients) == degree + 1:
+            # Create polynomial string for display
+            poly_terms = []
+            for i, coeff in enumerate(coefficients):
+                power = degree - i
+                if abs(coeff) > 1e-10:  # Only include non-zero terms
+                    if power == 0:
+                        poly_terms.append(f"{self.format_complex_latex(coeff)}")
+                    elif power == 1:
+                        if abs(coeff - 1) < 1e-10:
+                            poly_terms.append("z")
+                        elif abs(coeff + 1) < 1e-10:
+                            poly_terms.append("-z")
+                        else:
+                            poly_terms.append(f"{self.format_complex_latex(coeff)}z")
+                    else:
+                        if abs(coeff - 1) < 1e-10:
+                            poly_terms.append(f"z^{{{power}}}")
+                        elif abs(coeff + 1) < 1e-10:
+                            poly_terms.append(f"-z^{{{power}}}")
+                        else:
+                            poly_terms.append(f"{self.format_complex_latex(coeff)}z^{{{power}}}")
+            
+            poly_str = " + ".join(poly_terms).replace(" + -", " - ")
+            st.write(f"### Finding roots of: {poly_str} = 0")
+            
+            try:
+                # Convert to numpy polynomial format (reverse order)
+                numpy_coeffs = coefficients[::-1]
+                roots = np.roots(coefficients)
+                
+                st.write(f"### Found {len(roots)} roots:")
+                
+                for i, root in enumerate(roots):
+                    if np.isreal(root):
+                        st.latex(f"z_{{{i+1}}} = {root.real:.6g}")
+                    else:
+                        st.latex(f"z_{{{i+1}}} = {self.format_complex_latex(complex(root))}")
+                
+                # Visualization if not too many roots
+                if len(roots) <= 12:
+                    root_points = [(complex(root), f"z_{i+1}") for i, root in enumerate(roots)]
+                    fig = self.create_gaussian_plane_plot(root_points, f"Polynomial Roots (degree {degree})")
+                    st.plotly_chart(fig)
+                
+                st.info(f"💡 According to the Fundamental Theorem of Algebra, this degree-{degree} polynomial has exactly {degree} roots (counting multiplicities)")
+                
+            except Exception as e:
+                st.error(f"Error finding roots: {str(e)}")
+                st.write("This might be due to numerical instability for high-degree polynomials.")

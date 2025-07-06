@@ -5,6 +5,7 @@ Streamlit UI for Linear Algebra Calculator
 """
 
 import streamlit as st
+import numpy as np
 from st_components.st_utils import StreamOutput # StreamOutput is not used directly in streamlit_app.py, but LinAlgCalculator needs it.
 from st_components.st_calculator_operations import LinAlgCalculator
 from st_components.st_quiz_ui import QuizComponent
@@ -15,6 +16,7 @@ from st_components.st_summation_calculator import SummationCalculator
 from st_components.st_complex_operations import ComplexOperations
 from st_components.st_determinant_operations import DeterminantOperations
 from st_components.st_cramers_rule import CramersRule
+from st_components.st_math_utils import MathUtils
 
 # Set page configuration
 st.set_page_config(
@@ -190,7 +192,7 @@ def main():
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;" stroke="#f0f2f6" stroke-width="2">
                 <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
-            <span class="rainbow-text">GitHub v1.9.1</span>
+            <span class="rainbow-text">GitHub v1.9.2</span>
         </a>
     </div>
     ''', unsafe_allow_html=True)
@@ -201,7 +203,7 @@ def main():
                              "Triangle Area", "Point-Line Distance", "Check Collinear"],
         "Lines and Planes": ["Plane from 3 Points", "Point-to-Plane Distance", "Line-Plane Intersection", "Plane Equation"],
         "Matrix Operations": ["Batch Expression Calculator", "Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
-                             "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", 
+                             "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Gauss-Jordan System Solver", "Special Matrices", 
                              "Eigenvalues and Eigenvectors"],
         "Determinants": ["2×2 Determinant & Parallelogram Area", "3×3 Determinant & Sarrus Rule", 
                         "General Determinant", "Exercise Examples"],
@@ -212,6 +214,7 @@ def main():
         "Linear Mappings": ["Check Linearity", "Matrix Representation", "Polynomial Mappings", "Trigonometric Mappings", 
                            "Dot Product Mappings", "Quadratic Forms", "Matrix-Vector Multiplication"],
         "Complex Numbers": ["Addition", "Multiplication", "Division", "Conjugate", "Polar Form", 
+                           "Polar Arithmetic", "Powers & Roots", "Polynomial Equations",
                            "Gaussian Plane Visualization", "Exercise Examples"],
         "Series & Summations": ["General Summation", "Geometric Series", "Arithmetic Series", "Pattern Recognition", "Exercise Helper"]
     }
@@ -762,7 +765,7 @@ def main():
     
     elif category == "Matrix Operations":
         matrix_operations = ["Batch Expression Calculator", "Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
-                           "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", 
+                           "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Gauss-Jordan System Solver", "Special Matrices", 
                            "Eigenvalues and Eigenvectors"]
         
         # Auto-select operation if it came from search
@@ -952,6 +955,87 @@ def main():
                     calculator.matrix_inverse(matrix)
                 else:
                     st.error("Please enter a matrix.")
+                    
+        elif operation == "Gauss-Jordan System Solver":
+            st.write("Solve linear systems using Gauss-Jordan elimination with step-by-step visualization.")
+            
+            input_method = st.radio("Input method:", ["Augmented Matrix", "Separate A and b"])
+            
+            if input_method == "Augmented Matrix":
+                matrix_input = st.text_area(
+                    "Enter augmented matrix [A|b] (rows separated by semicolons):",
+                    value="2, 1, -1, 8; -3, -1, 2, -11; -2, 1, 2, -3",
+                    height=100
+                )
+                
+                if st.button("Solve using Gauss-Jordan"):
+                    try:
+                        augmented = MathUtils.parse_matrix(matrix_input)
+                        if augmented.shape[0] != augmented.shape[1] - 1:
+                            st.error("Matrix must be square coefficient matrix with one additional column")
+                            return
+                        
+                        calculator.gauss_jordan_solver(augmented)
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+            
+            else:  # Separate A and b
+                col1, col2 = st.columns([2, 1])
+                
+                with col1:
+                    a_input = st.text_area(
+                        "Coefficient Matrix A:",
+                        value="2, 1, -1; -3, -1, 2; -2, 1, 2",
+                        height=100
+                    )
+                
+                with col2:
+                    b_input = st.text_input(
+                        "Constants Vector b:",
+                        value="8; -11; -3"
+                    )
+                
+                if st.button("Solve using Gauss-Jordan"):
+                    try:
+                        A = MathUtils.parse_matrix(a_input)
+                        
+                        # Parse b vector
+                        if ';' in b_input:
+                            b = np.array([float(x.strip()) for x in b_input.split(';')])
+                        else:
+                            b = np.array([float(x.strip()) for x in b_input.split(',')])
+                        
+                        if A.shape[0] != A.shape[1]:
+                            st.error("Coefficient matrix A must be square")
+                            return
+                        
+                        if len(b) != A.shape[0]:
+                            st.error("Vector b must have same number of elements as rows in A")
+                            return
+                        
+                        # Create augmented matrix
+                        augmented = np.hstack([A, b.reshape(-1, 1)])
+                        calculator.gauss_jordan_solver(augmented)
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+            
+            with st.expander("Help: Gauss-Jordan Elimination"):
+                st.write("""
+                Gauss-Jordan elimination is an extension of Gaussian elimination that produces 
+                the reduced row echelon form (RREF) of a matrix.
+                
+                **Steps:**
+                1. Forward elimination: Create zeros below each pivot
+                2. Backward elimination: Create zeros above each pivot  
+                3. Scale: Make each pivot equal to 1
+                
+                **Result:** The solution can be read directly from the final augmented matrix.
+                
+                **Advantages:**
+                - No back-substitution needed
+                - Solution is immediately visible
+                - Can handle systems with multiple solutions
+                """)
                     
         elif operation == "Special Matrices":
             st.write("This operation generates and explains special matrices with specific properties.")

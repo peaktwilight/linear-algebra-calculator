@@ -2584,6 +2584,11 @@ Where:
                     
                     These methods are more stable and efficient than the explicit formula approach.
                     """)
+                
+                # Add Gauss-Jordan elimination option
+                st.markdown("### Gauss-Jordan Elimination")
+                if st.button("Show Gauss-Jordan Process", key="gauss_jordan_btn"):
+                    self._show_gauss_jordan_inverse(matrix)
             
             return inverse
             
@@ -2596,6 +2601,173 @@ Where:
             import traceback
             st.error(traceback.format_exc())
         return None
+    
+    def _show_gauss_jordan_inverse(self, matrix: np.ndarray):
+        """Show step-by-step Gauss-Jordan elimination for matrix inverse."""
+        n = matrix.shape[0]
+        
+        # Create augmented matrix [A|I]
+        augmented = np.hstack([matrix.astype(float), np.eye(n)])
+        
+        st.write("### Step-by-Step Gauss-Jordan Elimination")
+        st.write("**Initial Augmented Matrix [A|I]:**")
+        st.latex(self._format_augmented_matrix_latex(augmented, n))
+        
+        # Perform Gauss-Jordan elimination step by step
+        steps = []
+        current = augmented.copy()
+        
+        # Forward elimination
+        for i in range(n):
+            # Find pivot
+            pivot_row = i + np.argmax(np.abs(current[i:, i]))
+            
+            # Swap rows if needed
+            if pivot_row != i:
+                current[[i, pivot_row]] = current[[pivot_row, i]]
+                steps.append(f"Swap row {i+1} ↔ row {pivot_row+1}")
+                steps.append(self._format_augmented_matrix_latex(current, n))
+            
+            # Scale pivot row
+            pivot = current[i, i]
+            if abs(pivot) < 1e-10:
+                st.error(f"Zero pivot encountered at position ({i+1}, {i+1})")
+                return
+            
+            if abs(pivot - 1.0) > 1e-10:
+                current[i] = current[i] / pivot
+                steps.append(f"Scale row {i+1} by 1/{pivot:.3g}")
+                steps.append(self._format_augmented_matrix_latex(current, n))
+            
+            # Eliminate column
+            for j in range(n):
+                if i != j and abs(current[j, i]) > 1e-10:
+                    factor = current[j, i]
+                    current[j] = current[j] - factor * current[i]
+                    steps.append(f"Row {j+1} = Row {j+1} - ({factor:.3g}) × Row {i+1}")
+                    steps.append(self._format_augmented_matrix_latex(current, n))
+        
+        # Display steps in expandable sections
+        for i in range(0, len(steps), 2):
+            if i + 1 < len(steps):
+                with st.expander(f"Step {(i//2)+1}: {steps[i]}"):
+                    st.latex(steps[i+1])
+        
+        st.write("**Final Result:**")
+        inverse_result = current[:, n:]
+        st.latex(f"A^{{-1}} = {self._matrix_to_latex(inverse_result)}")
+    
+    def _format_augmented_matrix_latex(self, augmented: np.ndarray, n: int) -> str:
+        """Format augmented matrix for LaTeX display with vertical line."""
+        latex = r"\left(\begin{array}{" + "c" * n + "|" + "c" * n + "}\n"
+        
+        for i in range(n):
+            row_elements = []
+            for j in range(2 * n):
+                val = augmented[i, j]
+                if abs(val) < 1e-10:
+                    val = 0
+                row_elements.append(f"{val:.3g}")
+            
+            latex += " & ".join(row_elements)
+            if i < n - 1:
+                latex += r" \\ "
+        
+        latex += r"\end{array}\right)"
+        return latex
+    
+    def gauss_jordan_solver(self, augmented_matrix: np.ndarray):
+        """Solve linear system using Gauss-Jordan elimination with step-by-step display."""
+        st.subheader("Gauss-Jordan Elimination Solution")
+        
+        try:
+            n = augmented_matrix.shape[0]
+            m = augmented_matrix.shape[1]
+            
+            if m != n + 1:
+                st.error("Augmented matrix should have n+1 columns for n equations")
+                return
+            
+            st.write("### System Setup")
+            st.write("**Initial Augmented Matrix [A|b]:**")
+            st.latex(self._format_augmented_matrix_latex(augmented_matrix, n))
+            
+            # Perform Gauss-Jordan elimination
+            current = augmented_matrix.astype(float).copy()
+            steps = []
+            
+            # Forward elimination to reduced row echelon form
+            for i in range(min(n, m-1)):
+                # Find pivot
+                pivot_row = i + np.argmax(np.abs(current[i:, i]))
+                
+                # Check for zero pivot
+                if abs(current[pivot_row, i]) < 1e-10:
+                    st.error(f"Zero pivot at column {i+1}. System may be inconsistent or have infinitely many solutions.")
+                    return
+                
+                # Swap rows if needed
+                if pivot_row != i:
+                    current[[i, pivot_row]] = current[[pivot_row, i]]
+                    steps.append((f"Swap row {i+1} ↔ row {pivot_row+1}", current.copy()))
+                
+                # Scale pivot row to make pivot = 1
+                pivot = current[i, i]
+                current[i] = current[i] / pivot
+                steps.append((f"Scale row {i+1} by 1/{pivot:.3g}", current.copy()))
+                
+                # Eliminate entire column (both above and below pivot)
+                for j in range(n):
+                    if i != j and abs(current[j, i]) > 1e-10:
+                        factor = current[j, i]
+                        current[j] = current[j] - factor * current[i]
+                        steps.append((f"Row {j+1} = Row {j+1} - ({factor:.3g}) × Row {i+1}", current.copy()))
+            
+            # Display steps
+            st.write("### Step-by-Step Solution")
+            for i, (description, matrix_state) in enumerate(steps):
+                with st.expander(f"Step {i+1}: {description}"):
+                    st.latex(self._format_augmented_matrix_latex(matrix_state, n))
+            
+            # Extract solution
+            st.write("### 🎯 Final Solution")
+            
+            # Check for inconsistency
+            for i in range(n):
+                if abs(current[i, i]) < 1e-10 and abs(current[i, -1]) > 1e-10:
+                    st.error("System is inconsistent (no solution)")
+                    return
+            
+            solution = current[:, -1]
+            
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.write("**Final Reduced Row Echelon Form:**")
+                st.latex(self._format_augmented_matrix_latex(current, n))
+                
+                st.write("**Solution Vector:**")
+                solution_latex = "\\mathbf{x} = " + self._matrix_to_latex(solution.reshape(-1, 1))
+                st.latex(solution_latex)
+            
+            with col2:
+                st.write("**Component Form:**")
+                for i, x_val in enumerate(solution):
+                    st.latex(f"x_{{{i+1}}} = {x_val:.6g}")
+                
+                # Verification
+                st.write("**Verification:**")
+                A = augmented_matrix[:, :-1]
+                b = augmented_matrix[:, -1]
+                verification = A @ solution
+                
+                if np.allclose(verification, b, rtol=1e-6):
+                    st.success("✅ Solution verified!")
+                else:
+                    st.warning("⚠️ Verification shows numerical differences")
+        
+        except Exception as e:
+            st.error(f"Error during Gauss-Jordan elimination: {str(e)}")
     
     def special_matrices_generator(self):
         """
