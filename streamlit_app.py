@@ -206,7 +206,7 @@ def main():
                              "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Gauss-Jordan System Solver", "Special Matrices", 
                              "Eigenvalues and Eigenvectors"],
         "Determinants": ["2×2 Determinant & Parallelogram Area", "3×3 Determinant & Sarrus Rule", 
-                        "General Determinant", "Exercise Examples"],
+                        "General Determinant"],
         "Systems of Linear Equations": ["Solve System (Gaussian Elimination)", "Cramer's Rule", "Standard Form Analysis", 
                                        "Row Operations Analysis", "Free Parameter Analysis", 
                                        "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
@@ -215,7 +215,7 @@ def main():
                            "Dot Product Mappings", "Quadratic Forms", "Matrix-Vector Multiplication"],
         "Complex Numbers": ["Addition", "Multiplication", "Division", "Conjugate", "Polar Form", 
                            "Polar Arithmetic", "Powers & Roots", "Polynomial Equations",
-                           "Gaussian Plane Visualization", "Exercise Examples"],
+                           "Gaussian Plane Visualization"],
         "Series & Summations": ["General Summation", "Geometric Series", "Arithmetic Series", "Pattern Recognition", "Exercise Helper"]
     }
     

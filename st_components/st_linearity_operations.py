@@ -1036,29 +1036,6 @@ class LinearityOperations:
             if st.button("$L(x,y) = xy$", help="Product of variables"):
                 self._analyze_example("x*y", 2)
         
-        # Add Week 20 Exercise Examples
-        st.markdown("---")
-        st.subheader("📚 Week 20 Exercise Examples")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.write("**Example 10.5 (8AVYCE):**")
-            if st.button("$L(x,y) = (2x, 3y)$", key="ex10_5a"):
-                self._analyze_example("2*x, 3*y", 2)
-            if st.button("$L(x,y) = (x+y, x-y)$", key="ex10_5b"):
-                self._analyze_example("x+y, x-y", 2)
-                
-        with col2:
-            st.write("**Example 10.6 (QKBUT2):**")
-            if st.button("$L(x) = mx + b$", key="ex10_6", help="Linear function with b≠0"):
-                self._analyze_example("2*x + 3", 1)  # Example with m=2, b=3
-            
-        with col3:
-            st.write("**More Examples:**")
-            if st.button("$L(x,y,z) = (x, y)$", key="proj_3to2", help="Projection ℝ³→ℝ²"):
-                self._analyze_example("x, y", 3)
-        
         st.markdown("---")
         
         # Add matrix-vector multiplication section
