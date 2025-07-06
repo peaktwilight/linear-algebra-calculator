@@ -2659,18 +2659,27 @@ Where:
     
     def _format_augmented_matrix_latex(self, augmented: np.ndarray, n: int) -> str:
         """Format augmented matrix for LaTeX display with vertical line."""
-        latex = r"\left(\begin{array}{" + "c" * n + "|" + "c" * n + "}\n"
+        # Get actual matrix dimensions
+        rows, cols = augmented.shape
         
-        for i in range(n):
+        # Determine if this is for matrix inverse [A|I] or linear system [A|b]
+        if cols == 2 * n:
+            # Matrix inverse case: [A|I]
+            latex = r"\left(\begin{array}{" + "c" * n + "|" + "c" * n + "}\n"
+        else:
+            # Linear system case: [A|b]  
+            latex = r"\left(\begin{array}{" + "c" * (cols-1) + "|" + "c" + "}\n"
+        
+        for i in range(rows):
             row_elements = []
-            for j in range(2 * n):
+            for j in range(cols):
                 val = augmented[i, j]
                 if abs(val) < 1e-10:
                     val = 0
                 row_elements.append(f"{val:.3g}")
             
             latex += " & ".join(row_elements)
-            if i < n - 1:
+            if i < rows - 1:
                 latex += r" \\ "
         
         latex += r"\end{array}\right)"

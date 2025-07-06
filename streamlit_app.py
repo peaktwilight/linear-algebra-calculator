@@ -971,8 +971,10 @@ def main():
                 if st.button("Solve using Gauss-Jordan"):
                     try:
                         augmented = MathUtils.parse_matrix(matrix_input)
-                        if augmented.shape[0] != augmented.shape[1] - 1:
-                            st.error("Matrix must be square coefficient matrix with one additional column")
+                        rows, cols = augmented.shape
+                        
+                        if rows != cols - 1:
+                            st.error(f"Augmented matrix should have {rows} rows and {rows + 1} columns for a {rows}×{rows} system. Got {rows}×{cols}")
                             return
                         
                         calculator.gauss_jordan_solver(augmented)
