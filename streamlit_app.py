@@ -13,6 +13,7 @@ from st_components.st_linearity_operations import LinearityOperations
 from st_components.st_batch_calculator import BatchMatrixCalculator
 from st_components.st_summation_calculator import SummationCalculator
 from st_components.st_complex_operations import ComplexOperations
+from st_components.st_determinant_operations import DeterminantOperations
 
 # Set page configuration
 st.set_page_config(
@@ -172,6 +173,7 @@ def main():
     batch_calculator = BatchMatrixCalculator()
     summation_calculator = SummationCalculator()
     complex_calculator = ComplexOperations()
+    determinant_calculator = DeterminantOperations()
     
     # Apply minimal styling approach 
     apply_styling()
@@ -199,6 +201,8 @@ def main():
         "Matrix Operations": ["Batch Expression Calculator", "Matrix Addition", "Matrix Subtraction", "Scalar Multiplication", "Matrix Transpose", 
                              "Matrix Multiplication", "Matrix Determinant", "Matrix Inverse", "Special Matrices", 
                              "Eigenvalues and Eigenvectors"],
+        "Determinants": ["2×2 Determinant & Parallelogram Area", "3×3 Determinant & Sarrus Rule", 
+                        "General Determinant", "Exercise Examples"],
         "Systems of Linear Equations": ["Solve System (Gaussian Elimination)", "Standard Form Analysis", 
                                        "Row Operations Analysis", "Free Parameter Analysis", 
                                        "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
@@ -245,7 +249,7 @@ def main():
             st.sidebar.markdown("---")
             category = st.sidebar.selectbox(
                 "Select Operation Category",
-                ["Vector Operations", "Lines and Planes", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Quiz Mode", "Learning Resources"]
+                ["Vector Operations", "Lines and Planes", "Matrix Operations", "Determinants", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Quiz Mode", "Learning Resources"]
             )
     else:
         selected_operation_from_search = None
@@ -253,7 +257,7 @@ def main():
         # Default categories selection if no search
         category = st.sidebar.selectbox(
             "Select Operation Category",
-            ["Vector Operations", "Lines and Planes", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Quiz Mode", "Learning Resources"]
+            ["Vector Operations", "Lines and Planes", "Matrix Operations", "Determinants", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Quiz Mode", "Learning Resources"]
         )
     
     if category == "Vector Operations":
@@ -1004,6 +1008,10 @@ def main():
                     calculator.eigenvalues_eigenvectors(matrix)
                 else:
                     st.error("Please enter a matrix.")
+    
+    elif category == "Determinants":
+        # Use the determinant operations component
+        determinant_calculator.render_determinant_calculator()
     
     elif category == "Systems of Linear Equations":
         system_operations = ["Solve System (Gaussian Elimination)", "Standard Form Analysis", "Row Operations Analysis", 
