@@ -61,20 +61,42 @@ streamlit run streamlit_app.py
 - Linearity Testing for Various Function Types
 - Matrix Representation Generation
 
+## Architecture
+
+This is a **Streamlit web application** (v1.9.3) for linear algebra calculations. The architecture is modular and self-sufficient:
+
+**Entry Point:**
+- `streamlit_app.py` - Main application with routing between calculator modes
+
+**Core Components (`st_components/`):**
+- `st_math_utils.py` - Self-sufficient mathematical utilities (vectors, matrices, equations)
+- `st_calculator_operations.py` - Main calculator operations class
+- Operation mixins:
+  - `st_vector_operations_mixin.py` - Vector calculations
+  - `st_matrix_operations_mixin.py` - Matrix operations
+  - `st_plane_operations_mixin.py` - 3D geometry (planes, lines, intersections)
+- Specialized calculators:
+  - `st_batch_calculator.py` - Batch matrix expression evaluator
+  - `st_summation_calculator.py` - Series and summation calculator
+  - `st_linearity_operations.py` - Linear mapping analysis
+- UI components:
+  - `st_quiz_ui.py` - Interactive quizzes
+  - `st_learning_resources.py` - Educational content
+  - `st_visualization_utils.py` - Plotting and visualizations
+
+**Key Design Principles:**
+- All mathematical operations use numpy, sympy, and scipy directly
+- No external API dependencies
+- Organized as mixins for maintainability
+- Rich visualizations using plotly and matplotlib
+- LaTeX rendering for mathematical expressions
+
 ## File Structure
 
 -   `streamlit_app.py`: Main web application entry point
 -   `st_components/`: Streamlit interface components
-    -   `st_math_utils.py`: Core mathematical utilities and functions
-    -   `st_calculator_operations.py`: Main calculator operations
-    -   `st_batch_calculator.py`: Batch matrix expression evaluator
-    -   `st_summation_calculator.py`: Series and summation calculator
-    -   `st_quiz_ui.py`: Interactive quiz interface
-    -   `st_learning_resources.py`: Educational content and tutorials
-    -   Various operation mixins for specialized functionality
 -   `given_reference/`: Core algorithms and reference implementations
 -   `requirements.txt`: Python dependencies
--   `CLAUDE.md`: Development notes and configuration
 
 ## Online Version
 
