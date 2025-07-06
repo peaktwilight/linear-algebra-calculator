@@ -32,7 +32,7 @@ class DeterminantOperations:
         operation = st.selectbox(
             "Select Operation",
             ["2×2 Determinant & Parallelogram Area", "3×3 Determinant & Sarrus Rule", 
-             "General Determinant", "Exercise Examples"]
+             "General Determinant"]
         )
         
         if operation == "2×2 Determinant & Parallelogram Area":
@@ -41,8 +41,6 @@ class DeterminantOperations:
             self._render_3d_determinant()
         elif operation == "General Determinant":
             self._render_general_determinant()
-        elif operation == "Exercise Examples":
-            self._render_exercise_examples()
     
     def _render_2d_determinant(self):
         """Render 2×2 determinant with parallelogram area interpretation."""
@@ -498,55 +496,3 @@ class DeterminantOperations:
             except Exception as e:
                 st.error(f"Error: {str(e)}")
     
-    def _render_exercise_examples(self):
-        """Render Week 21 exercise examples."""
-        st.subheader("Week 21 Exercise Examples")
-        
-        example = st.selectbox(
-            "Select Example:",
-            ["12.1 Sticker (Q86D9C)", "12.2 Parallelogram Area (N1ERF3)", 
-             "12.3 Determinant ℝ²×² (UKQDY6)", "12.4 Determinant ℝ²×² (SE7NDL)",
-             "12.7 3D Determinants & Sarrus (T8SRHO)"]
-        )
-        
-        if example == "12.2 Parallelogram Area (N1ERF3)":
-            st.write("### Example 12.2: Area of a Parallelogram")
-            st.write("Calculate the area of the parallelogram spanned by two vectors")
-            
-            # Predefined examples
-            examples = [
-                ("Example a", np.array([3, 1]), np.array([1, 2])),
-                ("Example b", np.array([2, -1]), np.array([4, 3])),
-                ("Example c", np.array([5, 0]), np.array([2, 3]))
-            ]
-            
-            for name, v1, v2 in examples:
-                with st.expander(name):
-                    matrix = np.array([v1, v2])
-                    st.write(f"**Vectors:** v₁ = {v1}, v₂ = {v2}")
-                    self._calculate_2d_determinant(matrix)
-                    
-        elif example == "12.4 Determinant ℝ²×² (SE7NDL)":
-            st.write("### Example 12.4: 2×2 Determinants")
-            
-            matrices = [
-                ("Part a", np.array([[2, 3], [1, 4]])),
-                ("Part b", np.array([[5, -2], [3, 1]])),
-                ("Part c", np.array([[1, 1], [2, 2]]))  # Singular matrix
-            ]
-            
-            for name, matrix in matrices:
-                with st.expander(name):
-                    self._calculate_2d_determinant(matrix)
-                    
-        elif example == "12.7 3D Determinants & Sarrus (T8SRHO)":
-            st.write("### Example 12.7: 3×3 Determinants using Sarrus Rule")
-            
-            matrices = [
-                ("Part a", np.array([[1, 2, 3], [4, 5, 6], [7, 8, 10]])),
-                ("Part b", np.array([[2, -1, 0], [1, 3, -2], [0, 1, 4]]))
-            ]
-            
-            for name, matrix in matrices:
-                with st.expander(name):
-                    self._calculate_3d_determinant(matrix)
