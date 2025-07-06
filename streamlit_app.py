@@ -8,7 +8,6 @@ import streamlit as st
 import numpy as np
 from st_components.st_utils import StreamOutput # StreamOutput is not used directly in streamlit_app.py, but LinAlgCalculator needs it.
 from st_components.st_calculator_operations import LinAlgCalculator
-from st_components.st_quiz_ui import QuizComponent
 from st_components.st_learning_resources import render_learning_resources_page
 from st_components.st_linearity_operations import LinearityOperations
 from st_components.st_batch_calculator import BatchMatrixCalculator
@@ -171,7 +170,6 @@ def apply_styling():
 
 def main():
     calculator = LinAlgCalculator()
-    quiz_component = QuizComponent()
     linearity_checker = LinearityOperations()
     batch_calculator = BatchMatrixCalculator()
     summation_calculator = SummationCalculator()
@@ -254,7 +252,7 @@ def main():
             st.sidebar.markdown("---")
             category = st.sidebar.selectbox(
                 "Select Operation Category",
-                ["Vector Operations", "Lines and Planes", "Matrix Operations", "Determinants", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Quiz Mode", "Learning Resources"]
+                ["Vector Operations", "Lines and Planes", "Matrix Operations", "Determinants", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Learning Resources"]
             )
     else:
         selected_operation_from_search = None
@@ -262,7 +260,7 @@ def main():
         # Default categories selection if no search
         category = st.sidebar.selectbox(
             "Select Operation Category",
-            ["Vector Operations", "Lines and Planes", "Matrix Operations", "Determinants", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Quiz Mode", "Learning Resources"]
+            ["Vector Operations", "Lines and Planes", "Matrix Operations", "Determinants", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Learning Resources"]
         )
     
     if category == "Vector Operations":
@@ -1282,9 +1280,6 @@ def main():
     elif category == "Series & Summations":
         summation_calculator.render_summation_calculator()
     
-    elif category == "Quiz Mode":
-        quiz_component.render()
-    
     elif category == "Learning Resources":
         render_learning_resources_page()
     
@@ -1297,8 +1292,7 @@ def main():
         2.  **Select an Operation:** Choose the specific calculation you need.
         3.  **Enter Inputs:** Provide vectors/matrices in the specified format (e.g., `1,2,3` or `1,2;3,4`).
         4.  **Get Results:** Outputs and explanations will appear below the inputs.
-        5.  **Explore Quiz Mode:** Test your knowledge with interactive questions.
-        6.  **Visit Learning Resources:** For guides, examples, and concept explanations.
+        5.  **Visit Learning Resources:** For guides, examples, and concept explanations.
         """)
 
     # Enhanced footer with animations (CSS now in custom.css)

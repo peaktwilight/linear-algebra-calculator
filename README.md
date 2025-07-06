@@ -10,7 +10,7 @@
 -   📊 **Series & Pattern Recognition:** Analyze sequences, calculate geometric/arithmetic series, and solve summation problems.
 -   🎨 **Interactive Visualizations:** Understand concepts with dynamic graphical representations and LaTeX formatting.
 -   📚 **Step-by-Step Explanations:** Detailed walkthroughs with mathematical formulas and solution steps.
--   🧠 **Practice & Learn:** Interactive quizzes and comprehensive learning resources.
+-   🧠 **Practice & Learn:** Comprehensive learning resources.
 -   🌐 **Modern Web Interface:** Beautiful, responsive design with search functionality and organized categories.
 
 A comprehensive toolkit for learning and solving linear algebra problems, built as a modern web application with Streamlit.
@@ -80,7 +80,6 @@ This is a **Streamlit web application** (v1.9.4) for linear algebra calculations
   - `st_summation_calculator.py` - Series and summation calculator
   - `st_linearity_operations.py` - Linear mapping analysis
 - UI components:
-  - `st_quiz_ui.py` - Interactive quizzes
   - `st_learning_resources.py` - Educational content
   - `st_visualization_utils.py` - Plotting and visualizations
 
