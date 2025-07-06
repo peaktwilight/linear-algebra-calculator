@@ -1036,6 +1036,114 @@ class LinearityOperations:
             if st.button("$L(x,y) = xy$", help="Product of variables"):
                 self._analyze_example("x*y", 2)
         
+        # Add Week 20 Exercise Examples
+        st.markdown("---")
+        st.subheader("📚 Week 20 Exercise Examples")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.write("**Example 10.5 (8AVYCE):**")
+            if st.button("$L(x,y) = (2x, 3y)$", key="ex10_5a"):
+                self._analyze_example("2*x, 3*y", 2)
+            if st.button("$L(x,y) = (x+y, x-y)$", key="ex10_5b"):
+                self._analyze_example("x+y, x-y", 2)
+                
+        with col2:
+            st.write("**Example 10.6 (QKBUT2):**")
+            if st.button("$L(x) = mx + b$", key="ex10_6", help="Linear function with b≠0"):
+                self._analyze_example("2*x + 3", 1)  # Example with m=2, b=3
+            
+        with col3:
+            st.write("**More Examples:**")
+            if st.button("$L(x,y,z) = (x, y)$", key="proj_3to2", help="Projection ℝ³→ℝ²"):
+                self._analyze_example("x, y", 3)
+        
+        st.markdown("---")
+        
+        # Add matrix-vector multiplication section
+        st.subheader("🔍 Matrix-Vector Multiplication Linearity")
+        st.write("Check if L(v) = A⊙v defines a linear mapping (Example 10.7)")
+        
+        with st.expander("Matrix ⊙ Vector Analysis", expanded=False):
+            st.write("Enter a matrix A and check if L(v) = A⊙v is linear")
+            
+            # Matrix input
+            matrix_str = st.text_area(
+                "Enter Matrix A (rows separated by semicolons):",
+                value="1, 2; 3, 4",
+                help="Format: a11, a12; a21, a22",
+                height=100
+            )
+            
+            if st.button("🔍 Analyze Matrix Mapping", key="analyze_matrix_mapping"):
+                try:
+                    # Parse matrix
+                    matrix = np.array([
+                        [float(x.strip()) for x in row.split(',')]
+                        for row in matrix_str.split(';')
+                    ])
+                    
+                    rows, cols = matrix.shape
+                    
+                    # Display the mapping
+                    st.write("### Mapping Definition:")
+                    st.latex(f"L(\\vec{{v}}) = A \\odot \\vec{{v}}")
+                    st.write("Where A is:")
+                    st.latex(self._format_matrix_latex(matrix))
+                    
+                    # Theoretical explanation
+                    st.write("### Theoretical Analysis:")
+                    st.info("""
+                    **Theorem:** The mapping L(v) = Av (matrix-vector multiplication) is ALWAYS linear!
+                    
+                    **Proof:**
+                    1. **Additivity:** L(u + v) = A(u + v) = Au + Av = L(u) + L(v) ✅
+                    2. **Homogeneity:** L(cv) = A(cv) = c(Av) = cL(v) ✅
+                    
+                    This follows from the distributive properties of matrix multiplication.
+                    """)
+                    
+                    # Show the matrix representation
+                    st.success("✅ **This mapping is LINEAR**")
+                    st.write("**Matrix representation:** The matrix A itself represents this linear transformation!")
+                    
+                    # Demonstrate with examples
+                    st.write("### Verification with Examples:")
+                    
+                    # Generate test vectors
+                    test_vecs = []
+                    for i in range(cols):
+                        vec = np.zeros(cols)
+                        vec[i] = 1
+                        test_vecs.append(vec)
+                    
+                    # Show basis vector mappings
+                    st.write("Standard basis mappings:")
+                    for i, vec in enumerate(test_vecs):
+                        result = matrix @ vec
+                        st.latex(f"L(e_{{{i+1}}}) = A \\cdot {self._format_vector_latex(vec)} = {self._format_vector_latex(result)}")
+                    
+                    # Test additivity with specific vectors
+                    if cols >= 2:
+                        u = np.array([1] * cols)
+                        v = np.array([i+1 for i in range(cols)])
+                        
+                        Lu = matrix @ u
+                        Lv = matrix @ v
+                        L_sum = matrix @ (u + v)
+                        
+                        st.write("**Additivity test:**")
+                        st.latex(f"u = {self._format_vector_latex(u)}, v = {self._format_vector_latex(v)}")
+                        st.latex(f"L(u + v) = {self._format_vector_latex(L_sum)}")
+                        st.latex(f"L(u) + L(v) = {self._format_vector_latex(Lu)} + {self._format_vector_latex(Lv)} = {self._format_vector_latex(Lu + Lv)}")
+                        
+                        if np.allclose(L_sum, Lu + Lv):
+                            st.success("✅ Additivity verified!")
+                    
+                except Exception as e:
+                    st.error(f"Error parsing matrix: {str(e)}")
+        
         st.markdown("---")
         
         # Manual input section

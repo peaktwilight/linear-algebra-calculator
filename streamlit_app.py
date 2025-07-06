@@ -12,6 +12,7 @@ from st_components.st_learning_resources import render_learning_resources_page
 from st_components.st_linearity_operations import LinearityOperations
 from st_components.st_batch_calculator import BatchMatrixCalculator
 from st_components.st_summation_calculator import SummationCalculator
+from st_components.st_complex_operations import ComplexOperations
 
 # Set page configuration
 st.set_page_config(
@@ -170,6 +171,7 @@ def main():
     linearity_checker = LinearityOperations()
     batch_calculator = BatchMatrixCalculator()
     summation_calculator = SummationCalculator()
+    complex_calculator = ComplexOperations()
     
     # Apply minimal styling approach 
     apply_styling()
@@ -184,7 +186,7 @@ def main():
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;" stroke="#f0f2f6" stroke-width="2">
                 <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
-            <span class="rainbow-text">GitHub v1.9.0</span>
+            <span class="rainbow-text">GitHub v1.9.1</span>
         </a>
     </div>
     ''', unsafe_allow_html=True)
@@ -202,7 +204,9 @@ def main():
                                        "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
                                        "Calculate Null Space (Basis)", "Geometric Interpretation"],
         "Linear Mappings": ["Check Linearity", "Matrix Representation", "Polynomial Mappings", "Trigonometric Mappings", 
-                           "Dot Product Mappings", "Quadratic Forms"],
+                           "Dot Product Mappings", "Quadratic Forms", "Matrix-Vector Multiplication"],
+        "Complex Numbers": ["Addition", "Multiplication", "Division", "Conjugate", "Polar Form", 
+                           "Gaussian Plane Visualization", "Exercise Examples"],
         "Series & Summations": ["General Summation", "Geometric Series", "Arithmetic Series", "Pattern Recognition", "Exercise Helper"]
     }
     
@@ -241,7 +245,7 @@ def main():
             st.sidebar.markdown("---")
             category = st.sidebar.selectbox(
                 "Select Operation Category",
-                ["Vector Operations", "Lines and Planes", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Series & Summations", "Quiz Mode", "Learning Resources"]
+                ["Vector Operations", "Lines and Planes", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Quiz Mode", "Learning Resources"]
             )
     else:
         selected_operation_from_search = None
@@ -249,7 +253,7 @@ def main():
         # Default categories selection if no search
         category = st.sidebar.selectbox(
             "Select Operation Category",
-            ["Vector Operations", "Lines and Planes", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Series & Summations", "Quiz Mode", "Learning Resources"]
+            ["Vector Operations", "Lines and Planes", "Matrix Operations", "Systems of Linear Equations", "Linear Mappings", "Complex Numbers", "Series & Summations", "Quiz Mode", "Learning Resources"]
         )
     
     if category == "Vector Operations":
@@ -1170,6 +1174,10 @@ def main():
     elif category == "Linear Mappings":
         # Use the linearity checker component (it has its own header)
         linearity_checker.render_linearity_checker()
+    
+    elif category == "Complex Numbers":
+        # Use the complex operations component
+        complex_calculator.render_complex_calculator()
     
     elif category == "Series & Summations":
         summation_calculator.render_summation_calculator()
