@@ -276,17 +276,24 @@ class ComplexOperations:
         # Operation selector
         operation = st.selectbox(
             "Select Operation",
-            ["Addition", "Multiplication", "Division", "Conjugate", "Polar Form", "Gaussian Plane Visualization", "Exercise Examples"]
+            ["Addition", "Subtraction", "Multiplication", "Division", "Conjugate", "Real & Imaginary Parts", 
+             "Magnitude & Argument", "Polar Form", "Gaussian Plane Visualization", "Exercise Examples"]
         )
         
         if operation == "Addition":
             self._render_addition()
+        elif operation == "Subtraction":
+            self._render_subtraction()
         elif operation == "Multiplication":
             self._render_multiplication()
         elif operation == "Division":
             self._render_division()
         elif operation == "Conjugate":
             self._render_conjugate()
+        elif operation == "Real & Imaginary Parts":
+            self._render_real_imaginary_parts()
+        elif operation == "Magnitude & Argument":
+            self._render_magnitude_argument()
         elif operation == "Polar Form":
             self._render_polar_form()
         elif operation == "Gaussian Plane Visualization":
@@ -519,15 +526,207 @@ class ComplexOperations:
                 df = pd.DataFrame(data)
                 st.dataframe(df)
     
-    def _render_exercise_examples(self):
-        """Render specific exercise examples from Week 20."""
-        st.subheader("Week 20 Exercise Examples")
+    def _render_subtraction(self):
+        """Render subtraction interface."""
+        st.subheader("Complex Number Subtraction")
         
-        example = st.selectbox(
-            "Select Example:",
-            ["14.2 Complex Plane (KICGBV)", "14.3 Gaussian Plane (KGX8MQ)", 
-             "14.4 Addition & Multiplication (1EUM2V)", "14.5 Operations (2FXNNA)"]
-        )
+        col1, col2 = st.columns(2)
+        with col1:
+            z1_input = st.text_input("First complex number z₁:", value="5+3i", key="sub_z1")
+        with col2:
+            z2_input = st.text_input("Second complex number z₂:", value="2+i", key="sub_z2")
+        
+        if st.button("Calculate Subtraction"):
+            z1 = self.parse_complex_input(z1_input)
+            z2 = self.parse_complex_input(z2_input)
+            
+            if z1 is not None and z2 is not None:
+                result = z1 - z2
+                
+                st.write("### Step-by-Step Solution:")
+                st.latex(f"z_1 = {self.format_complex_latex(z1)}")
+                st.latex(f"z_2 = {self.format_complex_latex(z2)}")
+                st.latex(f"z_1 - z_2 = ({z1.real:.4g} + {z1.imag:.4g}i) - ({z2.real:.4g} + {z2.imag:.4g}i)")
+                st.latex(f"= ({z1.real:.4g} - {z2.real:.4g}) + ({z1.imag:.4g} - {z2.imag:.4g})i")
+                st.latex(f"= {self.format_complex_latex(result)}")
+                
+                st.success(f"Result: {self.format_complex_latex(result)}")
+                
+                # Visualization
+                st.write("### Visualization:")
+                fig = self.create_gaussian_plane_plot([
+                    (z1, "z₁"),
+                    (z2, "z₂"),
+                    (result, "z₁ - z₂")
+                ], title="Complex Subtraction on Gaussian Plane")
+                st.plotly_chart(fig)
+    
+    def _render_real_imaginary_parts(self):
+        """Render real and imaginary parts extraction interface."""
+        st.subheader("Real & Imaginary Parts")
+        
+        z_input = st.text_input("Enter complex number z:", value="3+4i")
+        
+        if st.button("Extract Parts"):
+            z = self.parse_complex_input(z_input)
+            
+            if z is not None:
+                real_part = z.real
+                imag_part = z.imag
+                
+                st.write("### Results:")
+                st.latex(f"z = {self.format_complex_latex(z)}")
+                st.latex(f"\\text{{Re}}(z) = {real_part:.4g}")
+                st.latex(f"\\text{{Im}}(z) = {imag_part:.4g}")
+                
+                # Properties
+                st.write("### Properties:")
+                if real_part == 0:
+                    st.info("This is a purely imaginary number")
+                elif imag_part == 0:
+                    st.info("This is a real number")
+                else:
+                    st.info("This is a complex number with both real and imaginary parts")
+                
+                # Visualization with components highlighted
+                fig = self.create_gaussian_plane_plot([
+                    (z, f"z = {self.format_complex_latex(z)}")
+                ], title="Complex Number Components")
+                
+                # Add component lines
+                fig.add_trace(go.Scatter(
+                    x=[0, real_part], y=[0, 0],
+                    mode='lines+markers',
+                    name=f'Real part = {real_part:.4g}',
+                    line=dict(color='orange', width=2, dash='dash'),
+                    marker=dict(size=[0, 8])
+                ))
+                
+                fig.add_trace(go.Scatter(
+                    x=[real_part, real_part], y=[0, imag_part],
+                    mode='lines+markers',
+                    name=f'Imaginary part = {imag_part:.4g}',
+                    line=dict(color='purple', width=2, dash='dash'),
+                    marker=dict(size=[0, 8])
+                ))
+                
+                st.plotly_chart(fig)
+    
+    def _render_magnitude_argument(self):
+        """Render magnitude and argument calculation interface."""
+        st.subheader("Magnitude & Argument")
+        
+        z_input = st.text_input("Enter complex number z:", value="3+4i")
+        
+        if st.button("Calculate Magnitude & Argument"):
+            z = self.parse_complex_input(z_input)
+            
+            if z is not None:
+                magnitude = abs(z)
+                argument = cmath.phase(z)
+                argument_deg = np.degrees(argument)
+                
+                st.write("### Results:")
+                st.latex(f"z = {self.format_complex_latex(z)}")
+                
+                # Magnitude calculation
+                st.write("**Magnitude (Modulus):**")
+                st.latex(f"|z| = \\sqrt{{({z.real:.4g})^2 + ({z.imag:.4g})^2}}")
+                st.latex(f"|z| = \\sqrt{{{z.real**2:.4g} + {z.imag**2:.4g}}} = {magnitude:.4g}")
+                
+                # Argument calculation
+                st.write("**Argument (Phase Angle):**")
+                if z.real > 0:
+                    st.latex(f"\\arg(z) = \\arctan\\left(\\frac{{{z.imag:.4g}}}{{{z.real:.4g}}}\\right) = {argument:.4g} \\text{{ rad}}")
+                elif z.real < 0 and z.imag >= 0:
+                    st.latex(f"\\arg(z) = \\arctan\\left(\\frac{{{z.imag:.4g}}}{{{z.real:.4g}}}\\right) + \\pi = {argument:.4g} \\text{{ rad}}")
+                elif z.real < 0 and z.imag < 0:
+                    st.latex(f"\\arg(z) = \\arctan\\left(\\frac{{{z.imag:.4g}}}{{{z.real:.4g}}}\\right) - \\pi = {argument:.4g} \\text{{ rad}}")
+                elif z.real == 0:
+                    if z.imag > 0:
+                        st.latex("\\arg(z) = \\frac{\\pi}{2}")
+                    elif z.imag < 0:
+                        st.latex("\\arg(z) = -\\frac{\\pi}{2}")
+                    else:
+                        st.latex("\\arg(z) \\text{ is undefined (z = 0)}")
+                
+                st.latex(f"\\arg(z) = {argument:.4g} \\text{{ rad}} = {argument_deg:.1f}°")
+                
+                # Polar form
+                st.write("**Polar Form:**")
+                st.latex(f"z = {magnitude:.4g}(\\cos({argument:.4g}) + i\\sin({argument:.4g}))")
+                st.latex(f"z = {magnitude:.4g}e^{{i{argument:.4g}}}")
+                
+                # Properties
+                st.write("### Properties:")
+                st.write(f"- **Magnitude:** {magnitude:.4g}")
+                st.write(f"- **Argument:** {argument:.4g} rad = {argument_deg:.1f}°")
+                
+                # Determine quadrant
+                if z.real > 0 and z.imag >= 0:
+                    quadrant = "First quadrant"
+                elif z.real <= 0 and z.imag > 0:
+                    quadrant = "Second quadrant"
+                elif z.real < 0 and z.imag <= 0:
+                    quadrant = "Third quadrant"
+                elif z.real >= 0 and z.imag < 0:
+                    quadrant = "Fourth quadrant"
+                else:
+                    quadrant = "On axis"
+                
+                st.write(f"- **Location:** {quadrant}")
+                
+                # Visualization
+                fig = self.create_gaussian_plane_plot([
+                    (z, f"z = {self.format_complex_latex(z)}")
+                ], title="Magnitude and Argument Visualization")
+                
+                # Add magnitude circle
+                theta_circle = np.linspace(0, 2*np.pi, 100)
+                x_circle = magnitude * np.cos(theta_circle)
+                y_circle = magnitude * np.sin(theta_circle)
+                
+                fig.add_trace(go.Scatter(
+                    x=x_circle, y=y_circle,
+                    mode='lines',
+                    name=f'|z| = {magnitude:.4g}',
+                    line=dict(color='yellow', width=1, dash='dot'),
+                    showlegend=True,
+                    hoverinfo='skip'
+                ))
+                
+                # Add argument line
+                fig.add_trace(go.Scatter(
+                    x=[0, magnitude * np.cos(argument)], 
+                    y=[0, magnitude * np.sin(argument)],
+                    mode='lines',
+                    name=f'arg(z) = {argument_deg:.1f}°',
+                    line=dict(color='red', width=3),
+                    showlegend=True
+                ))
+                
+                st.plotly_chart(fig)
+    
+    def _render_exercise_examples(self):
+        """Render specific exercise examples from Weeks 20-22."""
+        st.subheader("Complex Number Exercise Examples")
+        
+        week = st.selectbox("Select Week:", ["Week 20 Examples", "Week 22 Examples"])
+        
+        if week == "Week 20 Examples":
+            example = st.selectbox(
+                "Select Example:",
+                ["14.2 Complex Plane (KICGBV)", "14.3 Gaussian Plane (KGX8MQ)", 
+                 "14.4 Addition & Multiplication (1EUM2V)", "14.5 Operations (2FXNNA)"]
+            )
+        else:  # Week 22 Examples
+            example = st.selectbox(
+                "Select Example:",
+                ["14.6 Division (R3LX15)", "14.7 Addition & Multiplication (1IDMNV)", 
+                 "14.8 Subtraction & Division (9KJS56)", "14.9 Conjugate (WEFYB9)",
+                 "14.10 Real & Imaginary Parts (5UF7TR)", "14.14 Polar Form (246ZKY)",
+                 "14.15 Polar from Cartesian (Y4PQ8E)", "14.16 Polar Form (A2ELY3)"]
+            )
         
         if example == "14.2 Complex Plane (KICGBV)":
             st.write("### Example 14.2: Plot complex numbers on the Gaussian plane")
@@ -575,3 +774,141 @@ class ComplexOperations:
                             result = self.complex_division(z1, z2)
                             if 'error' not in result:
                                 st.latex(f"\\frac{{{z1_str}}}{{{z2_str}}} = {self.format_complex_latex(result['result'])}")
+        
+        # Week 22 Examples
+        elif example == "14.6 Division (R3LX15)":
+            st.write("### Example 14.6: Complex Number Division")
+            
+            division_examples = [
+                ("Example a", "6+8i", "3+4i"),
+                ("Example b", "2-3i", "1+2i"),
+                ("Example c", "5", "2+i")
+            ]
+            
+            for name, num_str, den_str in division_examples:
+                with st.expander(name):
+                    z1 = self.parse_complex_input(num_str)
+                    z2 = self.parse_complex_input(den_str)
+                    
+                    if z1 and z2:
+                        result = self.complex_division(z1, z2)
+                        if 'error' not in result:
+                            st.write(f"**Division:** {num_str} ÷ {den_str}")
+                            st.latex(f"\\frac{{{num_str}}}{{{den_str}}} = {self.format_complex_latex(result['result'])}")
+                            
+                            # Show step-by-step
+                            z2_conj = z2.conjugate()
+                            numerator = z1 * z2_conj
+                            denominator = (z2 * z2_conj).real
+                            
+                            st.write("**Step-by-step:**")
+                            st.latex(f"\\frac{{{self.format_complex_latex(z1)}}}{{{self.format_complex_latex(z2)}}} \\cdot \\frac{{{self.format_complex_latex(z2_conj)}}}{{{self.format_complex_latex(z2_conj)}}}")
+                            st.latex(f"= \\frac{{{self.format_complex_latex(numerator)}}}{{{denominator:.4g}}} = {self.format_complex_latex(result['result'])}")
+        
+        elif example == "14.8 Subtraction & Division (9KJS56)":
+            st.write("### Example 14.8: Subtraction and Division")
+            
+            examples = [
+                ("Subtraction", "7+2i", "3-4i"),
+                ("Division", "4+3i", "2-i")
+            ]
+            
+            for op_type, z1_str, z2_str in examples:
+                with st.expander(f"{op_type}: {z1_str} and {z2_str}"):
+                    z1 = self.parse_complex_input(z1_str)
+                    z2 = self.parse_complex_input(z2_str)
+                    
+                    if z1 and z2:
+                        if op_type == "Subtraction":
+                            result = z1 - z2
+                            st.latex(f"{z1_str} - {z2_str} = {self.format_complex_latex(result)}")
+                        else:  # Division
+                            result = self.complex_division(z1, z2)
+                            if 'error' not in result:
+                                st.latex(f"\\frac{{{z1_str}}}{{{z2_str}}} = {self.format_complex_latex(result['result'])}")
+        
+        elif example == "14.9 Conjugate (WEFYB9)":
+            st.write("### Example 14.9: Complex Conjugate")
+            
+            conjugate_examples = [
+                ("z₁", "3+4i"),
+                ("z₂", "2-5i"),
+                ("z₃", "-1+3i"),
+                ("z₄", "6")  # Real number
+            ]
+            
+            for name, z_str in conjugate_examples:
+                with st.expander(f"{name} = {z_str}"):
+                    z = self.parse_complex_input(z_str)
+                    if z:
+                        z_conj = z.conjugate()
+                        st.latex(f"{name} = {self.format_complex_latex(z)}")
+                        st.latex(f"\\overline{{{name}}} = {self.format_complex_latex(z_conj)}")
+                        
+                        # Properties
+                        st.write("**Properties:**")
+                        product = z * z_conj
+                        st.latex(f"{name} \\cdot \\overline{{{name}}} = {self.format_complex_latex(z)} \\cdot {self.format_complex_latex(z_conj)} = {product.real:.4g}")
+                        st.latex(f"|{name}|^2 = {abs(z)**2:.4g}")
+        
+        elif example == "14.10 Real & Imaginary Parts (5UF7TR)":
+            st.write("### Example 14.10: Extract Real and Imaginary Parts")
+            
+            part_examples = [
+                ("Part a", "5+3i"),
+                ("Part b", "-2+7i"),
+                ("Part c", "4-2i"),
+                ("Part d", "-6-i")
+            ]
+            
+            for name, z_str in part_examples:
+                with st.expander(f"{name}: z = {z_str}"):
+                    z = self.parse_complex_input(z_str)
+                    if z:
+                        st.latex(f"z = {self.format_complex_latex(z)}")
+                        st.latex(f"\\text{{Re}}(z) = {z.real:.4g}")
+                        st.latex(f"\\text{{Im}}(z) = {z.imag:.4g}")
+        
+        elif example == "14.14 Polar Form (246ZKY)":
+            st.write("### Example 14.14: Convert to Polar Form")
+            
+            polar_examples = [
+                ("Part a", "1+i"),
+                ("Part b", "-1+i"),
+                ("Part c", "2i"),
+                ("Part d", "-3")
+            ]
+            
+            for name, z_str in polar_examples:
+                with st.expander(f"{name}: z = {z_str}"):
+                    z = self.parse_complex_input(z_str)
+                    if z:
+                        r, theta = self.complex_to_polar(z)
+                        theta_deg = np.degrees(theta)
+                        
+                        st.latex(f"z = {self.format_complex_latex(z)}")
+                        st.latex(f"|z| = {r:.4g}")
+                        st.latex(f"\\arg(z) = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
+                        st.latex(f"z = {r:.4g}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
+                        st.latex(f"z = {r:.4g}e^{{i{theta:.4g}}}")
+        
+        elif example == "14.16 Polar Form (A2ELY3)":
+            st.write("### Example 14.16: Advanced Polar Form Conversions")
+            
+            advanced_examples = [
+                ("Part a", "√3 + i", complex(np.sqrt(3), 1)),
+                ("Part b", "-2 + 2√3i", complex(-2, 2*np.sqrt(3))),
+                ("Part c", "-4i", complex(0, -4)),
+                ("Part d", "1 - i", complex(1, -1))
+            ]
+            
+            for name, description, z in advanced_examples:
+                with st.expander(f"{name}: z = {description}"):
+                    r, theta = self.complex_to_polar(z)
+                    theta_deg = np.degrees(theta)
+                    
+                    st.latex(f"z = {self.format_complex_latex(z)}")
+                    st.latex(f"|z| = \\sqrt{{({z.real:.4g})^2 + ({z.imag:.4g})^2}} = {r:.4g}")
+                    st.latex(f"\\arg(z) = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
+                    st.latex(f"z = {r:.4g}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
+                    st.latex(f"z = {r:.4g}e^{{i{theta:.4g}}}")

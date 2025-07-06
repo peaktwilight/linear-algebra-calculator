@@ -14,6 +14,7 @@ from st_components.st_batch_calculator import BatchMatrixCalculator
 from st_components.st_summation_calculator import SummationCalculator
 from st_components.st_complex_operations import ComplexOperations
 from st_components.st_determinant_operations import DeterminantOperations
+from st_components.st_cramers_rule import CramersRule
 
 # Set page configuration
 st.set_page_config(
@@ -174,6 +175,7 @@ def main():
     summation_calculator = SummationCalculator()
     complex_calculator = ComplexOperations()
     determinant_calculator = DeterminantOperations()
+    cramers_rule_calculator = CramersRule()
     
     # Apply minimal styling approach 
     apply_styling()
@@ -203,7 +205,7 @@ def main():
                              "Eigenvalues and Eigenvectors"],
         "Determinants": ["2×2 Determinant & Parallelogram Area", "3×3 Determinant & Sarrus Rule", 
                         "General Determinant", "Exercise Examples"],
-        "Systems of Linear Equations": ["Solve System (Gaussian Elimination)", "Standard Form Analysis", 
+        "Systems of Linear Equations": ["Solve System (Gaussian Elimination)", "Cramer's Rule", "Standard Form Analysis", 
                                        "Row Operations Analysis", "Free Parameter Analysis", 
                                        "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
                                        "Calculate Null Space (Basis)", "Geometric Interpretation"],
@@ -1014,7 +1016,7 @@ def main():
         determinant_calculator.render_determinant_calculator()
     
     elif category == "Systems of Linear Equations":
-        system_operations = ["Solve System (Gaussian Elimination)", "Standard Form Analysis", "Row Operations Analysis", 
+        system_operations = ["Solve System (Gaussian Elimination)", "Cramer's Rule", "Standard Form Analysis", "Row Operations Analysis", 
                            "Free Variable / Pivot Analysis", "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
                            "Calculate Null Space (Basis)", "Geometric Interpretation"]
         
@@ -1075,6 +1077,10 @@ def main():
                     calculator.solve_gauss(matrix_input)
                 else:
                     st.error("Please enter the augmented matrix [A|b].")
+        
+        elif operation == "Cramer's Rule":
+            # Use the Cramer's Rule component
+            cramers_rule_calculator.render_cramers_rule_calculator()
                     
         elif operation == "Standard Form Analysis":
             st.write("This operation analyzes a system and presents it in the standard form (Ax = b).")
