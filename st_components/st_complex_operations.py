@@ -296,6 +296,15 @@ class ComplexOperations:
         if abs(magnitude - 1) < tolerance:
             return "1"
         
+        # Special cases for common expressions first
+        # 5th root of 1000 = 10^(3/5)
+        if abs(magnitude - (1000**(1/5))) < tolerance:
+            return "10^{3/5}"
+        
+        # 3rd root of 1000 = 10
+        if abs(magnitude - 10) < tolerance:
+            return "10"
+        
         # Check for exact powers and roots
         for base in [2, 3, 5, 10]:
             for power in range(1, 6):
@@ -310,13 +319,24 @@ class ComplexOperations:
                 for n in range(2, 10):
                     nth_root = exact_val ** (1/n)
                     if abs(magnitude - nth_root) < tolerance:
-                        if n == 2:
-                            return f"\\sqrt{{{exact_val}}}"
+                        # Special handling for powers of 10
+                        if base == 10:
+                            if n == 2:
+                                return f"\\sqrt{{10^{power}}}"
+                            elif n == 3 and power == 3:
+                                return "10"
+                            elif n == 5 and power == 3:
+                                return "10^{3/5}"
+                            else:
+                                return f"10^{{{power}/{n}}}"
                         else:
-                            return f"\\sqrt[{n}]{{{exact_val}}}"
+                            if n == 2:
+                                return f"\\sqrt{{{exact_val}}}"
+                            else:
+                                return f"\\sqrt[{n}]{{{exact_val}}}"
         
         # Check for common roots
-        for val in [2, 3, 5, 6, 7, 8, 10, 12, 15, 18, 20, 24, 27, 32, 50, 64, 100, 125, 128, 216, 243, 256, 343, 512, 625, 729, 1000, 1024]:
+        for val in [2, 3, 5, 6, 7, 8, 12, 15, 18, 20, 24, 27, 32, 50, 64, 100, 125, 128, 216, 243, 256, 343, 512, 625, 729, 1024]:
             for n in range(2, 10):
                 nth_root = val ** (1/n)
                 if abs(magnitude - nth_root) < tolerance:
