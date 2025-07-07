@@ -28,7 +28,11 @@ class ComplexOperations:
     def parse_complex_input(self, input_str: str) -> Optional[complex]:
         """Parse complex number from various input formats."""
         try:
-            # Remove spaces
+            # Handle exponential form first (before removing spaces)
+            if 'e^' in input_str.lower() and 'i' in input_str.lower():
+                return self._parse_exponential_form(input_str)
+            
+            # Remove spaces for other formats
             input_str = input_str.replace(' ', '')
             
             # Handle special cases first
@@ -110,6 +114,119 @@ class ComplexOperations:
             st.error(f"Invalid complex number format: {input_str}")
             return None
     
+    def _parse_exponential_form(self, input_str: str) -> Optional[complex]:
+        """Parse exponential form like re^(iθ) or (2/3) * e^(i*3*pi/2)."""
+        try:
+            # Handle spaces around * operator (e.g., "(2/3) * e^(i*3*pi/2)")
+            input_str = re.sub(r'\s*\*\s*', '*', input_str)
+            
+            # Find the position of 'e^' to split properly
+            e_pos = input_str.lower().find('e^')
+            if e_pos > 0:
+                magnitude_part = input_str[:e_pos].strip()
+                exponent_part = input_str[e_pos+2:].strip()  # Skip 'e^'
+                
+                # Remove trailing * from magnitude if present
+                if magnitude_part.endswith('*'):
+                    magnitude_part = magnitude_part[:-1].strip()
+                
+                parts = [magnitude_part, exponent_part]
+            else:
+                # Fallback to original split method
+                parts = input_str.lower().split('e^')
+            
+            if len(parts) == 2:
+                magnitude_str = parts[0].strip()
+                exponent_str = parts[1].strip()
+                
+                # Parse magnitude
+                if magnitude_str == '' or magnitude_str == '+':
+                    magnitude = 1.0
+                elif magnitude_str == '-':
+                    magnitude = -1.0
+                else:
+                    # Handle fractions in parentheses like (2/3)
+                    if magnitude_str.startswith('(') and magnitude_str.endswith(')'):
+                        magnitude_str = magnitude_str[1:-1]  # Remove parentheses
+                    
+                    # Try parsing as math expression first
+                    magnitude = self.parse_math_expression(magnitude_str)
+                    if magnitude is None:
+                        try:
+                            magnitude = float(magnitude_str)
+                        except:
+                            # Try evaluating simple fractions
+                            try:
+                                magnitude = eval(magnitude_str, {"__builtins__": {}}, {})
+                            except:
+                                magnitude = 1.0
+                
+                # Remove parentheses from exponent if present
+                exponent_str = exponent_str.strip('()')
+                
+                # Handle different formats: i*pi, -pi*i, -i*pi, etc.
+                if exponent_str.startswith('-'):
+                    sign = -1
+                    exponent_str = exponent_str[1:].strip()
+                else:
+                    sign = 1
+                
+                # More careful parsing to handle pi*i, i*pi patterns
+                angle_str = exponent_str
+                
+                # Remove i and * in the right order to preserve pi
+                if 'i*' in angle_str:
+                    angle_str = angle_str.replace('i*', '')
+                elif '*i' in angle_str:
+                    angle_str = angle_str.replace('*i', '')
+                elif angle_str.endswith('i'):
+                    angle_str = angle_str[:-1]
+                elif angle_str.startswith('i'):
+                    angle_str = angle_str[1:]
+                    if angle_str.startswith('*'):
+                        angle_str = angle_str[1:]
+                
+                angle_str = angle_str.strip()
+                
+                # If still empty after removing i, it means the coefficient was just i
+                if not angle_str:
+                    angle_str = '1'
+                
+                # Handle empty angle (means coefficient of i is 1)
+                if angle_str == '' or angle_str == '+':
+                    angle = 1.0
+                elif angle_str == '-':
+                    angle = -1.0
+                else:
+                    angle = self.parse_math_expression(angle_str)
+                    if angle is None:
+                        angle = float(angle_str)
+                
+                angle *= sign
+                
+                # Convert to rectangular form
+                if magnitude >= 0:
+                    real = magnitude * math.cos(angle)
+                    imag = magnitude * math.sin(angle)
+                else:
+                    # Handle negative magnitude by adding π to angle
+                    real = abs(magnitude) * math.cos(angle + math.pi)
+                    imag = abs(magnitude) * math.sin(angle + math.pi)
+                
+                # Clean up floating point errors (values very close to zero)
+                tolerance = 1e-12
+                if abs(real) < tolerance:
+                    real = 0.0
+                if abs(imag) < tolerance:
+                    imag = 0.0
+                    
+                return complex(real, imag)
+                
+        except Exception as e:
+            pass
+        
+        return None
+    
     def format_complex_latex(self, z: complex) -> str:
         """Format complex number for LaTeX display."""
         if z.imag == 0:
@@ -133,7 +250,7 @@ class ComplexOperations:
                 else:
                     return f"{z.real:.4g} - {abs(z.imag):.4g}i"
     
-    def format_complex_fraction(self, z: complex, tolerance: float = 1e-6) -> str:
+    def format_complex_fraction(self, z: complex, tolerance: float = 1e-10) -> str:
         """Format complex number as fraction when possible."""
         def to_fraction_str(value: float) -> str:
             """Convert float to fraction string if it's a simple fraction."""
@@ -142,9 +259,9 @@ class ComplexOperations:
             
             # Try to convert to fraction with different denominators
             try:
-                # First try with a reasonable limit
-                frac = Fraction(value).limit_denominator(1000)
-                if abs(float(frac) - value) < tolerance:
+                # First try with a reasonable limit - use higher limit for better detection
+                frac = Fraction(value).limit_denominator(10000)
+                if abs(float(frac) - value) < 1e-9:
                     if frac.denominator == 1:
                         return str(frac.numerator)
                     else:
@@ -178,18 +295,34 @@ class ComplexOperations:
                     7*math.pi/36: "\\frac{7\\pi}{36}",
                     5*math.pi/36: "\\frac{5\\pi}{36}",
                     
-                    # Simple fractions
+                    # Simple fractions (add more precise ones)
                     0.5: "\\frac{1}{2}",
                     1/3: "\\frac{1}{3}",
                     2/3: "\\frac{2}{3}",
                     1/4: "\\frac{1}{4}",
                     3/4: "\\frac{3}{4}",
+                    1/5: "\\frac{1}{5}",
+                    2/5: "\\frac{2}{5}",
+                    3/5: "\\frac{3}{5}",
+                    4/5: "\\frac{4}{5}",
                     1/6: "\\frac{1}{6}",
                     5/6: "\\frac{5}{6}",
+                    1/7: "\\frac{1}{7}",
+                    2/7: "\\frac{2}{7}",
+                    3/7: "\\frac{3}{7}",
+                    4/7: "\\frac{4}{7}",
+                    5/7: "\\frac{5}{7}",
+                    6/7: "\\frac{6}{7}",
                     1/8: "\\frac{1}{8}",
                     3/8: "\\frac{3}{8}",
                     5/8: "\\frac{5}{8}",
-                    7/8: "\\frac{7}{8}"
+                    7/8: "\\frac{7}{8}",
+                    1/9: "\\frac{1}{9}",
+                    2/9: "\\frac{2}{9}",
+                    4/9: "\\frac{4}{9}",
+                    5/9: "\\frac{5}{9}",
+                    7/9: "\\frac{7}{9}",
+                    8/9: "\\frac{8}{9}"
                 }
                 
                 for exact_val, latex_repr in common_values.items():
@@ -250,15 +383,17 @@ class ComplexOperations:
             elif expr_str == 'e':
                 return math.e
             
-            # Replace mathematical functions and constants
+            # Replace mathematical functions and constants (order matters!)
             expr_str = expr_str.replace('sqrt', 'math.sqrt')
-            expr_str = expr_str.replace('sin', 'math.sin')
+            expr_str = expr_str.replace('sin', 'math.sin') 
             expr_str = expr_str.replace('cos', 'math.cos')
             expr_str = expr_str.replace('tan', 'math.tan')
             expr_str = expr_str.replace('ln', 'math.log')
             expr_str = expr_str.replace('log', 'math.log10')
-            expr_str = expr_str.replace('pi', str(math.pi))
-            expr_str = expr_str.replace('e', str(math.e))
+            
+            # Handle pi carefully - replace whole word only
+            expr_str = re.sub(r'\bpi\b', str(math.pi), expr_str)
+            expr_str = re.sub(r'\be\b', str(math.e), expr_str)
             
             # Handle expressions like "7pi/36" -> "7*pi/36"
             expr_str = re.sub(r'(\d+)(' + str(math.pi) + ')', r'\1*\2', expr_str)
@@ -280,6 +415,11 @@ class ComplexOperations:
                 "pow": pow
             }
             
+            # Remove parentheses around the entire expression if present
+            expr_str = expr_str.strip()
+            if expr_str.startswith('(') and expr_str.endswith(')'):
+                expr_str = expr_str[1:-1]
+            
             result = eval(expr_str, allowed_names, {})
             return float(result)
             
@@ -289,13 +429,26 @@ class ComplexOperations:
     
     def complex_to_polar(self, z: complex) -> Tuple[float, float]:
         """Convert complex number to polar form (r, θ)."""
-        r = abs(z)
-        theta = cmath.phase(z)  # Returns angle in radians
+        # Clean up floating point errors first
+        tolerance = 1e-12
+        real_part = z.real if abs(z.real) >= tolerance else 0.0
+        imag_part = z.imag if abs(z.imag) >= tolerance else 0.0
+        
+        clean_z = complex(real_part, imag_part)
+        r = abs(clean_z)
+        theta = cmath.phase(clean_z)  # Returns angle in radians
         return r, theta
     
     def polar_to_complex(self, r: float, theta: float) -> complex:
         """Convert polar form to complex number."""
-        return cmath.rect(r, theta)
+        result = cmath.rect(r, theta)
+        
+        # Clean up floating point errors
+        tolerance = 1e-12
+        real_part = result.real if abs(result.real) >= tolerance else 0.0
+        imag_part = result.imag if abs(result.imag) >= tolerance else 0.0
+        
+        return complex(real_part, imag_part)
     
     def create_gaussian_plane_plot(self, numbers: List[Tuple[complex, str]], 
                                   title: str = "Gaussian Plane (Complex Plane)",
@@ -685,12 +838,77 @@ class ComplexOperations:
                     r, theta = self.complex_to_polar(z)
                     theta_deg = np.degrees(theta)
                     
+                    # Show how the input was interpreted
+                    st.write("### Input Interpretation:")
+                    
+                    # Use regular text display instead of LaTeX for the input string
+                    st.write(f"**Input:** `{z_input}`")
+                    
+                    # Show detailed interpretation if it's an exponential form
+                    if 'e^' in z_input.lower():
+                        st.write("**Exponential form parsing:**")
+                        # Try to extract the original magnitude and angle from the input
+                        if '*' in z_input and 'e^' in z_input.lower():
+                            # Extract parts for display
+                            parts = z_input.replace(' ', '').split('*e^')
+                            if len(parts) == 2:
+                                mag_part = parts[0].strip()
+                                exp_part = parts[1].strip()
+                                
+                                # Show the complete mathematical expression
+                                st.latex(f"{mag_part} \\cdot e^{{{exp_part}}} = {self.format_complex_latex(z)}")
+                        else:
+                            # Handle cases without * (like just e^(...))
+                            st.latex(f"e^{{{z_input.split('e^')[1].strip()}}} = {self.format_complex_latex(z)}")
+                    else:
+                        # For non-exponential forms, just show the interpretation
+                        input_fraction_form = self.format_complex_fraction(z)
+                        input_decimal_form = self.format_complex_latex(z)
+                        
+                        if input_fraction_form != input_decimal_form:
+                            st.latex(f"\\text{{Interpreted as: }} z = {input_fraction_form} = {input_decimal_form}")
+                        else:
+                            st.latex(f"\\text{{Interpreted as: }} z = {input_decimal_form}")
+                    
                     st.write("### Polar Form:")
-                    st.latex(f"z = {self.format_complex_latex(z)}")
-                    st.latex(f"|z| = r = \\sqrt{{({z.real:.4g})^2 + ({z.imag:.4g})^2}} = {r:.4g}")
-                    st.latex(f"\\arg(z) = \\theta = \\arctan\\left(\\frac{{{z.imag:.4g}}}{{{z.real:.4g}}}\\right) = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
-                    st.latex(f"z = {r:.4g}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
-                    st.latex(f"z = {r:.4g}e^{{i({theta:.4g})}}")
+                    
+                    # Show both fraction and decimal forms for the complex number
+                    fraction_form = self.format_complex_fraction(z)
+                    decimal_form = self.format_complex_latex(z)
+                    
+                    if fraction_form != decimal_form:
+                        st.latex(f"z = {fraction_form} = {decimal_form}")
+                    else:
+                        st.latex(f"z = {decimal_form}")
+                    
+                    # Show magnitude in fraction form if possible
+                    r_fraction = self.format_complex_fraction(complex(r, 0)).replace("+ 0i", "").replace("0 +", "").strip()
+                    if r_fraction != f"{r:.4g}":
+                        st.latex(f"|z| = r = \\sqrt{{({z.real:.4g})^2 + ({z.imag:.4g})^2}} = {r_fraction} = {r:.4g}")
+                    else:
+                        st.latex(f"|z| = r = \\sqrt{{({z.real:.4g})^2 + ({z.imag:.4g})^2}} = {r:.4g}")
+                    
+                    # Handle argument calculation properly for special cases
+                    if abs(z.real) < 1e-10:  # Purely imaginary
+                        if z.imag > 0:
+                            st.latex(f"\\arg(z) = \\theta = \\frac{{\\pi}}{{2}} = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
+                        else:
+                            st.latex(f"\\arg(z) = \\theta = -\\frac{{\\pi}}{{2}} = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
+                    elif abs(z.imag) < 1e-10:  # Purely real
+                        if z.real > 0:
+                            st.latex(f"\\arg(z) = \\theta = 0 = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
+                        else:
+                            st.latex(f"\\arg(z) = \\theta = \\pi = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
+                    else:
+                        st.latex(f"\\arg(z) = \\theta = \\arctan\\left(\\frac{{{z.imag:.4g}}}{{{z.real:.4g}}}\\right) = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
+                    
+                    # Show polar forms with fraction if available
+                    if r_fraction != f"{r:.4g}":
+                        st.latex(f"z = {r_fraction}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
+                        st.latex(f"z = {r_fraction}e^{{i({theta:.4g})}}")
+                    else:
+                        st.latex(f"z = {r:.4g}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
+                        st.latex(f"z = {r:.4g}e^{{i({theta:.4g})}}")
                     
                     # Automatic visualization
                     st.write("### Visualization:")
@@ -817,6 +1035,24 @@ class ComplexOperations:
                 if r is not None and theta is not None and r >= 0:
                     z = self.polar_to_complex(r, theta)
                     theta_deg = np.degrees(theta)
+                    
+                    # Show how the input was interpreted
+                    st.write("### Input Interpretation:")
+                    if use_numeric_r:
+                        r_display_input = f"{r_numeric}"
+                    else:
+                        r_display_input = r_input
+                    
+                    if use_numeric_theta:
+                        if angle_unit == "Degrees":
+                            theta_display_input = f"{theta_numeric}°"
+                        else:
+                            theta_display_input = f"{theta_numeric} rad"
+                    else:
+                        theta_display_input = theta_input + (" rad" if angle_unit == "Radians" else "°")
+                    
+                    st.write(f"**Input:** r = `{r_display_input}`, θ = `{theta_display_input}`")
+                    st.latex(f"\\text{{Interpreted as: }} r = {r:.4g}, \\theta = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
                     
                     # Calculate trig values
                     cos_val = np.cos(theta)
