@@ -16,6 +16,318 @@ class MatrixOperationsMixin:
     Mixin class that provides matrix operation methods for the Streamlit interface.
     This class contains methods that display and process matrix operations with visualization.
     """
+    
+    def smart_lgs_solver(self, input_text):
+        """
+        Smart LGS solver that automatically detects input format and solves accordingly.
+        Supports various equation formats and automatically chooses the appropriate method.
+        """
+        import re
+        
+        st.write("### Smart LGS Solver Analysis")
+        
+        try:
+            # Detect input format
+            lines = [line.strip() for line in input_text.strip().split('\n') if line.strip()]
+            
+            # Check if it's equation format (contains =) or matrix format
+            is_equation_format = any('=' in line for line in lines)
+            
+            if is_equation_format:
+                st.write("✅ **Detected Format:** Equation format")
+                # Parse equations
+                matrix, constants = self._parse_equations_to_matrix(lines)
+            else:
+                st.write("✅ **Detected Format:** Matrix format")
+                # Parse as matrix
+                matrix_str = '\n'.join(lines)
+                full_matrix = MathUtils.parse_matrix(matrix_str)
+                if full_matrix is None:
+                    st.error("Could not parse matrix. Please check format.")
+                    return
+                
+                # Handle single row case
+                if full_matrix.ndim == 1:
+                    full_matrix = full_matrix.reshape(1, -1)
+                
+                # Check if it's augmented matrix or just coefficient matrix
+                if full_matrix.shape[0] == 1:
+                    # Single equation - special handling
+                    n_cols = full_matrix.shape[1]
+                    if n_cols > 1:
+                        # Assume last column is constant
+                        matrix = full_matrix[:, :-1]
+                        constants = full_matrix[:, -1]
+                        st.write(f"• Single equation with {matrix.shape[1]} variables")
+                    else:
+                        st.error("Single value provided - need at least 2 values for an equation")
+                        return
+                elif full_matrix.shape[1] == full_matrix.shape[0] + 1:
+                    # Likely augmented matrix [A|b]
+                    matrix = full_matrix[:, :-1]
+                    constants = full_matrix[:, -1]
+                    st.write("• Detected as augmented matrix [A|b]")
+                else:
+                    # Just coefficient matrix - assume homogeneous system
+                    matrix = full_matrix
+                    constants = np.zeros(full_matrix.shape[0])
+                    st.write("• Detected as coefficient matrix (assuming homogeneous system)")
+            
+            # Analyze the system
+            m, n = matrix.shape
+            is_homogeneous = np.allclose(constants, 0)
+            
+            st.write(f"\n**System Properties:**")
+            st.write(f"• {m} equations, {n} variables")
+            st.write(f"• Type: {'Homogeneous' if is_homogeneous else 'Inhomogeneous'}")
+            
+            # Create augmented matrix
+            augmented = np.column_stack([matrix, constants])
+            
+            st.write("\n**Coefficient Matrix A:**")
+            st.latex(self._format_matrix_to_latex_string(matrix))
+            
+            st.write("**Constants vector b:**")
+            st.latex(self._format_vector_to_latex_string(constants))
+            
+            # Choose appropriate solver
+            if is_homogeneous:
+                st.write("\n### Solving Homogeneous System (Ax = 0)")
+                st.write("Finding null space basis...")
+                # Use null space calculation
+                self._smart_null_space_analysis(matrix)
+            else:
+                st.write("\n### Solving Inhomogeneous System (Ax = b)")
+                # Use Gaussian elimination
+                self._smart_gaussian_solve(augmented)
+                
+                # Also show homogeneous solution
+                st.write("\n### Associated Homogeneous System (Ax = 0)")
+                self._smart_null_space_analysis(matrix)
+                
+                st.info("""
+                💡 **General Solution Structure:**
+                x = x_p + x_h
+                
+                Where:
+                - x_p is a particular solution to Ax = b
+                - x_h is the general solution to Ax = 0
+                """)
+                
+        except Exception as e:
+            st.error(f"Error parsing input: {str(e)}")
+            st.write("**Tips:**")
+            st.write("• For equations, use format like: `x - 4y - 3z = 0`")
+            st.write("• For matrices, use comma-separated values")
+            st.write("• Separate equations/rows with new lines")
+    
+    def _parse_equations_to_matrix(self, equation_lines):
+        """Parse equation format to matrix format."""
+        import re
+        
+        # Collect all variables
+        all_vars = set()
+        equations = []
+        
+        for line in equation_lines:
+            if '=' not in line:
+                continue
+                
+            left, right = line.split('=')
+            equations.append((left.strip(), right.strip()))
+            
+            # Extract variables (x, y, z, x1, x2, x_1, x_2, etc.)
+            # More comprehensive pattern to catch all variable formats
+            vars_in_line = re.findall(r'([a-zA-Z]+_?\d*)', left)
+            all_vars.update(vars_in_line)
+        
+        # Sort variables intelligently (x before y, x1 before x2, etc.)
+        def sort_key(var):
+            # Extract base and number
+            import re
+            match = re.match(r'([a-zA-Z]+)(?:_?(\d+))?', var)
+            if match:
+                base, num = match.groups()
+                return (base, int(num) if num else 0)
+            return (var, 0)
+        
+        var_list = sorted(list(all_vars), key=sort_key)
+        var_to_idx = {var: i for i, var in enumerate(var_list)}
+        
+        st.write(f"• Variables detected: {', '.join(var_list)}")
+        
+        # Build matrix
+        n_vars = len(var_list)
+        n_eqs = len(equations)
+        matrix = np.zeros((n_eqs, n_vars))
+        constants = np.zeros(n_eqs)
+        
+        for i, (left, right) in enumerate(equations):
+            # Parse right side (constant)
+            try:
+                constants[i] = eval(right.replace('^', '**'))
+            except:
+                constants[i] = float(right)
+            
+            # Parse left side (coefficients)
+            # First, add spaces around + and - to help parsing
+            left_spaced = re.sub(r'([+-])', r' \1 ', left).strip()
+            # Handle terms like -4y, 3z, x, -x, x1, x_1, etc.
+            # Updated to match underscores: variable can be letter(s) optionally followed by _digit(s) or just digit(s)
+            terms = re.findall(r'([+-]?\s*\d*\.?\d*)\s*([a-zA-Z]+_?\d*)', left_spaced)
+            
+            for coeff_str, var in terms:
+                coeff_str = coeff_str.replace(' ', '')
+                if coeff_str in ['', '+']:
+                    coeff = 1.0
+                elif coeff_str == '-':
+                    coeff = -1.0
+                else:
+                    coeff = float(coeff_str)
+                
+                if var in var_to_idx:
+                    matrix[i, var_to_idx[var]] = coeff
+        
+        return matrix, constants
+    
+    def _smart_gaussian_solve(self, augmented):
+        """Perform Gaussian elimination with smart output."""
+        # Use existing solve_gauss logic but with cleaner output
+        from given_reference.core import mrref
+        
+        rref = mrref(augmented)
+        m, n = augmented.shape
+        n_vars = n - 1
+        
+        st.write("**RREF of augmented matrix [A|b]:**")
+        st.latex(self._format_matrix_to_latex_string(rref))
+        
+        # Check for inconsistency
+        for i in range(m):
+            if np.allclose(rref[i, :n_vars], 0) and abs(rref[i, -1]) > 1e-10:
+                st.error("❌ System is inconsistent (no solution)")
+                return
+        
+        # Find pivot columns
+        pivot_cols = []
+        for i in range(min(m, n_vars)):
+            for j in range(n_vars):
+                if abs(rref[i, j]) > 1e-10:
+                    pivot_cols.append(j)
+                    break
+        
+        free_vars = [j for j in range(n_vars) if j not in pivot_cols]
+        
+        if len(free_vars) == 0:
+            st.success("✅ System has a unique solution")
+            # Extract solution
+            solution = np.zeros(n_vars)
+            for i, col in enumerate(pivot_cols):
+                if i < m:
+                    solution[col] = rref[i, -1]
+            
+            st.write("**Solution:**")
+            for i in range(n_vars):
+                st.latex(f"x_{{{i+1}}} = {solution[i]:.4f}")
+        else:
+            st.success(f"✅ System has infinitely many solutions ({len(free_vars)} free variable{'s' if len(free_vars) > 1 else ''})")
+            self._display_parametric_solution(rref, pivot_cols, free_vars, n_vars)
+    
+    def _smart_null_space_analysis(self, matrix):
+        """Analyze null space with smart output."""
+        from given_reference.core import mrref
+        
+        rref = mrref(matrix)
+        m, n = matrix.shape
+        
+        # Find pivot columns
+        pivot_cols = []
+        for i in range(min(m, n)):
+            for j in range(n):
+                if abs(rref[i, j]) > 1e-10:
+                    pivot_cols.append(j)
+                    break
+        
+        free_vars = [j for j in range(n) if j not in pivot_cols]
+        
+        if len(free_vars) == 0:
+            st.write("**Null space:** Only the zero vector")
+            st.latex(r"\mathcal{N}(A) = \{\mathbf{0}\}")
+        else:
+            st.write(f"**Null space dimension:** {len(free_vars)}")
+            
+            # Calculate basis vectors
+            basis_vectors = []
+            for free_var in free_vars:
+                vec = np.zeros(n)
+                vec[free_var] = 1
+                
+                # Set pivot variables
+                for i, pivot_col in enumerate(pivot_cols):
+                    if i < rref.shape[0] and free_var < rref.shape[1]:
+                        vec[pivot_col] = -rref[i, free_var]
+                
+                basis_vectors.append(vec)
+            
+            st.write("**Basis vectors:**")
+            for i, vec in enumerate(basis_vectors):
+                st.latex(f"\\vec{{v}}_{{{i+1}}} = {self._format_vector_to_latex_string(vec)}")
+            
+            st.write("**General solution:**")
+            
+            # Display in the exam format (Quick & Dirty method)
+            if len(basis_vectors) == 1:
+                st.latex(f"\\vec{{x}} = \\lambda \\cdot {self._format_vector_to_latex_string(basis_vectors[0])}")
+                st.write("where λ ∈ ℝ")
+            elif len(basis_vectors) == 2:
+                st.latex(f"\\vec{{x}} = \\lambda \\cdot {self._format_vector_to_latex_string(basis_vectors[0])} + \\mu \\cdot {self._format_vector_to_latex_string(basis_vectors[1])}")
+                st.write("where λ, μ ∈ ℝ")
+            elif len(basis_vectors) == 3:
+                st.latex(f"\\vec{{x}} = \\lambda \\cdot {self._format_vector_to_latex_string(basis_vectors[0])} + \\mu \\cdot {self._format_vector_to_latex_string(basis_vectors[1])} + \\xi \\cdot {self._format_vector_to_latex_string(basis_vectors[2])}")
+                st.write("where λ, μ, ξ ∈ ℝ")
+            else:
+                param_names = [f"\\lambda_{{{i+1}}}" for i in range(len(basis_vectors))]
+                terms = [f"{param_names[i]} \\cdot {self._format_vector_to_latex_string(vec)}" for i, vec in enumerate(basis_vectors)]
+                st.latex(f"\\vec{{x}} = {' + '.join(terms)}")
+                st.write(f"where {', '.join(param_names)} ∈ ℝ")
+    
+    def _display_parametric_solution(self, rref, pivot_cols, free_vars, n_vars):
+        """Display parametric solution in exam-ready format."""
+        st.write("**Parametric solution:**")
+        
+        # Assign parameters to free variables
+        param_names = []
+        for i, free_var in enumerate(free_vars):
+            if len(free_vars) == 1:
+                param_names.append("t")
+                st.write(f"• Let x_{{{free_var+1}}} = t")
+            else:
+                param_names.append(f"t_{{{i+1}}}")
+                st.write(f"• Let x_{{{free_var+1}}} = t_{{{i+1}}}")
+        
+        # Express pivot variables
+        for i, pivot_col in enumerate(pivot_cols):
+            if i < rref.shape[0]:
+                expr_parts = [f"{rref[i, -1]:.4g}" if abs(rref[i, -1]) > 1e-10 else "0"]
+                
+                for j, free_var in enumerate(free_vars):
+                    coeff = -rref[i, free_var]
+                    if abs(coeff) > 1e-10:
+                        param = param_names[j]
+                        if abs(coeff - 1) < 1e-10:
+                            expr_parts.append(f"+ {param}")
+                        elif abs(coeff + 1) < 1e-10:
+                            expr_parts.append(f"- {param}")
+                        elif coeff > 0:
+                            expr_parts.append(f"+ {coeff:.4g}{param}")
+                        else:
+                            expr_parts.append(f"- {abs(coeff):.4g}{param}")
+                
+                expr = " ".join(expr_parts).replace("+ -", "- ").strip()
+                if expr.startswith("+ "):
+                    expr = expr[2:]
+                
+                st.latex(f"x_{{{pivot_col+1}}} = {expr}")
     def matrix_operations(self, operation, matrix_a_input, matrix_b_input=None, scalar_input=None):
         """Perform basic matrix operations like add, subtract, scalar multiply, transpose."""
         

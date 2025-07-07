@@ -1100,7 +1100,7 @@ def main():
         determinant_calculator.render_determinant_calculator()
     
     elif category == "Systems of Linear Equations":
-        system_operations = ["Solve System (Gaussian Elimination)", "Cramer's Rule", "Standard Form Analysis", "Row Operations Analysis", 
+        system_operations = ["Smart LGS Solver (Auto-detect)", "Solve System (Gaussian Elimination)", "Cramer's Rule", "Standard Form Analysis", "Row Operations Analysis", 
                            "Free Variable / Pivot Analysis", "Homogeneous/Inhomogeneous Solutions", "Check Vector Solutions",
                            "Calculate Null Space (Basis)", "Geometric Interpretation"]
         
@@ -1121,40 +1121,69 @@ def main():
         
         st.markdown(f'<h2 class="animate-subheader">{operation}</h2>', unsafe_allow_html=True)
         
-        # Unified matrix input for all operations in this category.
-        # Label will guide user on what to input based on the operation.
-        matrix_input = st.text_area(
-            "Enter Matrix (for Ax=b systems, use [A|b] format; for Null Space, enter only coefficient matrix A):",
-            value="-5, 2, 0, -9\n3, 0, 3, 0",
-            key="system_matrix_unified_input" # A unique key for this unified input
-        )
-        
-        # The expander provides general help for [A|b] but users are guided by the main label for Null Space.
-        with st.expander("Help: Matrix Format Explanation (primarily for [A|b] systems)"):
-            st.write("""
-            For a system of linear equations like:
-            ```
-            a₁x + b₁y + c₁z = d₁
-            a₂x + b₂y + c₂z = d₂
-            a₃x + b₃y + c₃z = d₃
-            ```
-            The **augmented matrix [A|b]** would be:
-            ```
-            a₁, b₁, c₁, d₁
-            a₂, b₂, c₂, d₂
-            a₃, b₃, c₃, d₃
-            ```
-            When calculating a **Null Space (Ax=0)**, you only need to enter the **coefficient matrix A** into the field above:
-            ```
-            a₁, b₁, c₁
-            a₂, b₂, c₂
-            a₃, b₃, c₃
-            ```
-            """)
+        # Only show the default matrix input for non-Smart solver operations
+        if operation != "Smart LGS Solver (Auto-detect)":
+            # Unified matrix input for all operations in this category.
+            # Label will guide user on what to input based on the operation.
+            matrix_input = st.text_area(
+                "Enter Matrix (for Ax=b systems, use [A|b] format; for Null Space, enter only coefficient matrix A):",
+                value="-5, 2, 0, -9\n3, 0, 3, 0",
+                key="system_matrix_unified_input" # A unique key for this unified input
+            )
+            
+            # The expander provides general help for [A|b] but users are guided by the main label for Null Space.
+            with st.expander("Help: Matrix Format Explanation (primarily for [A|b] systems)"):
+                st.write("""
+                For a system of linear equations like:
+                ```
+                a₁x + b₁y + c₁z = d₁
+                a₂x + b₂y + c₂z = d₂
+                a₃x + b₃y + c₃z = d₃
+                ```
+                The **augmented matrix [A|b]** would be:
+                ```
+                a₁, b₁, c₁, d₁
+                a₂, b₂, c₂, d₂
+                a₃, b₃, c₃, d₃
+                ```
+                When calculating a **Null Space (Ax=0)**, you only need to enter the **coefficient matrix A** into the field above:
+                ```
+                a₁, b₁, c₁
+                a₂, b₂, c₂
+                a₃, b₃, c₃
+                ```
+                """)
+        else:
+            matrix_input = None  # Set to None for Smart solver
         
         equations_input = None # Initialize, only used by Standard Form Analysis if checkbox is ticked
 
-        if operation == "Solve System (Gaussian Elimination)":
+        if operation == "Smart LGS Solver (Auto-detect)":
+            st.write("Enter your linear system in any format - the solver will automatically detect and solve it!")
+            st.info("""
+            **Supported formats:**
+            • Equations: `x - 4y - 3z = 0`
+            • Matrix form: `1, -4, -3, 0`
+            • Multiple equations (one per line)
+            • Homogeneous or inhomogeneous systems
+            • Systems with free variables
+            """)
+            
+            # Text area for flexible input
+            smart_input = st.text_area(
+                "Enter your linear system (equations or matrix):",
+                value="x - 4y - 3z = 0\ny + z = 0",
+                height=150,
+                key="smart_lgs_input"
+            )
+            
+            if st.button("Solve Smart", key="smart_solve"):
+                if smart_input:
+                    calculator.smart_lgs_solver(smart_input)
+                else:
+                    st.error("Please enter your linear system.")
+                    
+        elif operation == "Solve System (Gaussian Elimination)":
             st.write("This operation solves a system of linear equations using Gaussian elimination.")
             if st.button("Solve System"):
                 if matrix_input:
