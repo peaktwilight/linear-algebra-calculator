@@ -2295,7 +2295,8 @@ class ComplexOperations:
             degree = len(combined_coeffs) - 1
             
             if degree == 2:
-                return "quadratic", combined_coeffs[:3]  # [c, b, a]
+                # Return in standard form [a, b, c] where az² + bz + c = 0
+                return "quadratic", [combined_coeffs[2], combined_coeffs[1], combined_coeffs[0]]
             elif degree > 2:
                 return "higher_degree", combined_coeffs
             else:
