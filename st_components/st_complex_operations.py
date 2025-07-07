@@ -691,6 +691,71 @@ class ComplexOperations:
                     st.latex(f"\\arg(z) = \\theta = \\arctan\\left(\\frac{{{z.imag:.4g}}}{{{z.real:.4g}}}\\right) = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
                     st.latex(f"z = {r:.4g}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
                     st.latex(f"z = {r:.4g}e^{{i({theta:.4g})}}")
+                    
+                    # Automatic visualization
+                    st.write("### Visualization:")
+                    fig = self.create_gaussian_plane_plot([
+                        (z, f"z = {self.format_complex_latex(z)}")
+                    ], title="Rectangular to Polar Conversion")
+                    
+                    # Add magnitude circle
+                    theta_circle = np.linspace(0, 2*np.pi, 100)
+                    x_circle = r * np.cos(theta_circle)
+                    y_circle = r * np.sin(theta_circle)
+                    
+                    fig.add_trace(go.Scatter(
+                        x=x_circle, y=y_circle,
+                        mode='lines',
+                        name=f'|z| = {r:.3f}',
+                        line=dict(color='yellow', width=1, dash='dot'),
+                        showlegend=True,
+                        hoverinfo='skip'
+                    ))
+                    
+                    # Add angle line from origin to point
+                    fig.add_trace(go.Scatter(
+                        x=[0, z.real], 
+                        y=[0, z.imag],
+                        mode='lines',
+                        name=f'θ = {theta_deg:.1f}°',
+                        line=dict(color='red', width=3),
+                        showlegend=True
+                    ))
+                    
+                    # Add component lines (real and imaginary parts)
+                    fig.add_trace(go.Scatter(
+                        x=[0, z.real], y=[0, 0],
+                        mode='lines+markers',
+                        name=f'Real = {z.real:.3f}',
+                        line=dict(color='orange', width=2, dash='dash'),
+                        marker=dict(size=[0, 8])
+                    ))
+                    
+                    fig.add_trace(go.Scatter(
+                        x=[z.real, z.real], y=[0, z.imag],
+                        mode='lines+markers',
+                        name=f'Imaginary = {z.imag:.3f}',
+                        line=dict(color='purple', width=2, dash='dash'),
+                        marker=dict(size=[0, 8])
+                    ))
+                    
+                    # Add angle arc
+                    if abs(theta) > 0.1:  # Only show arc if angle is significant
+                        arc_theta = np.linspace(0, theta, 50)
+                        arc_radius = min(r * 0.3, 0.5)  # Smaller radius for the arc
+                        arc_x = arc_radius * np.cos(arc_theta)
+                        arc_y = arc_radius * np.sin(arc_theta)
+                        
+                        fig.add_trace(go.Scatter(
+                            x=arc_x, y=arc_y,
+                            mode='lines',
+                            name=f'Angle: {theta_deg:.1f}°',
+                            line=dict(color='orange', width=2),
+                            showlegend=False,
+                            hoverinfo='skip'
+                        ))
+                    
+                    st.plotly_chart(fig)
         
         else:  # Polar to Rectangular
             st.write("**Enter magnitude and angle (supports mathematical expressions):**")
@@ -801,6 +866,54 @@ class ComplexOperations:
                             st.latex(f"\\text{{Exact: }} z = i({imag_exact})")
                         elif imag_exact == "0":
                             st.latex(f"\\text{{Exact: }} z = {real_exact}")
+                    
+                    # Automatic visualization
+                    st.write("### Visualization:")
+                    fig = self.create_gaussian_plane_plot([
+                        (z, f"z = {fraction_form if fraction_form != decimal_form else decimal_form}")
+                    ], title="Polar to Rectangular Conversion")
+                    
+                    # Add magnitude circle
+                    theta_circle = np.linspace(0, 2*np.pi, 100)
+                    x_circle = r * np.cos(theta_circle)
+                    y_circle = r * np.sin(theta_circle)
+                    
+                    fig.add_trace(go.Scatter(
+                        x=x_circle, y=y_circle,
+                        mode='lines',
+                        name=f'|z| = {r:.3f}',
+                        line=dict(color='yellow', width=1, dash='dot'),
+                        showlegend=True,
+                        hoverinfo='skip'
+                    ))
+                    
+                    # Add angle line from origin to point
+                    fig.add_trace(go.Scatter(
+                        x=[0, z.real], 
+                        y=[0, z.imag],
+                        mode='lines',
+                        name=f'θ = {theta_deg:.1f}°',
+                        line=dict(color='red', width=3),
+                        showlegend=True
+                    ))
+                    
+                    # Add angle arc
+                    if abs(theta) > 0.1:  # Only show arc if angle is significant
+                        arc_theta = np.linspace(0, theta, 50)
+                        arc_radius = min(r * 0.3, 0.5)  # Smaller radius for the arc
+                        arc_x = arc_radius * np.cos(arc_theta)
+                        arc_y = arc_radius * np.sin(arc_theta)
+                        
+                        fig.add_trace(go.Scatter(
+                            x=arc_x, y=arc_y,
+                            mode='lines',
+                            name=f'Angle: {theta_deg:.1f}°',
+                            line=dict(color='orange', width=2),
+                            showlegend=False,
+                            hoverinfo='skip'
+                        ))
+                    
+                    st.plotly_chart(fig)
                 else:
                     if r is None:
                         st.error("Invalid magnitude expression")
