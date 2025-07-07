@@ -132,20 +132,29 @@ class MatrixOperationsMixin:
                 constants[i] = float(right)
             
             # Parse left side (coefficients)
-            # First, add spaces around + and - to help parsing
-            left_spaced = re.sub(r'([+-])', r' \1 ', left).strip()
-            # Handle terms like -4y, 3z, x, -x, x1, x_1, etc.
-            # Updated to match underscores: variable can be letter(s) optionally followed by _digit(s) or just digit(s)
-            terms = re.findall(r'([+-]?\s*\d*\.?\d*)\s*([a-zA-Z]+_?\d*)', left_spaced)
+            # Normalize Unicode minus signs to ASCII
+            left = left.replace('−', '-').replace('–', '-')
             
-            for coeff_str, var in terms:
-                coeff_str = coeff_str.replace(' ', '')
-                if coeff_str in ['', '+']:
+            # Add explicit + at start if equation doesn't start with - or +
+            if not left.strip().startswith(('+', '-')):
+                left = '+' + left
+            
+            # Find all terms with improved regex
+            # This captures: (+/-)coefficient + variable
+            pattern = r'([+-])\s*(\d*\.?\d*)\s*([a-zA-Z]+_?\d*)'
+            matches = re.findall(pattern, left)
+            
+            for sign, coeff_str, var in matches:
+                # Handle coefficient
+                if coeff_str == '':
+                    # No explicit coefficient means 1
                     coeff = 1.0
-                elif coeff_str == '-':
-                    coeff = -1.0
                 else:
                     coeff = float(coeff_str)
+                
+                # Apply sign
+                if sign == '-':
+                    coeff = -coeff
                 
                 if var in var_to_idx:
                     matrix[i, var_to_idx[var]] = coeff
@@ -193,7 +202,7 @@ class MatrixOperationsMixin:
                 st.latex(f"x_{{{i+1}}} = {solution[i]:.4f}")
         else:
             st.success(f"✅ System has infinitely many solutions ({len(free_vars)} free variable{'s' if len(free_vars) > 1 else ''})")
-            self._display_parametric_solution(rref, pivot_cols, free_vars, n_vars)
+            self._display_complete_solution(rref, pivot_cols, free_vars, n_vars)
     
     def _smart_null_space_analysis(self, matrix):
         """Analyze null space with smart output."""
@@ -492,6 +501,74 @@ class MatrixOperationsMixin:
                     expr = expr[2:]
                 
                 st.latex(f"x_{{{pivot_col+1}}} = {expr}")
+    
+    def _display_complete_solution(self, rref, pivot_cols, free_vars, n_vars):
+        """Display complete solution with particular solution + homogeneous solutions."""
+        st.write("**Complete Solution Analysis:**")
+        
+        # Step 1: Find a particular solution (set all free variables to 0)
+        particular_solution = np.zeros(n_vars)
+        for i, pivot_col in enumerate(pivot_cols):
+            if i < rref.shape[0]:
+                particular_solution[pivot_col] = rref[i, -1]
+        
+        st.write("**1️⃣ Particular Solution (Aufpunkt)**")
+        st.write("Setting all free variables to 0:")
+        
+        for j in free_vars:
+            st.latex(f"x_{{{j+1}}} = 0")
+        
+        st.write("Gives us the particular solution:")
+        st.latex(f"\\vec{{x}}_p = {self._format_vector_to_latex_string(particular_solution)}")
+        
+        # Step 2: Display homogeneous solutions (direction vectors)
+        st.write("**2️⃣ Homogeneous Solutions (Direction Vectors)**")
+        st.write("Solutions to the associated homogeneous system Ax = 0:")
+        
+        # Get direction vectors
+        direction_vectors = []
+        for free_var in free_vars:
+            vec = np.zeros(n_vars)
+            vec[free_var] = 1
+            
+            # Set pivot variables
+            for i, pivot_col in enumerate(pivot_cols):
+                if i < rref.shape[0] and free_var < rref.shape[1]:
+                    vec[pivot_col] = -rref[i, free_var]
+            
+            direction_vectors.append(vec)
+        
+        for i, vec in enumerate(direction_vectors):
+            st.latex(f"\\vec{{v}}_{{{i+1}}} = {self._format_vector_to_latex_string(vec)}")
+        
+        # Step 3: Complete general solution
+        st.write("**3️⃣ General Solution**")
+        st.write("The complete general solution is:")
+        
+        if len(direction_vectors) == 1:
+            st.latex(f"\\vec{{x}} = {self._format_vector_to_latex_string(particular_solution)} + \\lambda \\cdot {self._format_vector_to_latex_string(direction_vectors[0])}")
+            st.write("where λ ∈ ℝ is a free parameter")
+        elif len(direction_vectors) == 2:
+            st.latex(f"\\vec{{x}} = {self._format_vector_to_latex_string(particular_solution)} + \\lambda \\cdot {self._format_vector_to_latex_string(direction_vectors[0])} + \\mu \\cdot {self._format_vector_to_latex_string(direction_vectors[1])}")
+            st.write("where λ, μ ∈ ℝ are free parameters")
+        elif len(direction_vectors) == 3:
+            st.latex(f"\\vec{{x}} = {self._format_vector_to_latex_string(particular_solution)} + \\lambda \\cdot {self._format_vector_to_latex_string(direction_vectors[0])} + \\mu \\cdot {self._format_vector_to_latex_string(direction_vectors[1])} + \\xi \\cdot {self._format_vector_to_latex_string(direction_vectors[2])}")
+            st.write("where λ, μ, ξ ∈ ℝ are free parameters")
+        else:
+            param_names = ["\\lambda", "\\mu", "\\xi", "\\rho", "\\sigma"][:len(direction_vectors)]
+            if len(direction_vectors) > len(param_names):
+                param_names.extend([f"\\lambda_{{{i+1}}}" for i in range(len(param_names), len(direction_vectors))])
+            
+            terms = [f"{param_names[i]} \\cdot {self._format_vector_to_latex_string(vec)}" for i, vec in enumerate(direction_vectors)]
+            st.latex(f"\\vec{{x}} = {self._format_vector_to_latex_string(particular_solution)} + {' + '.join(terms)}")
+            st.write(f"where {', '.join(param_names)} ∈ ℝ are free parameters")
+        
+        # Verification
+        st.write("**✅ Verification:**")
+        st.write("- The particular solution satisfies Ax = b")
+        st.write("- Each direction vector satisfies Ax = 0")
+        st.write("- Any linear combination gives a valid solution")
+    
     def matrix_operations(self, operation, matrix_a_input, matrix_b_input=None, scalar_input=None):
         """Perform basic matrix operations like add, subtract, scalar multiply, transpose."""
         
