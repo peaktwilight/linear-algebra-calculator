@@ -12,6 +12,8 @@ import plotly.graph_objects as go
 from typing import Tuple, Optional, List, Dict, Union
 import cmath
 from fractions import Fraction
+import re
+import math
 
 class ComplexOperations:
     """
@@ -131,23 +133,86 @@ class ComplexOperations:
                 else:
                     return f"{z.real:.4g} - {abs(z.imag):.4g}i"
     
-    def format_complex_fraction(self, z: complex, tolerance: float = 1e-10) -> str:
+    def format_complex_fraction(self, z: complex, tolerance: float = 1e-6) -> str:
         """Format complex number as fraction when possible."""
         def to_fraction_str(value: float) -> str:
             """Convert float to fraction string if it's a simple fraction."""
             if abs(value) < tolerance:
                 return "0"
             
-            # Try to convert to fraction
+            # Try to convert to fraction with different denominators
             try:
+                # First try with a reasonable limit
                 frac = Fraction(value).limit_denominator(1000)
                 if abs(float(frac) - value) < tolerance:
                     if frac.denominator == 1:
                         return str(frac.numerator)
                     else:
                         return f"\\frac{{{frac.numerator}}}{{{frac.denominator}}}"
-                else:
-                    return f"{value:.4g}"
+                
+                # Check for common mathematical values
+                common_values = {
+                    # Exact trigonometric values
+                    math.sqrt(2)/2: "\\frac{\\sqrt{2}}{2}",
+                    math.sqrt(3)/2: "\\frac{\\sqrt{3}}{2}",
+                    math.sqrt(6)/4: "\\frac{\\sqrt{6}}{4}",
+                    (math.sqrt(6) - math.sqrt(2))/4: "\\frac{\\sqrt{6} - \\sqrt{2}}{4}",
+                    (math.sqrt(6) + math.sqrt(2))/4: "\\frac{\\sqrt{6} + \\sqrt{2}}{4}",
+                    (math.sqrt(3) - 1)/(2*math.sqrt(2)): "\\frac{\\sqrt{3} - 1}{2\\sqrt{2}}",
+                    (math.sqrt(3) + 1)/(2*math.sqrt(2)): "\\frac{\\sqrt{3} + 1}{2\\sqrt{2}}",
+                    
+                    # Common square roots
+                    math.sqrt(2): "\\sqrt{2}",
+                    math.sqrt(3): "\\sqrt{3}",
+                    math.sqrt(5): "\\sqrt{5}",
+                    math.sqrt(6): "\\sqrt{6}",
+                    1/math.sqrt(2): "\\frac{1}{\\sqrt{2}}",
+                    1/math.sqrt(3): "\\frac{1}{\\sqrt{3}}",
+                    
+                    # Pi fractions
+                    math.pi/2: "\\frac{\\pi}{2}",
+                    math.pi/3: "\\frac{\\pi}{3}",
+                    math.pi/4: "\\frac{\\pi}{4}",
+                    math.pi/6: "\\frac{\\pi}{6}",
+                    math.pi/12: "\\frac{\\pi}{12}",
+                    7*math.pi/36: "\\frac{7\\pi}{36}",
+                    5*math.pi/36: "\\frac{5\\pi}{36}",
+                    
+                    # Simple fractions
+                    0.5: "\\frac{1}{2}",
+                    1/3: "\\frac{1}{3}",
+                    2/3: "\\frac{2}{3}",
+                    1/4: "\\frac{1}{4}",
+                    3/4: "\\frac{3}{4}",
+                    1/6: "\\frac{1}{6}",
+                    5/6: "\\frac{5}{6}",
+                    1/8: "\\frac{1}{8}",
+                    3/8: "\\frac{3}{8}",
+                    5/8: "\\frac{5}{8}",
+                    7/8: "\\frac{7}{8}"
+                }
+                
+                for exact_val, latex_repr in common_values.items():
+                    if abs(value - exact_val) < tolerance:
+                        return latex_repr
+                    if abs(value + exact_val) < tolerance:
+                        return f"-{latex_repr}"
+                
+                # Try to express as multiple of sqrt(2), sqrt(3), etc.
+                for divisor, name in [(math.sqrt(2), "\\sqrt{2}"), (math.sqrt(3), "\\sqrt{3}")]:
+                    ratio = value / divisor
+                    frac_ratio = Fraction(ratio).limit_denominator(20)
+                    if abs(float(frac_ratio) - ratio) < tolerance:
+                        if frac_ratio == 1:
+                            return name
+                        elif frac_ratio == -1:
+                            return f"-{name}"
+                        elif frac_ratio.denominator == 1:
+                            return f"{frac_ratio.numerator}{name}"
+                        else:
+                            return f"\\frac{{{frac_ratio.numerator}{name}}}{{{frac_ratio.denominator}}}"
+                
+                return f"{value:.4g}"
             except:
                 return f"{value:.4g}"
         
@@ -172,6 +237,55 @@ class ComplexOperations:
                 return f"{real_frac} + {imag_frac}i"
             else:
                 return f"{real_frac} - {imag_frac.replace('-', '')}i"
+    
+    def parse_math_expression(self, expr_str: str) -> Optional[float]:
+        """Parse mathematical expressions like 'sqrt(2)', 'pi/4', '7pi/36', etc."""
+        try:
+            # Remove spaces
+            expr_str = expr_str.replace(' ', '').lower()
+            
+            # Handle special cases
+            if expr_str == 'pi':
+                return math.pi
+            elif expr_str == 'e':
+                return math.e
+            
+            # Replace mathematical functions and constants
+            expr_str = expr_str.replace('sqrt', 'math.sqrt')
+            expr_str = expr_str.replace('sin', 'math.sin')
+            expr_str = expr_str.replace('cos', 'math.cos')
+            expr_str = expr_str.replace('tan', 'math.tan')
+            expr_str = expr_str.replace('ln', 'math.log')
+            expr_str = expr_str.replace('log', 'math.log10')
+            expr_str = expr_str.replace('pi', str(math.pi))
+            expr_str = expr_str.replace('e', str(math.e))
+            
+            # Handle expressions like "7pi/36" -> "7*pi/36"
+            expr_str = re.sub(r'(\d+)(' + str(math.pi) + ')', r'\1*\2', expr_str)
+            
+            # Evaluate the expression safely
+            # Only allow certain functions and constants
+            allowed_names = {
+                "__builtins__": {},
+                "math": math,
+                "sqrt": math.sqrt,
+                "sin": math.sin,
+                "cos": math.cos,
+                "tan": math.tan,
+                "pi": math.pi,
+                "e": math.e,
+                "log": math.log,
+                "log10": math.log10,
+                "abs": abs,
+                "pow": pow
+            }
+            
+            result = eval(expr_str, allowed_names, {})
+            return float(result)
+            
+        except Exception as e:
+            st.error(f"Could not parse mathematical expression '{expr_str}': {e}")
+            return None
     
     def complex_to_polar(self, z: complex) -> Tuple[float, float]:
         """Convert complex number to polar form (r, θ)."""
@@ -579,22 +693,121 @@ class ComplexOperations:
                     st.latex(f"z = {r:.4g}e^{{i({theta:.4g})}}")
         
         else:  # Polar to Rectangular
+            st.write("**Enter magnitude and angle (supports mathematical expressions):**")
+            st.write("Examples: r = sqrt(2), θ = pi/4 or 7pi/36")
+            
             col1, col2 = st.columns(2)
             with col1:
-                r = st.number_input("Magnitude r:", value=2.0, min_value=0.0)
+                r_input = st.text_input("Magnitude r:", value="sqrt(2)", 
+                                      help="Examples: 2, sqrt(2), pi, e")
+                use_numeric_r = st.checkbox("Use numeric input for r", key="numeric_r")
+                if use_numeric_r:
+                    r_numeric = st.number_input("Magnitude r (numeric):", value=2.0, min_value=0.0)
+            
             with col2:
-                theta_deg = st.number_input("Angle θ (degrees):", value=45.0)
+                angle_unit = st.radio("Angle unit:", ["Radians", "Degrees"], key="angle_unit")
+                if angle_unit == "Radians":
+                    theta_input = st.text_input("Angle θ (radians):", value="7*pi/36",
+                                              help="Examples: pi/4, 7*pi/36, 1.5708")
+                    use_numeric_theta = st.checkbox("Use numeric input for θ", key="numeric_theta_rad")
+                    if use_numeric_theta:
+                        theta_numeric = st.number_input("Angle θ (radians):", value=0.785398)
+                else:
+                    theta_input = st.text_input("Angle θ (degrees):", value="35",
+                                              help="Examples: 45, 30, 60")
+                    use_numeric_theta = st.checkbox("Use numeric input for θ", key="numeric_theta_deg")
+                    if use_numeric_theta:
+                        theta_numeric = st.number_input("Angle θ (degrees):", value=45.0)
             
             if st.button("Convert to Rectangular"):
-                theta = np.radians(theta_deg)
-                z = self.polar_to_complex(r, theta)
+                # Parse magnitude
+                if use_numeric_r:
+                    r = r_numeric
+                    r_display = f"{r:.4g}"
+                else:
+                    r = self.parse_math_expression(r_input)
+                    r_display = r_input
                 
-                st.write("### Rectangular Form:")
-                st.latex(f"r = {r:.4g}, \\theta = {theta_deg}° = {theta:.4g} \\text{{ rad}}")
-                st.latex(f"z = r(\\cos(\\theta) + i\\sin(\\theta))")
-                st.latex(f"z = {r:.4g}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
-                st.latex(f"z = {r:.4g} \\times {np.cos(theta):.4g} + i \\times {r:.4g} \\times {np.sin(theta):.4g}")
-                st.latex(f"z = {self.format_complex_latex(z)}")
+                # Parse angle
+                if use_numeric_theta:
+                    if angle_unit == "Degrees":
+                        theta = np.radians(theta_numeric)
+                        theta_display = f"{theta_numeric}°"
+                    else:
+                        theta = theta_numeric
+                        theta_display = f"{theta_numeric} rad"
+                else:
+                    theta_parsed = self.parse_math_expression(theta_input)
+                    if theta_parsed is not None:
+                        if angle_unit == "Degrees":
+                            theta = np.radians(theta_parsed)
+                            theta_display = f"{theta_input}° = {theta_parsed:.4g}°"
+                        else:
+                            theta = theta_parsed
+                            theta_display = f"{theta_input} = {theta_parsed:.4g} rad"
+                    else:
+                        theta = None
+                        theta_display = "Invalid"
+                
+                if r is not None and theta is not None and r >= 0:
+                    z = self.polar_to_complex(r, theta)
+                    theta_deg = np.degrees(theta)
+                    
+                    # Calculate trig values
+                    cos_val = np.cos(theta)
+                    sin_val = np.sin(theta)
+                    
+                    st.write("### Rectangular Form:")
+                    st.latex(f"r = {r_display} = {r:.4g}")
+                    st.latex(f"\\theta = {theta_display} = {theta:.4g} \\text{{ rad}} = {theta_deg:.1f}°")
+                    st.latex(f"z = r(\\cos(\\theta) + i\\sin(\\theta))")
+                    
+                    # Show trig values in both exact and decimal forms
+                    cos_frac = self.format_complex_fraction(complex(cos_val, 0)).replace("+ 0i", "").replace("0 +", "").strip()
+                    sin_frac = self.format_complex_fraction(complex(sin_val, 0)).replace("+ 0i", "").replace("0 +", "").strip()
+                    
+                    if cos_frac != f"{cos_val:.4g}" or sin_frac != f"{sin_val:.4g}":
+                        st.latex(f"\\cos({theta:.4g}) = {cos_frac} \\approx {cos_val:.4g}")
+                        st.latex(f"\\sin({theta:.4g}) = {sin_frac} \\approx {sin_val:.4g}")
+                        st.latex(f"z = {r:.4g}({cos_frac} + i{sin_frac})")
+                    else:
+                        st.latex(f"z = {r:.4g}(\\cos({theta:.4g}) + i\\sin({theta:.4g}))")
+                    
+                    st.latex(f"z = {r:.4g} \\times {cos_val:.4g} + i \\times {r:.4g} \\times {sin_val:.4g}")
+                    
+                    # Show both fraction and decimal forms of final result
+                    fraction_form = self.format_complex_fraction(z)
+                    decimal_form = self.format_complex_latex(z)
+                    
+                    if fraction_form != decimal_form:
+                        st.latex(f"z = {fraction_form} \\approx {decimal_form}")
+                    else:
+                        st.latex(f"z = {decimal_form}")
+                    
+                    # Show exact calculation if we have exact trig values
+                    if cos_frac != f"{cos_val:.4g}" or sin_frac != f"{sin_val:.4g}":
+                        # Calculate exact form
+                        real_exact = f"{r_display} \\times {cos_frac}" if cos_frac != "1" else r_display
+                        imag_exact = f"{r_display} \\times {sin_frac}" if sin_frac != "1" else r_display
+                        
+                        if cos_frac == "0":
+                            real_exact = "0"
+                        if sin_frac == "0":
+                            imag_exact = "0"
+                            
+                        if real_exact != "0" and imag_exact != "0":
+                            st.latex(f"\\text{{Exact: }} z = {real_exact} + i({imag_exact})")
+                        elif real_exact == "0":
+                            st.latex(f"\\text{{Exact: }} z = i({imag_exact})")
+                        elif imag_exact == "0":
+                            st.latex(f"\\text{{Exact: }} z = {real_exact}")
+                else:
+                    if r is None:
+                        st.error("Invalid magnitude expression")
+                    elif theta is None:
+                        st.error("Invalid angle expression")
+                    elif r < 0:
+                        st.error("Magnitude must be non-negative")
     
     def _render_gaussian_plane(self):
         """Render Gaussian plane visualization interface."""
