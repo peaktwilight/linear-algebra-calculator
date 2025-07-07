@@ -1901,7 +1901,14 @@ class ComplexOperations:
                 st.write("### Verification:")
                 for k, root, _ in roots:
                     verification = root ** n
-                    st.write(f"z_{k}^{n} = {self.format_complex_latex(verification)}")
+                    
+                    # Clean up floating point errors in verification
+                    tolerance = 1e-12
+                    clean_real = verification.real if abs(verification.real) >= tolerance else 0.0
+                    clean_imag = verification.imag if abs(verification.imag) >= tolerance else 0.0
+                    clean_verification = complex(clean_real, clean_imag)
+                    
+                    st.write(f"z_{k}^{n} = {self.format_complex_latex(clean_verification)}")
                 
                 # Geometric visualization
                 root_points = [(root, f"z_{k}") for k, root, _ in roots]
@@ -1951,11 +1958,18 @@ class ComplexOperations:
                 all_correct = True
                 for k, solution in solutions:
                     verification = solution ** n
-                    is_correct = np.allclose([verification.real, verification.imag], [w.real, w.imag])
+                    
+                    # Clean up floating point errors in verification
+                    tolerance = 1e-12
+                    clean_real = verification.real if abs(verification.real) >= tolerance else 0.0
+                    clean_imag = verification.imag if abs(verification.imag) >= tolerance else 0.0
+                    clean_verification = complex(clean_real, clean_imag)
+                    
+                    is_correct = np.allclose([clean_verification.real, clean_verification.imag], [w.real, w.imag])
                     if is_correct:
-                        st.success(f"✅ z_{k}^{n} = {self.format_complex_latex(verification)}")
+                        st.success(f"✅ z_{k}^{n} = {self.format_complex_latex(clean_verification)}")
                     else:
-                        st.error(f"❌ z_{k}^{n} = {self.format_complex_latex(verification)}")
+                        st.error(f"❌ z_{k}^{n} = {self.format_complex_latex(clean_verification)}")
                         all_correct = False
                 
                 if all_correct:
