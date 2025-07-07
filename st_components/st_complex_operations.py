@@ -29,7 +29,10 @@ class ComplexOperations:
         """Parse complex number from various input formats."""
         try:
             # Handle exponential form first (before removing spaces)
-            if 'e^' in input_str.lower() and 'i' in input_str.lower():
+            # Also handle different variations of the exponential symbol
+            if ('e^' in input_str.lower() or 'eˆ' in input_str.lower()) and 'i' in input_str.lower():
+                # Normalize the exponential symbol
+                input_str = input_str.replace('eˆ', 'e^')
                 return self._parse_exponential_form(input_str)
             
             # Remove spaces for other formats
@@ -117,6 +120,9 @@ class ComplexOperations:
     def _parse_exponential_form(self, input_str: str) -> Optional[complex]:
         """Parse exponential form like re^(iθ) or (2/3) * e^(i*3*pi/2)."""
         try:
+            # Normalize different exponential symbols
+            input_str = input_str.replace('eˆ', 'e^')
+            
             # Handle spaces around * operator (e.g., "(2/3) * e^(i*3*pi/2)")
             input_str = re.sub(r'\s*\*\s*', '*', input_str)
             
@@ -391,12 +397,14 @@ class ComplexOperations:
             expr_str = expr_str.replace('ln', 'math.log')
             expr_str = expr_str.replace('log', 'math.log10')
             
+            # Handle cases like "7pi" -> "7*pi" BEFORE replacing pi with its value
+            expr_str = re.sub(r'(\d+)(pi)', r'\1*\2', expr_str)
+            
             # Handle pi carefully - replace whole word only
             expr_str = re.sub(r'\bpi\b', str(math.pi), expr_str)
             expr_str = re.sub(r'\be\b', str(math.e), expr_str)
             
-            # Handle expressions like "7pi/36" -> "7*pi/36"
-            expr_str = re.sub(r'(\d+)(' + str(math.pi) + ')', r'\1*\2', expr_str)
+            # Handle expressions like "7*3.14159..." -> keep as is (already handled above)
             
             # Evaluate the expression safely
             # Only allow certain functions and constants
@@ -1479,10 +1487,17 @@ class ComplexOperations:
                 
                 # Verification with direct multiplication
                 direct_result = z1 * z2
-                st.write("### Verification:")
-                st.latex(f"\\text{{Direct multiplication: }} {self.format_complex_latex(direct_result)}")
                 
-                if np.allclose([result.real, result.imag], [direct_result.real, direct_result.imag]):
+                # Clean up floating point errors in the direct result
+                tolerance = 1e-12
+                clean_real = direct_result.real if abs(direct_result.real) >= tolerance else 0.0
+                clean_imag = direct_result.imag if abs(direct_result.imag) >= tolerance else 0.0
+                clean_direct_result = complex(clean_real, clean_imag)
+                
+                st.write("### Verification:")
+                st.latex(f"\\text{{Direct multiplication: }} {self.format_complex_latex(clean_direct_result)}")
+                
+                if np.allclose([result.real, result.imag], [clean_direct_result.real, clean_direct_result.imag]):
                     st.success("✅ Results match!")
                 
                 # Visualization
@@ -1544,10 +1559,17 @@ class ComplexOperations:
                 
                 # Verification
                 direct_result = z1 / z2
-                st.write("### Verification:")
-                st.latex(f"\\text{{Direct division: }} {self.format_complex_latex(direct_result)}")
                 
-                if np.allclose([result.real, result.imag], [direct_result.real, direct_result.imag]):
+                # Clean up floating point errors in the direct result
+                tolerance = 1e-12
+                clean_real = direct_result.real if abs(direct_result.real) >= tolerance else 0.0
+                clean_imag = direct_result.imag if abs(direct_result.imag) >= tolerance else 0.0
+                clean_direct_result = complex(clean_real, clean_imag)
+                
+                st.write("### Verification:")
+                st.latex(f"\\text{{Direct division: }} {self.format_complex_latex(clean_direct_result)}")
+                
+                if np.allclose([result.real, result.imag], [clean_direct_result.real, clean_direct_result.imag]):
                     st.success("✅ Results match!")
     
     def _polar_power(self):
@@ -1600,10 +1622,17 @@ class ComplexOperations:
                 
                 # Verification
                 direct_result = z ** n
-                st.write("### Verification:")
-                st.latex(f"\\text{{Direct calculation: }} {self.format_complex_latex(direct_result)}")
                 
-                if np.allclose([result.real, result.imag], [direct_result.real, direct_result.imag]):
+                # Clean up floating point errors in the direct result
+                tolerance = 1e-12
+                clean_real = direct_result.real if abs(direct_result.real) >= tolerance else 0.0
+                clean_imag = direct_result.imag if abs(direct_result.imag) >= tolerance else 0.0
+                clean_direct_result = complex(clean_real, clean_imag)
+                
+                st.write("### Verification:")
+                st.latex(f"\\text{{Direct calculation: }} {self.format_complex_latex(clean_direct_result)}")
+                
+                if np.allclose([result.real, result.imag], [clean_direct_result.real, clean_direct_result.imag]):
                     st.success("✅ Results match!")
                 
                 # Show pattern for powers
