@@ -73,46 +73,8 @@ class MatrixOperationsMixin:
                     constants = np.zeros(full_matrix.shape[0])
                     st.write("• Detected as coefficient matrix (assuming homogeneous system)")
             
-            # Analyze the system
-            m, n = matrix.shape
-            is_homogeneous = np.allclose(constants, 0)
-            
-            st.write(f"\n**System Properties:**")
-            st.write(f"• {m} equations, {n} variables")
-            st.write(f"• Type: {'Homogeneous' if is_homogeneous else 'Inhomogeneous'}")
-            
-            # Create augmented matrix
-            augmented = np.column_stack([matrix, constants])
-            
-            st.write("\n**Coefficient Matrix A:**")
-            st.latex(self._format_matrix_to_latex_string(matrix))
-            
-            st.write("**Constants vector b:**")
-            st.latex(self._format_vector_to_latex_string(constants))
-            
-            # Choose appropriate solver
-            if is_homogeneous:
-                st.write("\n### Solving Homogeneous System (Ax = 0)")
-                st.write("Finding null space basis...")
-                # Use null space calculation
-                self._smart_null_space_analysis(matrix)
-            else:
-                st.write("\n### Solving Inhomogeneous System (Ax = b)")
-                # Use Gaussian elimination
-                self._smart_gaussian_solve(augmented)
-                
-                # Also show homogeneous solution
-                st.write("\n### Associated Homogeneous System (Ax = 0)")
-                self._smart_null_space_analysis(matrix)
-                
-                st.info("""
-                💡 **General Solution Structure:**
-                x = x_p + x_h
-                
-                Where:
-                - x_p is a particular solution to Ax = b
-                - x_h is the general solution to Ax = 0
-                """)
+            # Perform comprehensive analysis
+            self._comprehensive_lgs_analysis(matrix, constants)
                 
         except Exception as e:
             st.error(f"Error parsing input: {str(e)}")
@@ -290,6 +252,208 @@ class MatrixOperationsMixin:
                 terms = [f"{param_names[i]} \\cdot {self._format_vector_to_latex_string(vec)}" for i, vec in enumerate(basis_vectors)]
                 st.latex(f"\\vec{{x}} = {' + '.join(terms)}")
                 st.write(f"where {', '.join(param_names)} ∈ ℝ")
+    
+    def _comprehensive_lgs_analysis(self, matrix, constants):
+        """Provide comprehensive analysis like exam solutions."""
+        from given_reference.core import mrref
+        
+        m, n = matrix.shape
+        is_homogeneous = np.allclose(constants, 0)
+        
+        st.write(f"\n**📊 System Analysis**")
+        st.write(f"• **Equations:** {m}")
+        st.write(f"• **Variables:** {n}")
+        st.write(f"• **Type:** {'Homogeneous' if is_homogeneous else 'Inhomogeneous'}")
+        
+        # Create augmented matrix and find RREF
+        augmented = np.column_stack([matrix, constants])
+        rref = mrref(augmented)
+        
+        st.write("\n**📋 Input System**")
+        st.write("**Coefficient Matrix A:**")
+        st.latex(self._format_matrix_to_latex_string(matrix))
+        
+        if not is_homogeneous:
+            st.write("**Constants vector b:**")
+            st.latex(self._format_vector_to_latex_string(constants))
+        
+        st.write("**Augmented Matrix [A|b]:**")
+        st.latex(self._format_matrix_to_latex_string(augmented))
+        
+        st.write("\n**🔄 Row Reduction to RREF**")
+        st.latex(self._format_matrix_to_latex_string(rref))
+        
+        # Analyze consistency and dependency
+        rank_A = self._calculate_rank(matrix)
+        rank_augmented = self._calculate_rank(augmented)
+        
+        st.write("\n**🎯 System Properties Analysis**")
+        st.write(f"• **Rank of A:** {rank_A}")
+        st.write(f"• **Rank of [A|b]:** {rank_augmented}")
+        
+        # Consistency check
+        is_consistent = (rank_A == rank_augmented)
+        
+        if not is_consistent:
+            st.error("❌ **System is INCONSISTENT** (no solution)")
+            st.write("**Reason:** rank(A) ≠ rank([A|b])")
+            self._describe_inconsistent_geometry(n)
+            return
+        
+        st.success("✅ **System is CONSISTENT** (has solution)")
+        
+        # Find pivot columns and free variables
+        pivot_cols, free_vars = self._analyze_variables(rref, n)
+        
+        st.write(f"\n**🔍 Variable Analysis**")
+        st.write(f"• **Pivot variables:** {len(pivot_cols)} (columns {[i+1 for i in pivot_cols]})")
+        st.write(f"• **Free variables:** {len(free_vars)} (columns {[i+1 for i in free_vars] if free_vars else 'none'})")
+        
+        # Determine solution type
+        if len(free_vars) == 0:
+            st.info("🎯 **UNIQUE SOLUTION** (exactly one solution)")
+            self._describe_unique_solution(rref, pivot_cols, n)
+        else:
+            st.info(f"🌐 **INFINITELY MANY SOLUTIONS** ({len(free_vars)} free parameter{'s' if len(free_vars) > 1 else ''})")
+            
+        # Geometric interpretation
+        self._describe_geometric_interpretation(n, m, rank_A, len(free_vars), is_homogeneous)
+        
+        # Solution details
+        if is_consistent:
+            if not is_homogeneous and len(free_vars) > 0:
+                st.write("\n**📋 Complete Solution Analysis**")
+                self._smart_gaussian_solve(augmented)
+                st.write("\n**🏠 Associated Homogeneous System (Ax = 0)**")
+                self._smart_null_space_analysis(matrix)
+                
+                st.info("""
+                💡 **General Solution Structure:**
+                x = x_particular + x_homogeneous
+                
+                Where:
+                - x_particular is any particular solution to Ax = b  
+                - x_homogeneous is the general solution to Ax = 0
+                """)
+            elif len(free_vars) > 0:
+                st.write("\n**🏠 Homogeneous System Analysis**")
+                self._smart_null_space_analysis(matrix)
+            else:
+                st.write("\n**✨ Unique Solution**")
+                self._smart_gaussian_solve(augmented)
+    
+    def _calculate_rank(self, matrix):
+        """Calculate matrix rank using RREF."""
+        from given_reference.core import mrref
+        rref = mrref(matrix)
+        
+        # Count non-zero rows
+        rank = 0
+        for i in range(rref.shape[0]):
+            if not np.allclose(rref[i, :], 0):
+                rank += 1
+        return rank
+    
+    def _analyze_variables(self, rref, n_vars):
+        """Analyze pivot and free variables from RREF."""
+        pivot_cols = []
+        
+        # Find pivot columns
+        for i in range(min(rref.shape[0], n_vars)):
+            for j in range(n_vars):
+                if abs(rref[i, j]) > 1e-10:
+                    pivot_cols.append(j)
+                    break
+        
+        free_vars = [j for j in range(n_vars) if j not in pivot_cols]
+        return pivot_cols, free_vars
+    
+    def _describe_unique_solution(self, rref, pivot_cols, n_vars):
+        """Describe unique solution."""
+        solution = np.zeros(n_vars)
+        for i, col in enumerate(pivot_cols):
+            if i < rref.shape[0]:
+                solution[col] = rref[i, -1]
+        
+        st.write("**Solution:**")
+        for i in range(n_vars):
+            st.latex(f"x_{{{i+1}}} = {solution[i]:.4g}")
+    
+    def _describe_geometric_interpretation(self, n_vars, n_eqs, rank, n_free, is_homogeneous):
+        """Provide geometric interpretation like exam solutions."""
+        st.write("\n**🌟 Geometric Interpretation**")
+        
+        if n_vars == 2:
+            # 2D case - lines
+            if is_homogeneous:
+                if rank == 1:
+                    st.write("📏 **Lines through origin:** The equations represent lines passing through the origin.")
+                    if n_free == 1:
+                        st.write("🔗 **Result:** The lines coincide (same line)")
+                    else:
+                        st.write("📍 **Result:** Lines intersect only at origin")
+                else:
+                    st.write("📍 **Result:** Only the origin satisfies all equations")
+            else:
+                if rank == 1:
+                    st.write("🔗 **Result:** All lines are the same (coincident)")
+                elif rank == 2:
+                    st.write("📍 **Result:** Lines intersect at exactly one point")
+                else:
+                    st.write("⚠️ **Result:** Lines are parallel but distinct (no intersection)")
+                    
+        elif n_vars == 3:
+            # 3D case - planes
+            if is_homogeneous:
+                st.write("🏠 **Planes through origin:** Each equation represents a plane passing through the origin.")
+            else:
+                st.write("✈️ **Planes in 3D space:** Each equation represents a plane.")
+            
+            if not is_homogeneous and rank < min(n_eqs, n_vars):
+                # Inconsistent case already handled above
+                pass
+            elif n_free == 0:
+                st.write("📍 **Result:** Planes intersect at exactly one point")
+            elif n_free == 1:
+                st.write("📏 **Result:** Planes intersect along a line")
+                if is_homogeneous:
+                    st.write("   (Line passes through origin)")
+            elif n_free == 2:
+                st.write("✈️ **Result:** Planes coincide (same plane)")
+            elif n_free == 3:
+                st.write("🌌 **Result:** No constraints (entire 3D space)")
+                
+        else:
+            # Higher dimensions
+            st.write(f"📐 **{n_vars}D Hyperplanes:** Each equation represents a hyperplane in {n_vars}D space.")
+            if n_free == 0:
+                st.write("📍 **Result:** Hyperplanes intersect at exactly one point")
+            elif n_free == 1:
+                st.write("📏 **Result:** Intersection is a line")
+            elif n_free == 2:
+                st.write("📱 **Result:** Intersection is a plane")
+            else:
+                st.write(f"📐 **Result:** Intersection is a {n_free}D subspace")
+        
+        # Additional linear dependency information
+        if rank < n_eqs:
+            dependent_eqs = n_eqs - rank
+            st.write(f"\n**⚠️ Linear Dependency:** {dependent_eqs} equation{'s' if dependent_eqs > 1 else ''} {'are' if dependent_eqs > 1 else 'is'} linearly dependent")
+            st.write("**Meaning:** Some equations can be derived from others (redundant)")
+    
+    def _describe_inconsistent_geometry(self, n_vars):
+        """Describe geometry for inconsistent systems."""
+        st.write("\n**🌟 Geometric Interpretation**")
+        
+        if n_vars == 2:
+            st.write("📏 **Parallel Lines:** The equations represent parallel but distinct lines")
+            st.write("**Result:** Lines never intersect (no common point)")
+        elif n_vars == 3:
+            st.write("✈️ **Parallel Planes:** The equations represent parallel but distinct planes")
+            st.write("**Result:** Planes never intersect (no common point)")
+        else:
+            st.write(f"📐 **Parallel Hyperplanes:** The equations represent parallel but distinct hyperplanes in {n_vars}D space")
+            st.write("**Result:** Hyperplanes never intersect (no common point)")
     
     def _display_parametric_solution(self, rref, pivot_cols, free_vars, n_vars):
         """Display parametric solution in exam-ready format."""
