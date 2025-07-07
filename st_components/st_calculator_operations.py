@@ -166,7 +166,7 @@ class LinAlgCalculator(VectorOperationsMixin, MatrixOperationsMixin, PlaneOperat
         """Check if given vectors are particular solutions, homogeneous solutions, or neither."""
         try:
             # Parse the augmented matrix [A|b]
-            augmented = self.framework.parse_matrix(matrix_input)
+            augmented = MathUtils.parse_matrix(matrix_input)
             
             # Split into coefficient matrix and right-hand side
             A = augmented[:, :-1]
@@ -177,7 +177,7 @@ class LinAlgCalculator(VectorOperationsMixin, MatrixOperationsMixin, PlaneOperat
             vectors = []
             for line in vector_lines:
                 if line.strip():
-                    vectors.append(self.framework.parse_vector(line.strip()))
+                    vectors.append(MathUtils.parse_vector(line.strip()))
             
             if not vectors:
                 st.error("No vectors provided to check.")
