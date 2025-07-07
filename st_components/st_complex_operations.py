@@ -256,6 +256,78 @@ class ComplexOperations:
                 else:
                     return f"{z.real:.4g} - {abs(z.imag):.4g}i"
     
+    def format_angle_exact(self, angle: float, tolerance: float = 1e-10) -> str:
+        """Format angle as exact π fraction when possible."""
+        # Normalize angle to [0, 2π)
+        angle = angle % (2 * math.pi)
+        
+        # Handle special cases
+        if abs(angle) < tolerance:
+            return "0"
+        if abs(angle - math.pi) < tolerance:
+            return "\\pi"
+        if abs(angle - 2*math.pi) < tolerance:
+            return "2\\pi"
+        
+        # Try to express as a multiple of π
+        pi_ratio = angle / math.pi
+        
+        # Check for exact π fractions with common denominators
+        for denom in [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 16, 18, 20, 24, 30, 36]:
+            for num in range(1, 2*denom + 1):
+                exact_ratio = num / denom
+                if abs(pi_ratio - exact_ratio) < tolerance:
+                    if denom == 1:
+                        if num == 1:
+                            return "\\pi"
+                        else:
+                            return f"{num}\\pi"
+                    else:
+                        if num == 1:
+                            return f"\\frac{{\\pi}}{{{denom}}}"
+                        else:
+                            return f"\\frac{{{num}\\pi}}{{{denom}}}"
+        
+        # If no exact match found, use decimal
+        return f"{angle:.4g}"
+    
+    def format_magnitude_exact(self, magnitude: float, tolerance: float = 1e-10) -> str:
+        """Format magnitude as exact form when possible."""
+        if abs(magnitude - 1) < tolerance:
+            return "1"
+        
+        # Check for exact powers and roots
+        for base in [2, 3, 5, 10]:
+            for power in range(1, 6):
+                exact_val = base ** power
+                if abs(magnitude - exact_val) < tolerance:
+                    if power == 1:
+                        return str(base)
+                    else:
+                        return f"{base}^{{{power}}}"
+                
+                # Check for nth roots
+                for n in range(2, 10):
+                    nth_root = exact_val ** (1/n)
+                    if abs(magnitude - nth_root) < tolerance:
+                        if n == 2:
+                            return f"\\sqrt{{{exact_val}}}"
+                        else:
+                            return f"\\sqrt[{n}]{{{exact_val}}}"
+        
+        # Check for common roots
+        for val in [2, 3, 5, 6, 7, 8, 10, 12, 15, 18, 20, 24, 27, 32, 50, 64, 100, 125, 128, 216, 243, 256, 343, 512, 625, 729, 1000, 1024]:
+            for n in range(2, 10):
+                nth_root = val ** (1/n)
+                if abs(magnitude - nth_root) < tolerance:
+                    if n == 2:
+                        return f"\\sqrt{{{val}}}"
+                    else:
+                        return f"\\sqrt[{n}]{{{val}}}"
+        
+        # Use decimal if no exact form found
+        return f"{magnitude:.4g}"
+
     def format_complex_fraction(self, z: complex, tolerance: float = 1e-10) -> str:
         """Format complex number as fraction when possible."""
         def to_fraction_str(value: float) -> str:
@@ -1893,9 +1965,20 @@ class ComplexOperations:
                 # Display formula
                 st.latex(f"z_k = \\sqrt[{n}]{{r}} \\cdot e^{{i\\frac{{\\theta + 2\\pi k}}{{{n}}}}}, \\quad k = 0, 1, ..., {n-1}")
                 
-                # Show each root
+                # Show each root with exact forms
                 for k, root, theta_k in roots:
-                    st.latex(f"z_{{{k}}} = {r**(1/n):.4g} e^{{i{theta_k:.4g}}} = {self.format_complex_latex(root)}")
+                    # Format magnitude exactly
+                    magnitude_exact = self.format_magnitude_exact(r**(1/n))
+                    # Format angle exactly
+                    angle_exact = self.format_angle_exact(theta_k)
+                    
+                    # Display both exact and decimal forms
+                    if magnitude_exact != f"{r**(1/n):.4g}" or angle_exact != f"{theta_k:.4g}":
+                        # Show exact form
+                        st.latex(f"z_{{{k}}} = {magnitude_exact} e^{{i{angle_exact}}} = {self.format_complex_latex(root)}")
+                    else:
+                        # Show decimal form if no exact form available
+                        st.latex(f"z_{{{k}}} = {r**(1/n):.4g} e^{{i{theta_k:.4g}}} = {self.format_complex_latex(root)}")
                 
                 # Verification: check that each root^n = z
                 st.write("### Verification:")
@@ -1946,17 +2029,27 @@ class ComplexOperations:
                     r_sol = r ** (1/n)
                     theta_sol = (theta + 2*np.pi*k) / n
                     solution = self.polar_to_complex(r_sol, theta_sol)
-                    solutions.append((k, solution))
+                    solutions.append((k, solution, theta_sol))
                 
                 st.write(f"### Solutions to z^{n} = {self.format_complex_latex(w)}:")
                 
-                for k, solution in solutions:
-                    st.latex(f"z_{{{k}}} = {self.format_complex_latex(solution)}")
+                for k, solution, theta_k in solutions:
+                    # Format magnitude and angle exactly
+                    magnitude_exact = self.format_magnitude_exact(r**(1/n))
+                    angle_exact = self.format_angle_exact(theta_k)
+                    
+                    # Display exact form when possible
+                    if magnitude_exact != f"{r**(1/n):.4g}" or angle_exact != f"{theta_k:.4g}":
+                        # Show exact form
+                        st.latex(f"z_{{{k}}} = {magnitude_exact} e^{{i{angle_exact}}} = {self.format_complex_latex(solution)}")
+                    else:
+                        # Show decimal form if no exact form available
+                        st.latex(f"z_{{{k}}} = {self.format_complex_latex(solution)}")
                 
                 # Verification
                 st.write("### Verification:")
                 all_correct = True
-                for k, solution in solutions:
+                for k, solution, _ in solutions:
                     verification = solution ** n
                     
                     # Clean up floating point errors in verification
@@ -2130,7 +2223,17 @@ class ComplexOperations:
                 st.write(f"### All {n} solutions:")
                 
                 for k, solution, theta_k in solutions:
-                    st.latex(f"z_{k} = \\sqrt[{n}]{{|c|}} \\cdot e^{{i\\frac{{\\arg(c) + 2\\pi \\cdot {k}}}{{{n}}}}} = {self.format_complex_latex(solution)}")
+                    # Format magnitude and angle exactly
+                    magnitude_exact = self.format_magnitude_exact(r**(1/n))
+                    angle_exact = self.format_angle_exact(theta_k)
+                    
+                    # Create exact form display
+                    if magnitude_exact != f"{r**(1/n):.4g}" or angle_exact != f"{theta_k:.4g}":
+                        # Show exact form
+                        st.latex(f"z_{{{k}}} = {magnitude_exact} e^{{i{angle_exact}}} = {self.format_complex_latex(solution)}")
+                    else:
+                        # Show decimal form if no exact form available
+                        st.latex(f"z_{{{k}}} = \\sqrt[{n}]{{|c|}} \\cdot e^{{i\\frac{{\\arg(c) + 2\\pi \\cdot {k}}}{{{n}}}}} = {self.format_complex_latex(solution)}")
                 
                 # Show in terms of roots of unity if c is real
                 if abs(c.imag) < 1e-10 and c.real > 0:
@@ -2198,7 +2301,6 @@ class ComplexOperations:
             
             try:
                 # Convert to numpy polynomial format (reverse order)
-                numpy_coeffs = coefficients[::-1]
                 roots = np.roots(coefficients)
                 
                 st.write(f"### Found {len(roots)} roots:")
