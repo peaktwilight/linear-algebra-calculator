@@ -2104,10 +2104,14 @@ class ComplexOperations:
             """)
         
         equation_type = st.selectbox("Select Equation Type:", 
-                                   ["Quadratic (z² + pz + q = 0)", "Cubic Roots of Unity", "General z^n = c", "Custom Polynomial"])
+                                   ["General Equation Parser", "Quadratic (az² + bz + c = 0)", "Quadratic with Fractions", "Cubic Roots of Unity", "General z^n = c", "Custom Polynomial"])
         
-        if equation_type == "Quadratic (z² + pz + q = 0)":
+        if equation_type == "General Equation Parser":
+            self._solve_general_equation()
+        elif equation_type == "Quadratic (az² + bz + c = 0)":
             self._solve_quadratic()
+        elif equation_type == "Quadratic with Fractions":
+            self._solve_quadratic_fractions()
         elif equation_type == "Cubic Roots of Unity":
             self._cubic_roots_unity()
         elif equation_type == "General z^n = c":
@@ -2116,63 +2120,544 @@ class ComplexOperations:
             self._custom_polynomial()
     
     def _solve_quadratic(self):
-        """Solve quadratic equations with complex coefficients."""
-        st.write("### Quadratic Equation: z² + pz + q = 0")
+        """Solve quadratic equations with complex coefficients: az² + bz + c = 0."""
+        st.write("### Quadratic Equation: az² + bz + c = 0")
         
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
-            p_input = st.text_input("Coefficient p:", value="0")
+            a_input = st.text_input("Coefficient a:", value="1")
         with col2:
-            q_input = st.text_input("Constant q:", value="1")
+            b_input = st.text_input("Coefficient b:", value="0")
+        with col3:
+            c_input = st.text_input("Constant c:", value="1")
         
         if st.button("Solve Quadratic"):
-            p = self.parse_complex_input(p_input)
-            q = self.parse_complex_input(q_input)
+            a = self.parse_complex_input(a_input)
+            b = self.parse_complex_input(b_input)
+            c = self.parse_complex_input(c_input)
             
-            if p is not None and q is not None:
-                st.write(f"### Solving: z² + ({self.format_complex_latex(p)})z + ({self.format_complex_latex(q)}) = 0")
+            if a is not None and b is not None and c is not None:
+                if abs(a) < 1e-10:
+                    st.error("Coefficient 'a' cannot be zero for a quadratic equation.")
+                    return
                 
-                # Quadratic formula: z = (-p ± √(p² - 4q)) / 2
-                discriminant = p*p - 4*q
+                st.write(f"### Solving: ({self.format_complex_latex(a)})z² + ({self.format_complex_latex(b)})z + ({self.format_complex_latex(c)}) = 0")
+                
+                # Quadratic formula: z = (-b ± √(b² - 4ac)) / (2a)
+                discriminant = b*b - 4*a*c
                 sqrt_discriminant = np.sqrt(discriminant)
                 
-                z1 = (-p + sqrt_discriminant) / 2
-                z2 = (-p - sqrt_discriminant) / 2
+                z1 = (-b + sqrt_discriminant) / (2*a)
+                z2 = (-b - sqrt_discriminant) / (2*a)
                 
                 st.write("### Using Quadratic Formula:")
-                st.latex(f"z = \\frac{{-p \\pm \\sqrt{{p^2 - 4q}}}}{{2}}")
+                st.latex(r"z = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}")
                 
                 col1, col2 = st.columns(2)
                 
                 with col1:
+                    st.write("**Step-by-Step Calculation:**")
+                    st.latex(f"a = {self.format_complex_latex(a)}")
+                    st.latex(f"b = {self.format_complex_latex(b)}")
+                    st.latex(f"c = {self.format_complex_latex(c)}")
+                    
                     st.write("**Discriminant:**")
-                    st.latex(f"\\Delta = p^2 - 4q")
-                    st.latex(f"= ({self.format_complex_latex(p)})^2 - 4({self.format_complex_latex(q)})")
+                    st.latex(r"\Delta = b^2 - 4ac")
+                    st.latex(f"= ({self.format_complex_latex(b)})^2 - 4({self.format_complex_latex(a)})({self.format_complex_latex(c)})")
                     st.latex(f"= {self.format_complex_latex(discriminant)}")
                     
                     st.write("**Square Root of Discriminant:**")
-                    st.latex(f"\\sqrt{{\\Delta}} = {self.format_complex_latex(sqrt_discriminant)}")
+                    st.latex(f"\\sqrt{{\\Delta}} = \\pm {self.format_complex_latex(sqrt_discriminant)}")
                 
                 with col2:
                     st.write("**Solutions:**")
-                    st.latex(f"z_1 = \\frac{{-({self.format_complex_latex(p)}) + {self.format_complex_latex(sqrt_discriminant)}}}{{2}} = {self.format_complex_latex(z1)}")
-                    st.latex(f"z_2 = \\frac{{-({self.format_complex_latex(p)}) - {self.format_complex_latex(sqrt_discriminant)}}}{{2}} = {self.format_complex_latex(z2)}")
+                    st.latex(f"z_1 = \\frac{{-({self.format_complex_latex(b)}) + {self.format_complex_latex(sqrt_discriminant)}}}{{2({self.format_complex_latex(a)})}} = {self.format_complex_latex(z1)}")
+                    st.latex(f"z_2 = \\frac{{-({self.format_complex_latex(b)}) - {self.format_complex_latex(sqrt_discriminant)}}}{{2({self.format_complex_latex(a)})}} = {self.format_complex_latex(z2)}")
+                    
+                    # Also show with fractions when possible
+                    z1_frac = self.format_complex_fraction(z1)
+                    z2_frac = self.format_complex_fraction(z2)
+                    if z1_frac != self.format_complex_latex(z1):
+                        st.write("**Exact Forms:**")
+                        st.latex(f"z_1 = {z1_frac}")
+                        st.latex(f"z_2 = {z2_frac}")
                 
                 # Verification
                 st.write("### Verification:")
+                tolerance = 1e-12
                 for i, z in enumerate([z1, z2], 1):
-                    result = z*z + p*z + q
-                    st.latex(f"z_{i}^2 + pz_{i} + q = {self.format_complex_latex(result)}")
-                    if abs(result) < 1e-10:
+                    result = a*z*z + b*z + c
+                    # Clean up floating point errors
+                    clean_real = result.real if abs(result.real) >= tolerance else 0.0
+                    clean_imag = result.imag if abs(result.imag) >= tolerance else 0.0
+                    clean_result = complex(clean_real, clean_imag)
+                    
+                    st.latex(f"az_{i}^2 + bz_{i} + c = {self.format_complex_latex(clean_result)}")
+                    if abs(clean_result) < 1e-10:
                         st.success(f"✅ z_{i} is correct")
                     else:
                         st.warning(f"⚠️ z_{i} has numerical error: {abs(result):.2e}")
                 
+                # Special cases recognition
+                if abs(discriminant) < 1e-10:
+                    st.info("💡 **Double Root**: The discriminant is zero, so there is one repeated solution.")
+                elif discriminant.imag == 0 and discriminant.real < 0:
+                    st.info("💡 **Complex Conjugate Roots**: The discriminant is negative real, so the roots are complex conjugates.")
+                
                 # Visualization
-                if abs(p) < 10 and abs(q) < 10:  # Only for reasonable values
-                    solutions_plot = [(z1, "z₁"), (z2, "z₂")]
-                    fig = self.create_gaussian_plane_plot(solutions_plot, "Quadratic Equation Solutions")
-                    st.plotly_chart(fig)
+                solutions_plot = [(z1, "z₁"), (z2, "z₂")]
+                fig = self.create_gaussian_plane_plot(solutions_plot, "Quadratic Equation Solutions")
+                st.plotly_chart(fig)
+    
+    def _solve_general_equation(self):
+        """Parse and solve general quadratic equations from text input."""
+        st.write("### General Equation Parser")
+        st.write("Enter any quadratic equation format. Examples:")
+        st.write("• `z^2 + 6z + 9 = 0`")
+        st.write("• `4z^2 + 8z + 29 = 0`") 
+        st.write("• `z^2 - 2iz - 10 = 0`")
+        st.write("• `iz^2 - (9+16i) = -144/z^2`")
+        
+        equation_input = st.text_area(
+            "Enter your equation:",
+            value="z^2 + 6z + 9 = 0",
+            height=100,
+            help="Use z or Z for the variable. Supports complex coefficients like i, 2+3i, etc."
+        )
+        
+        if st.button("Parse and Solve Equation"):
+            try:
+                equation_type, coefficients = self.parse_general_equation(equation_input)
+                
+                if equation_type == "quadratic":
+                    a, b, c = coefficients
+                    st.success(f"✅ Parsed as quadratic: ({self.format_complex_latex(a)})z² + ({self.format_complex_latex(b)})z + ({self.format_complex_latex(c)}) = 0")
+                    self._solve_quadratic_with_coeffs(a, b, c)
+                    
+                elif equation_type == "quartic_rational":
+                    a, b, c, d = coefficients
+                    st.success(f"✅ Parsed as rational equation with quartic transformation")
+                    self._solve_quartic_rational(a, b, c, d)
+                    
+                elif equation_type == "higher_degree":
+                    st.success(f"✅ Parsed as degree-{len(coefficients)-1} polynomial")
+                    self._solve_polynomial_general(coefficients)
+                    
+                else:
+                    st.error("❌ Could not determine equation type")
+                    
+            except Exception as e:
+                st.error(f"❌ Parsing error: {str(e)}")
+                st.write("**Tips for proper format:**")
+                st.write("• Use 'z' for the variable")
+                st.write("• Use '^' for exponents: z^2")
+                st.write("• Use 'i' for imaginary unit")
+                st.write("• Use parentheses for complex numbers: (3+4i)")
+                st.write("• Separate terms clearly with + or -")
+    
+    def parse_general_equation(self, equation_str: str):
+        """Parse a general equation string and extract coefficients."""
+        # Clean and normalize the equation
+        equation_str = equation_str.replace(' ', '').replace('Z', 'z')
+        
+        # Initialize paren_map
+        self._paren_map = {}
+        
+        # Handle different equation formats
+        if '=' in equation_str:
+            left_side, right_side = equation_str.split('=')
+            
+            # Check for rational form: something = something/z^2
+            if '/z^2' in right_side or '/z²' in right_side:
+                return self._parse_rational_equation(left_side, right_side)
+            
+            # Standard polynomial form: move everything to left side
+            # Parse both sides and subtract
+            left_coeffs = self._parse_polynomial_side(left_side)
+            right_coeffs = self._parse_polynomial_side(right_side)
+            
+            # Combine: left - right = 0
+            max_degree = max(len(left_coeffs), len(right_coeffs))
+            combined_coeffs = [0] * max_degree
+            
+            for i in range(len(left_coeffs)):
+                if i < len(combined_coeffs):
+                    combined_coeffs[i] += left_coeffs[i]
+            
+            for i in range(len(right_coeffs)):
+                if i < len(combined_coeffs):
+                    combined_coeffs[i] -= right_coeffs[i]
+            
+            # Remove leading zeros
+            while len(combined_coeffs) > 1 and abs(combined_coeffs[-1]) < 1e-10:
+                combined_coeffs.pop()
+            
+            degree = len(combined_coeffs) - 1
+            
+            if degree == 2:
+                return "quadratic", combined_coeffs[:3]  # [c, b, a]
+            elif degree > 2:
+                return "higher_degree", combined_coeffs
+            else:
+                raise ValueError("Not a quadratic equation")
+        else:
+            raise ValueError("Equation must contain '=' sign")
+    
+    def _parse_rational_equation(self, left_side: str, right_side: str):
+        """Parse rational equations like iz^2 - (9+16i) = -144/z^2."""
+        # Extract numerator from right side
+        if '/z^2' in right_side:
+            numerator_str = right_side.replace('/z^2', '').replace('/z²', '')
+        else:
+            raise ValueError("Right side must be of form 'something/z^2'")
+        
+        # Initialize paren_map for left side parsing
+        self._paren_map = {}
+        
+        # Parse left side polynomial
+        left_coeffs = self._parse_polynomial_side(left_side)
+        
+        # Ensure we have at least 3 coefficients for quadratic
+        while len(left_coeffs) < 3:
+            left_coeffs.append(0)
+        
+        c_coeff, b_coeff, a_coeff = left_coeffs[0], left_coeffs[1], left_coeffs[2]
+        d_coeff = self.parse_complex_input(numerator_str)
+        
+        if d_coeff is None:
+            raise ValueError(f"Could not parse numerator: {numerator_str}")
+        
+        return "quartic_rational", [a_coeff, b_coeff, c_coeff, d_coeff]
+    
+    def _parse_polynomial_side(self, side_str: str):
+        """Parse one side of equation into polynomial coefficients [c, b, a, ...]."""
+        coefficients = [0, 0, 0, 0, 0]  # Up to degree 4: [z^0, z^1, z^2, z^3, z^4]
+        
+        # Handle parentheses first - protect complex numbers in parentheses
+        side_str = self._handle_parentheses_terms(side_str)
+        
+        # Handle signs and split terms
+        side_str = side_str.replace('-', '+-')
+        if side_str.startswith('+'):
+            side_str = side_str[1:]
+        
+        terms = [term.strip() for term in side_str.split('+') if term.strip()]
+        
+        for term in terms:
+            if not term:
+                continue
+                
+            # Parse each term
+            degree, coeff = self._parse_term(term)
+            if degree < len(coefficients):
+                coefficients[degree] += coeff
+        
+        # Remove trailing zeros
+        while len(coefficients) > 1 and abs(coefficients[-1]) < 1e-10:
+            coefficients.pop()
+        
+        return coefficients
+    
+    def _handle_parentheses_terms(self, side_str: str):
+        """Handle complex numbers in parentheses like (9+16i)."""
+        import re
+        
+        # Find all parentheses groups and replace them with placeholders
+        paren_groups = re.findall(r'\([^)]+\)', side_str)
+        processed_str = side_str
+        
+        for i, group in enumerate(paren_groups):
+            # Create a placeholder that won't interfere with splitting
+            placeholder = f"__PAREN_{i}__"
+            processed_str = processed_str.replace(group, placeholder, 1)
+        
+        # Store the mapping for later restoration
+        self._paren_map = {f"__PAREN_{i}__": group[1:-1] for i, group in enumerate(paren_groups)}
+        
+        return processed_str
+    
+    def _parse_term(self, term: str):
+        """Parse a single term like '4z^2', '-2iz', '(9+16i)', etc."""
+        term = term.strip()
+        
+        # Handle negative terms
+        negative = term.startswith('-')
+        if negative:
+            term = term[1:]
+        
+        # Check for z powers
+        if '^' in term:
+            if 'z^' in term:
+                parts = term.split('z^')
+                coeff_str = parts[0] if parts[0] else '1'
+                degree = int(parts[1]) if parts[1] else 1
+            else:
+                raise ValueError(f"Invalid power notation in term: {term}")
+        elif term.endswith('z') or term.endswith('z²') or term.endswith('z2'):
+            if term.endswith('z²') or term.endswith('z2'):
+                degree = 2
+                coeff_str = term[:-2] if len(term) > 2 else '1'
+            else:  # ends with 'z'
+                degree = 1  
+                coeff_str = term[:-1] if len(term) > 1 else '1'
+        elif 'z' not in term:
+            # Constant term
+            degree = 0
+            coeff_str = term
+        else:
+            raise ValueError(f"Could not parse term: {term}")
+        
+        # Restore parentheses placeholders
+        if hasattr(self, '_paren_map'):
+            for placeholder, original in self._paren_map.items():
+                coeff_str = coeff_str.replace(placeholder, original)
+        
+        # Parse coefficient
+        if coeff_str == '' or coeff_str == '+':
+            coeff = 1
+        elif coeff_str == '-':
+            coeff = -1
+        else:
+            coeff = self.parse_complex_input(coeff_str)
+            if coeff is None:
+                raise ValueError(f"Could not parse coefficient: {coeff_str}")
+        
+        if negative:
+            coeff = -coeff
+        
+        return degree, coeff
+    
+    def _solve_quadratic_with_coeffs(self, a, b, c):
+        """Solve quadratic with given coefficients."""
+        if abs(a) < 1e-10:
+            st.error("Coefficient of z² cannot be zero for a quadratic equation.")
+            return
+        
+        st.write(f"### Solving: ({self.format_complex_latex(a)})z² + ({self.format_complex_latex(b)})z + ({self.format_complex_latex(c)}) = 0")
+        
+        # Quadratic formula: z = (-b ± √(b² - 4ac)) / (2a)
+        discriminant = b*b - 4*a*c
+        sqrt_discriminant = np.sqrt(discriminant)
+        
+        z1 = (-b + sqrt_discriminant) / (2*a)
+        z2 = (-b - sqrt_discriminant) / (2*a)
+        
+        st.write("### Using Quadratic Formula:")
+        st.latex(r"z = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("**Step-by-Step Calculation:**")
+            st.latex(f"a = {self.format_complex_latex(a)}")
+            st.latex(f"b = {self.format_complex_latex(b)}")
+            st.latex(f"c = {self.format_complex_latex(c)}")
+            
+            st.write("**Discriminant:**")
+            st.latex(r"\Delta = b^2 - 4ac")
+            st.latex(f"= ({self.format_complex_latex(b)})^2 - 4({self.format_complex_latex(a)})({self.format_complex_latex(c)})")
+            st.latex(f"= {self.format_complex_latex(discriminant)}")
+            
+            st.write("**Square Root of Discriminant:**")
+            st.latex(f"\\sqrt{{\\Delta}} = \\pm {self.format_complex_latex(sqrt_discriminant)}")
+        
+        with col2:
+            st.write("**Solutions:**")
+            st.latex(f"z_1 = \\frac{{-({self.format_complex_latex(b)}) + {self.format_complex_latex(sqrt_discriminant)}}}{{2({self.format_complex_latex(a)})}} = {self.format_complex_latex(z1)}")
+            st.latex(f"z_2 = \\frac{{-({self.format_complex_latex(b)}) - {self.format_complex_latex(sqrt_discriminant)}}}{{2({self.format_complex_latex(a)})}} = {self.format_complex_latex(z2)}")
+            
+            # Also show with fractions when possible
+            z1_frac = self.format_complex_fraction(z1)
+            z2_frac = self.format_complex_fraction(z2)
+            if z1_frac != self.format_complex_latex(z1):
+                st.write("**Exact Forms:**")
+                st.latex(f"z_1 = {z1_frac}")
+                st.latex(f"z_2 = {z2_frac}")
+        
+        # Verification
+        st.write("### Verification:")
+        tolerance = 1e-12
+        for i, z in enumerate([z1, z2], 1):
+            result = a*z*z + b*z + c
+            # Clean up floating point errors
+            clean_real = result.real if abs(result.real) >= tolerance else 0.0
+            clean_imag = result.imag if abs(result.imag) >= tolerance else 0.0
+            clean_result = complex(clean_real, clean_imag)
+            
+            st.latex(f"az_{i}^2 + bz_{i} + c = {self.format_complex_latex(clean_result)}")
+            if abs(clean_result) < 1e-10:
+                st.success(f"✅ z_{i} is correct")
+            else:
+                st.warning(f"⚠️ z_{i} has numerical error: {abs(result):.2e}")
+        
+        # Special cases recognition
+        if abs(discriminant) < 1e-10:
+            st.info("💡 **Double Root**: The discriminant is zero, so there is one repeated solution.")
+        elif discriminant.imag == 0 and discriminant.real < 0:
+            st.info("💡 **Complex Conjugate Roots**: The discriminant is negative real, so the roots are complex conjugates.")
+        
+        # Visualization
+        solutions_plot = [(z1, "z₁"), (z2, "z₂")]
+        fig = self.create_gaussian_plane_plot(solutions_plot, "Quadratic Equation Solutions")
+        st.plotly_chart(fig)
+    
+    def _solve_quartic_rational(self, a, b, c, d):
+        """Solve quartic rational equations."""
+        st.write(f"### Rational Equation: ({self.format_complex_latex(a)})z² + ({self.format_complex_latex(b)})z + ({self.format_complex_latex(c)}) = ({self.format_complex_latex(d)})/z²")
+        
+        # Transform to polynomial: az⁴ + bz³ + cz² - d = 0
+        st.write("### Multiply both sides by z² to get:")
+        st.latex(f"({self.format_complex_latex(a)})z^4 + ({self.format_complex_latex(b)})z^3 + ({self.format_complex_latex(c)})z^2 + ({self.format_complex_latex(-d)}) = 0")
+        
+        # Solve the quartic polynomial
+        coefficients = [a, b, c, complex(0), -d]  # z^4, z^3, z^2, z^1, z^0
+        
+        try:
+            # Use numpy to find roots
+            roots = np.roots(coefficients)
+            
+            st.write(f"### Found {len(roots)} solutions:")
+            
+            valid_roots = []
+            for i, root in enumerate(roots):
+                root_complex = complex(root)
+                if abs(root_complex) > 1e-10:  # Avoid division by zero
+                    valid_roots.append(root_complex)
+                    st.latex(f"z_{{{i+1}}} = {self.format_complex_latex(root_complex)}")
+                else:
+                    st.write(f"z_{i+1} ≈ 0 (excluded due to division by zero in original equation)")
+            
+            # Verification with original equation
+            if valid_roots:
+                st.write("### Verification with Original Equation:")
+                for i, z in enumerate(valid_roots, 1):
+                    left_side = a*z*z + b*z + c
+                    right_side = d / (z*z)
+                    difference = left_side - right_side
+                    
+                    # Clean up floating point errors
+                    tolerance = 1e-10
+                    clean_real = difference.real if abs(difference.real) >= tolerance else 0.0
+                    clean_imag = difference.imag if abs(difference.imag) >= tolerance else 0.0
+                    clean_diff = complex(clean_real, clean_imag)
+                    
+                    st.latex(f"\\text{{LHS}} - \\text{{RHS}} = {self.format_complex_latex(clean_diff)}")
+                    if abs(clean_diff) < 1e-8:
+                        st.success(f"✅ z_{i} is correct")
+                    else:
+                        st.warning(f"⚠️ z_{i} has error: {abs(difference):.2e}")
+            
+            # Visualization
+            if valid_roots:
+                solutions_plot = [(root, f"z_{i+1}") for i, root in enumerate(valid_roots)]
+                fig = self.create_gaussian_plane_plot(solutions_plot, "Rational Equation Solutions")
+                st.plotly_chart(fig)
+                
+        except Exception as e:
+            st.error(f"Error solving equation: {str(e)}")
+    
+    def _solve_polynomial_general(self, coefficients):
+        """Solve general polynomial equations."""
+        degree = len(coefficients) - 1
+        st.write(f"### Solving degree-{degree} polynomial equation")
+        
+        try:
+            # Reverse coefficients for numpy (numpy expects highest degree first)
+            numpy_coeffs = coefficients[::-1]
+            roots = np.roots(numpy_coeffs)
+            
+            st.write(f"### Found {len(roots)} roots:")
+            
+            for i, root in enumerate(roots):
+                if np.isreal(root):
+                    st.latex(f"z_{{{i+1}}} = {root.real:.6g}")
+                else:
+                    st.latex(f"z_{{{i+1}}} = {self.format_complex_latex(complex(root))}")
+            
+            # Visualization if not too many roots
+            if len(roots) <= 12:
+                root_points = [(complex(root), f"z_{i+1}") for i, root in enumerate(roots)]
+                fig = self.create_gaussian_plane_plot(root_points, f"Polynomial Roots (degree {degree})")
+                st.plotly_chart(fig)
+            
+        except Exception as e:
+            st.error(f"Error finding roots: {str(e)}")
+    
+    def _solve_quadratic_fractions(self):
+        """Solve quadratic equations with fractions: az² + bz + c = d/z² format."""
+        st.write("### Quadratic with Fractions: az² + bz + c = d/z²")
+        st.write("This transforms to: az⁴ + bz³ + cz² - d = 0")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            a_input = st.text_input("Coefficient a:", value="i", key="frac_a")
+        with col2:
+            b_input = st.text_input("Coefficient b:", value="0", key="frac_b")
+        with col3:
+            c_input = st.text_input("Constant c:", value="-(9+16i)", key="frac_c")
+        with col4:
+            d_input = st.text_input("Numerator d:", value="-144", key="frac_d")
+        
+        if st.button("Solve Fractional Quadratic"):
+            a = self.parse_complex_input(a_input)
+            b = self.parse_complex_input(b_input)
+            c = self.parse_complex_input(c_input)
+            d = self.parse_complex_input(d_input)
+            
+            if all(x is not None for x in [a, b, c, d]):
+                st.write(f"### Original: ({self.format_complex_latex(a)})z² + ({self.format_complex_latex(b)})z + ({self.format_complex_latex(c)}) = ({self.format_complex_latex(d)})/z²")
+                
+                # Transform to polynomial: az⁴ + bz³ + cz² - d = 0
+                st.write("### Multiply both sides by z² to get:")
+                st.latex(f"({self.format_complex_latex(a)})z^4 + ({self.format_complex_latex(b)})z^3 + ({self.format_complex_latex(c)})z^2 + ({self.format_complex_latex(-d)}) = 0")
+                
+                # Solve the quartic polynomial
+                coefficients = [a, b, c, complex(0), -d]  # z^4, z^3, z^2, z^1, z^0
+                
+                try:
+                    # Use numpy to find roots
+                    roots = np.roots(coefficients)
+                    
+                    st.write(f"### Found {len(roots)} solutions:")
+                    
+                    valid_roots = []
+                    for i, root in enumerate(roots):
+                        root_complex = complex(root)
+                        if abs(root_complex) > 1e-10:  # Avoid division by zero
+                            valid_roots.append(root_complex)
+                            st.latex(f"z_{{{i+1}}} = {self.format_complex_latex(root_complex)}")
+                        else:
+                            st.write(f"z_{i+1} ≈ 0 (excluded due to division by zero in original equation)")
+                    
+                    # Verification with original equation
+                    if valid_roots:
+                        st.write("### Verification with Original Equation:")
+                        for i, z in enumerate(valid_roots, 1):
+                            left_side = a*z*z + b*z + c
+                            right_side = d / (z*z)
+                            difference = left_side - right_side
+                            
+                            # Clean up floating point errors
+                            tolerance = 1e-10
+                            clean_real = difference.real if abs(difference.real) >= tolerance else 0.0
+                            clean_imag = difference.imag if abs(difference.imag) >= tolerance else 0.0
+                            clean_diff = complex(clean_real, clean_imag)
+                            
+                            st.latex(f"\\text{{LHS}} - \\text{{RHS}} = {self.format_complex_latex(clean_diff)}")
+                            if abs(clean_diff) < 1e-8:
+                                st.success(f"✅ z_{i} is correct")
+                            else:
+                                st.warning(f"⚠️ z_{i} has error: {abs(difference):.2e}")
+                    
+                    # Visualization
+                    if valid_roots:
+                        solutions_plot = [(root, f"z_{i+1}") for i, root in enumerate(valid_roots)]
+                        fig = self.create_gaussian_plane_plot(solutions_plot, "Fractional Quadratic Solutions")
+                        st.plotly_chart(fig)
+                        
+                except Exception as e:
+                    st.error(f"Error solving equation: {str(e)}")
+                    st.write("This might be due to numerical instability. Try using exact methods or different numerical approaches.")
     
     def _cubic_roots_unity(self):
         """Show cubic roots of unity and their properties."""
