@@ -11,6 +11,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from typing import Tuple, Optional, List, Dict, Union
 import cmath
+from fractions import Fraction
 
 class ComplexOperations:
     """
@@ -28,14 +29,69 @@ class ComplexOperations:
             # Remove spaces
             input_str = input_str.replace(' ', '')
             
+            # Handle special cases first
+            if input_str.lower() in ['i', '+i']:
+                return complex(0, 1)
+            elif input_str.lower() in ['-i']:
+                return complex(0, -1)
+            
+            # Handle complex fractions like (1+2i)/(3+4i)
+            if '/' in input_str and ('i' in input_str.lower() or 'j' in input_str.lower()):
+                try:
+                    # Find the division point, accounting for parentheses
+                    paren_level = 0
+                    division_index = -1
+                    
+                    for i, char in enumerate(input_str):
+                        if char == '(':
+                            paren_level += 1
+                        elif char == ')':
+                            paren_level -= 1
+                        elif char == '/' and paren_level == 0:
+                            division_index = i
+                            break
+                    
+                    if division_index > 0:
+                        numerator_str = input_str[:division_index]
+                        denominator_str = input_str[division_index+1:]
+                        
+                        # Remove parentheses if they wrap the entire expression
+                        if numerator_str.startswith('(') and numerator_str.endswith(')'):
+                            numerator_str = numerator_str[1:-1]
+                        if denominator_str.startswith('(') and denominator_str.endswith(')'):
+                            denominator_str = denominator_str[1:-1]
+                        
+                        # Recursively parse numerator and denominator
+                        numerator = self.parse_complex_input(numerator_str)
+                        denominator = self.parse_complex_input(denominator_str)
+                        
+                        if numerator is not None and denominator is not None:
+                            if abs(denominator) > 1e-10:
+                                return numerator / denominator
+                            else:
+                                st.error("Division by zero")
+                                return None
+                except:
+                    pass
+            
             # Handle different formats
             if 'j' in input_str.lower():
                 # Python format: 3+4j or 3+4J
                 return complex(input_str.replace('J', 'j'))
             elif 'i' in input_str.lower():
                 # Math format: 3+4i
-                input_str = input_str.replace('i', 'j').replace('I', 'j')
-                return complex(input_str)
+                # First handle standalone i
+                processed = input_str.replace('I', 'i')
+                
+                # Replace lone 'i' with '1j' (but not when it's part of a number)
+                import re
+                # Replace 'i' at the end or when preceded by +/- or at start
+                processed = re.sub(r'(?<![0-9])i(?![0-9])', '1j', processed)
+                processed = re.sub(r'([+-])i(?![0-9])', r'\g<1>1j', processed)
+                # Replace other 'i' with 'j'
+                processed = processed.replace('i', 'j')
+                
+                return complex(processed)
             else:
                 # Check if it's just a real number
                 return complex(float(input_str), 0)
@@ -74,6 +130,48 @@ class ComplexOperations:
                     return f"{z.real:.4g} - i"
                 else:
                     return f"{z.real:.4g} - {abs(z.imag):.4g}i"
+    
+    def format_complex_fraction(self, z: complex, tolerance: float = 1e-10) -> str:
+        """Format complex number as fraction when possible."""
+        def to_fraction_str(value: float) -> str:
+            """Convert float to fraction string if it's a simple fraction."""
+            if abs(value) < tolerance:
+                return "0"
+            
+            # Try to convert to fraction
+            try:
+                frac = Fraction(value).limit_denominator(1000)
+                if abs(float(frac) - value) < tolerance:
+                    if frac.denominator == 1:
+                        return str(frac.numerator)
+                    else:
+                        return f"\\frac{{{frac.numerator}}}{{{frac.denominator}}}"
+                else:
+                    return f"{value:.4g}"
+            except:
+                return f"{value:.4g}"
+        
+        real_frac = to_fraction_str(z.real)
+        imag_frac = to_fraction_str(z.imag)
+        
+        if abs(z.imag) < tolerance:
+            return real_frac
+        elif abs(z.real) < tolerance:
+            if imag_frac == "1":
+                return "i"
+            elif imag_frac == "-1":
+                return "-i"
+            else:
+                return f"{imag_frac}i"
+        else:
+            if abs(z.imag - 1) < tolerance:
+                return f"{real_frac} + i"
+            elif abs(z.imag + 1) < tolerance:
+                return f"{real_frac} - i"
+            elif z.imag > 0:
+                return f"{real_frac} + {imag_frac}i"
+            else:
+                return f"{real_frac} - {imag_frac.replace('-', '')}i"
     
     def complex_to_polar(self, z: complex) -> Tuple[float, float]:
         """Convert complex number to polar form (r, θ)."""
@@ -409,7 +507,15 @@ class ComplexOperations:
                     st.latex(f"\\frac{{{self.format_complex_latex(z1)}}}{{{self.format_complex_latex(z2)}}}")
                     st.write(result['step2'])
                     st.latex(f"= \\frac{{{self.format_complex_latex(result['numerator'])}}}{{{result['denominator']:.4g}}}")
-                    st.latex(f"= {self.format_complex_latex(result['result'])}")
+                    
+                    # Show both fraction and decimal form
+                    fraction_form = self.format_complex_fraction(result['result'])
+                    decimal_form = self.format_complex_latex(result['result'])
+                    
+                    if fraction_form != decimal_form:
+                        st.latex(f"= {fraction_form} = {decimal_form}")
+                    else:
+                        st.latex(f"= {decimal_form}")
                     
                     # Visualization
                     st.write("### Visualization:")
@@ -580,9 +686,29 @@ class ComplexOperations:
                 imag_part = z.imag
                 
                 st.write("### Results:")
-                st.latex(f"z = {self.format_complex_latex(z)}")
-                st.latex(f"\\text{{Re}}(z) = {real_part:.4g}")
-                st.latex(f"\\text{{Im}}(z) = {imag_part:.4g}")
+                
+                # Show both decimal and fraction forms
+                fraction_form = self.format_complex_fraction(z)
+                decimal_form = self.format_complex_latex(z)
+                
+                if fraction_form != decimal_form:
+                    st.latex(f"z = {fraction_form} = {decimal_form}")
+                else:
+                    st.latex(f"z = {decimal_form}")
+                
+                # Real part
+                real_fraction = self.format_complex_fraction(complex(real_part, 0))
+                if real_fraction != f"{real_part:.4g}":
+                    st.latex(f"\\text{{Re}}(z) = {real_fraction} = {real_part:.4g}")
+                else:
+                    st.latex(f"\\text{{Re}}(z) = {real_part:.4g}")
+                
+                # Imaginary part
+                imag_fraction = self.format_complex_fraction(complex(0, imag_part)).replace('i', '')
+                if imag_fraction != f"{imag_part:.4g}":
+                    st.latex(f"\\text{{Im}}(z) = {imag_fraction} = {imag_part:.4g}")
+                else:
+                    st.latex(f"\\text{{Im}}(z) = {imag_part:.4g}")
                 
                 # Properties
                 st.write("### Properties:")

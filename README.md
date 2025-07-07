@@ -1,4 +1,4 @@
-# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.9.4-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.9.4)
+# Doruk's Linear Algebra Calculator [![Version](https://img.shields.io/badge/version-1.9.5-blue.svg)](https://github.com/peaktwilight/linear-algebra-calculator/releases/tag/v1.9.5)
 ![Web App Demo](public/linear-algebra-calculator.gif)
 
 ## Features
@@ -63,7 +63,7 @@ streamlit run streamlit_app.py
 
 ## Architecture
 
-This is a **Streamlit web application** (v1.9.4) for linear algebra calculations. The architecture is modular and self-sufficient:
+This is a **Streamlit web application** (v1.9.5) for linear algebra calculations. The architecture is modular and self-sufficient:
 
 **Entry Point:**
 - `streamlit_app.py` - Main application with routing between calculator modes
