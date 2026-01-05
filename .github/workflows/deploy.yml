@@ -29,6 +29,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ghcr.io/peak-labs/linear-algebra-calculator:latest
+        tags: ghcr.io/dreamlabs-ch/linear-algebra-calculator:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
