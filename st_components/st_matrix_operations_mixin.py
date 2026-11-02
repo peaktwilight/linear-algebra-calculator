@@ -85,8 +85,44 @@ class MatrixOperationsMixin:
     
     def _parse_equations_to_matrix(self, equation_lines):
         """Parse equation format to matrix format."""
+        import ast
+        import operator
         import re
-        
+
+        def evaluate_numeric_expression(expression):
+            """Evaluate bounded numeric arithmetic without executing Python."""
+            if len(expression) > 256:
+                raise ValueError("Numeric expression is too long")
+            operators = {
+                ast.Add: operator.add,
+                ast.Sub: operator.sub,
+                ast.Mult: operator.mul,
+                ast.Div: operator.truediv,
+                ast.Pow: operator.pow,
+                ast.Mod: operator.mod,
+                ast.FloorDiv: operator.floordiv,
+            }
+            tree = ast.parse(expression, mode="eval")
+            if sum(1 for _ in ast.walk(tree)) > 64:
+                raise ValueError("Numeric expression is too complex")
+
+            def evaluate(node):
+                if isinstance(node, ast.Expression):
+                    return evaluate(node.body)
+                if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool):
+                    return node.value
+                if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+                    value = evaluate(node.operand)
+                    return value if isinstance(node.op, ast.UAdd) else -value
+                if isinstance(node, ast.BinOp) and type(node.op) in operators:
+                    left, right = evaluate(node.left), evaluate(node.right)
+                    if isinstance(node.op, ast.Pow) and abs(right) > 100:
+                        raise ValueError("Exponent is too large")
+                    return operators[type(node.op)](left, right)
+                raise ValueError("Only numeric literals and arithmetic operators are allowed")
+
+            return evaluate(tree)
+
         # Collect all variables
         all_vars = set()
         equations = []
@@ -127,7 +163,7 @@ class MatrixOperationsMixin:
         for i, (left, right) in enumerate(equations):
             # Parse right side (constant)
             try:
-                constants[i] = eval(right.replace('^', '**'))
+                constants[i] = evaluate_numeric_expression(right.replace('^', '**'))
             except:
                 constants[i] = float(right)
             
