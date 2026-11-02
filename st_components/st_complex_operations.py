@@ -10,10 +10,12 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from typing import Tuple, Optional, List, Dict, Union
+import ast
 import cmath
 from fractions import Fraction
 import re
 import math
+import operator
 
 class ComplexOperations:
     """
@@ -469,6 +471,54 @@ class ComplexOperations:
             else:
                 return f"{real_frac} - {imag_frac.replace('-', '')}i"
     
+    def _evaluate_numeric_math_expression(self, expression: str):
+        """Evaluate bounded arithmetic and explicitly allowed math functions."""
+        if len(expression) > 256:
+            raise ValueError("Expression is too long")
+        tree = ast.parse(expression, mode="eval")
+        if sum(1 for _ in ast.walk(tree)) > 64:
+            raise ValueError("Expression is too complex")
+
+        binary_ops = {
+            ast.Add: operator.add,
+            ast.Sub: operator.sub,
+            ast.Mult: operator.mul,
+            ast.Div: operator.truediv,
+            ast.Pow: operator.pow,
+            ast.Mod: operator.mod,
+            ast.FloorDiv: operator.floordiv,
+        }
+        functions = {
+            "sqrt": math.sqrt, "sin": math.sin, "cos": math.cos,
+            "tan": math.tan, "log": math.log, "log10": math.log10,
+            "abs": abs, "pow": pow,
+        }
+
+        def evaluate(node):
+            if isinstance(node, ast.Expression):
+                return evaluate(node.body)
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool):
+                return node.value
+            if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+                value = evaluate(node.operand)
+                return value if isinstance(node.op, ast.UAdd) else -value
+            if isinstance(node, ast.BinOp) and type(node.op) in binary_ops:
+                left, right = evaluate(node.left), evaluate(node.right)
+                if isinstance(node.op, ast.Pow) and abs(right) > 100:
+                    raise ValueError("Exponent is too large")
+                return binary_ops[type(node.op)](left, right)
+            if isinstance(node, ast.Call) and not node.keywords:
+                if isinstance(node.func, ast.Name) and node.func.id in functions:
+                    function = functions[node.func.id]
+                elif isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name) and node.func.value.id == "math" and node.func.attr in functions:
+                    function = functions[node.func.attr]
+                else:
+                    raise ValueError("Function is not allowed")
+                return function(*(evaluate(arg) for arg in node.args))
+            raise ValueError("Only numeric arithmetic and approved math functions are allowed")
+
+        return evaluate(tree)
+
     def parse_math_expression(self, expr_str: str) -> Optional[float]:
         """Parse mathematical expressions like 'sqrt(2)', 'pi/4', '7pi/36', etc."""
         try:
@@ -520,7 +570,7 @@ class ComplexOperations:
             if expr_str.startswith('(') and expr_str.endswith(')'):
                 expr_str = expr_str[1:-1]
             
-            result = eval(expr_str, allowed_names, {})
+            result = self._evaluate_numeric_math_expression(expr_str)
             return float(result)
             
         except Exception as e:
